@@ -29,7 +29,7 @@ export const Route = createFileRoute("/_authenticated/subjects/$id")({
 function SubjectDetail() {
   const { id } = useParams({ from: "/_authenticated/subjects/$id" });
   const { user } = useAuth();
-  const { subjects, topics, progress, profiles, addTopic, bulkAddTopics, deleteTopic, toggleTopic } = useData();
+  const { subjects, topics, progress, profiles, addTopic, bulkAddTopics, updateTopic, deleteTopic, toggleTopic } = useData();
 
   const subject = subjects.find((s) => s.id === id);
   const sTopics = useMemo(() => topics.filter((t) => t.subject_id === id), [topics, id]);
