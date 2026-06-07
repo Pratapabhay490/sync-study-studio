@@ -12,7 +12,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Plus, Search, Trash2, Upload } from "lucide-react";
+import { ArrowLeft, Pencil, Plus, Search, Trash2, Upload } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { ProgressRing } from "@/components/progress-ring";
