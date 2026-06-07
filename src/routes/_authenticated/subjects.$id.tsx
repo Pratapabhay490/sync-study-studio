@@ -12,7 +12,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Plus, Search, Trash2, Upload } from "lucide-react";
+import { ArrowLeft, Pencil, Plus, Search, Trash2, Upload } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { ProgressRing } from "@/components/progress-ring";
@@ -25,7 +29,7 @@ export const Route = createFileRoute("/_authenticated/subjects/$id")({
 function SubjectDetail() {
   const { id } = useParams({ from: "/_authenticated/subjects/$id" });
   const { user } = useAuth();
-  const { subjects, topics, progress, profiles, addTopic, bulkAddTopics, deleteTopic, toggleTopic } = useData();
+  const { subjects, topics, progress, profiles, addTopic, bulkAddTopics, updateTopic, deleteTopic, toggleTopic } = useData();
 
   const subject = subjects.find((s) => s.id === id);
   const sTopics = useMemo(() => topics.filter((t) => t.subject_id === id), [topics, id]);
@@ -37,6 +41,8 @@ function SubjectDetail() {
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [bulkText, setBulkText] = useState("");
+  const [editTopic, setEditTopic] = useState<null | { id: string; name: string; description: string }>(null);
+  const [confirmDelete, setConfirmDelete] = useState<null | { id: string; name: string }>(null);
 
   const Icon = getSubjectIcon(subject?.icon);
 
@@ -223,16 +229,24 @@ function SubjectDetail() {
                     );
                   })}
                   <td className="px-2 py-3">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={async () => {
-                        await deleteTopic(t.id);
-                        toast.success("Topic removed");
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        title="Edit topic"
+                        onClick={() => setEditTopic({ id: t.id, name: t.topic_name, description: t.description ?? "" })}
+                      >
+                        <Pencil className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        title="Delete topic"
+                        onClick={() => setConfirmDelete({ id: t.id, name: t.topic_name })}
+                      >
+                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -246,6 +260,74 @@ function SubjectDetail() {
         Showing {visible.length} of {sTopics.length} topics
         {filter !== "all" && (isCompletedByMe(visible[0]?.id ?? "") || true) ? "" : ""}
       </div>
+
+      <Dialog open={!!editTopic} onOpenChange={(o) => !o && setEditTopic(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit topic</DialogTitle></DialogHeader>
+          {editTopic && (
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="et-name">Topic name</Label>
+                <Input
+                  id="et-name"
+                  value={editTopic.name}
+                  onChange={(e) => setEditTopic({ ...editTopic, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="et-desc">Description (optional)</Label>
+                <Textarea
+                  id="et-desc"
+                  rows={3}
+                  value={editTopic.description}
+                  onChange={(e) => setEditTopic({ ...editTopic, description: e.target.value })}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditTopic(null)}>Cancel</Button>
+            <Button
+              className="bg-gradient-primary text-white"
+              onClick={async () => {
+                if (!editTopic || !editTopic.name.trim()) return;
+                await updateTopic(editTopic.id, {
+                  topic_name: editTopic.name.trim(),
+                  description: editTopic.description.trim() || null,
+                });
+                toast.success("Topic updated");
+                setEditTopic(null);
+              }}
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this topic?</AlertDialogTitle>
+            <AlertDialogDescription>
+              "{confirmDelete?.name}" will be deleted for both partners along with its progress. This can't be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (!confirmDelete) return;
+                await deleteTopic(confirmDelete.id);
+                toast.success("Topic removed");
+                setConfirmDelete(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
