@@ -229,16 +229,24 @@ function SubjectDetail() {
                     );
                   })}
                   <td className="px-2 py-3">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={async () => {
-                        await deleteTopic(t.id);
-                        toast.success("Topic removed");
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        title="Edit topic"
+                        onClick={() => setEditTopic({ id: t.id, name: t.topic_name, description: t.description ?? "" })}
+                      >
+                        <Pencil className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        title="Delete topic"
+                        onClick={() => setConfirmDelete({ id: t.id, name: t.topic_name })}
+                      >
+                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
