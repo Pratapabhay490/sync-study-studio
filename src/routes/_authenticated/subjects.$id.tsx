@@ -41,6 +41,8 @@ function SubjectDetail() {
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [bulkText, setBulkText] = useState("");
+  const [editTopic, setEditTopic] = useState<null | { id: string; name: string; description: string }>(null);
+  const [confirmDelete, setConfirmDelete] = useState<null | { id: string; name: string }>(null);
 
   const Icon = getSubjectIcon(subject?.icon);
 
