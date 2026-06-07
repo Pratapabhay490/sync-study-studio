@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Search, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/subjects")({
+export const Route = createFileRoute("/_authenticated/subjects/")({
   head: () => ({ meta: [{ title: "Subjects — Let's be in sync" }] }),
   component: SubjectsPage,
 });
