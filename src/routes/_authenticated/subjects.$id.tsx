@@ -260,6 +260,74 @@ function SubjectDetail() {
         Showing {visible.length} of {sTopics.length} topics
         {filter !== "all" && (isCompletedByMe(visible[0]?.id ?? "") || true) ? "" : ""}
       </div>
+
+      <Dialog open={!!editTopic} onOpenChange={(o) => !o && setEditTopic(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit topic</DialogTitle></DialogHeader>
+          {editTopic && (
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="et-name">Topic name</Label>
+                <Input
+                  id="et-name"
+                  value={editTopic.name}
+                  onChange={(e) => setEditTopic({ ...editTopic, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="et-desc">Description (optional)</Label>
+                <Textarea
+                  id="et-desc"
+                  rows={3}
+                  value={editTopic.description}
+                  onChange={(e) => setEditTopic({ ...editTopic, description: e.target.value })}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditTopic(null)}>Cancel</Button>
+            <Button
+              className="bg-gradient-primary text-white"
+              onClick={async () => {
+                if (!editTopic || !editTopic.name.trim()) return;
+                await updateTopic(editTopic.id, {
+                  topic_name: editTopic.name.trim(),
+                  description: editTopic.description.trim() || null,
+                });
+                toast.success("Topic updated");
+                setEditTopic(null);
+              }}
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this topic?</AlertDialogTitle>
+            <AlertDialogDescription>
+              "{confirmDelete?.name}" will be deleted for both partners along with its progress. This can't be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (!confirmDelete) return;
+                await deleteTopic(confirmDelete.id);
+                toast.success("Topic removed");
+                setConfirmDelete(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
