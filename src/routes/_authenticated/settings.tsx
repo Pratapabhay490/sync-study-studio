@@ -149,6 +149,23 @@ function SettingsPage() {
         <h3 className="mb-4 font-display text-lg font-semibold">Account</h3>
         <Button variant="outline" onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> Sign out</Button>
       </div>
+
+      <AlertDialog open={!!removePartner} onOpenChange={(o) => !o && setRemovePartner(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove {removePartner?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes their profile and progress from the shared study space. Their login account still exists — they can sign in again to rejoin.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRemovePartner} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remove partner
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
