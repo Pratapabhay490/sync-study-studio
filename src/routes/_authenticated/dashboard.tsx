@@ -3,9 +3,25 @@ import { useAuth } from "@/lib/auth-context";
 import { computeUserStats, useData } from "@/lib/data-context";
 import { UserAvatar } from "@/components/user-avatar";
 import { ProgressRing } from "@/components/progress-ring";
-import { Activity, ArrowRight, BookOpen, CheckCircle2, Flame, ListTodo, Sparkles } from "lucide-react";
-import { useMemo } from "react";
-import { formatDistanceToNow, isToday, parseISO, startOfDay, subDays } from "date-fns";
+import { Activity, ArrowRight, BookOpen, CalendarClock, CheckCircle2, Flame, ListTodo, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { differenceInSeconds, formatDistanceToNow, isToday, parseISO, startOfDay, subDays } from "date-fns";
+
+const NEET_PG_DATE = new Date("2026-08-30T09:00:00+05:30");
+
+function useCountdown(target: Date) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const total = Math.max(0, differenceInSeconds(target, now));
+  const days = Math.floor(total / 86400);
+  const hours = Math.floor((total % 86400) / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+  return { days, hours, minutes, seconds, total };
+}
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Let's be in sync" }] }),
@@ -22,6 +38,7 @@ const QUOTES = [
 function Dashboard() {
   const { user } = useAuth();
   const { profiles, subjects, topics, progress, loading } = useData();
+  const countdown = useCountdown(NEET_PG_DATE);
 
   const me = profiles.find((p) => p.id === user?.id);
   const other = profiles.find((p) => p.id !== user?.id);
@@ -112,6 +129,30 @@ function Dashboard() {
               <div className="text-xs uppercase tracking-wider text-muted-foreground">Combined</div>
             </div>
           </ProgressRing>
+        </div>
+      </section>
+
+      {/* NEET PG Countdown */}
+      <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card md:p-8">
+        <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-gradient-primary opacity-15 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-gradient-aurora opacity-20 blur-3xl" />
+        <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground">
+              <CalendarClock className="h-3.5 w-3.5 text-primary" />
+              NEET PG 2026 · 30 August 2026
+            </div>
+            <h2 className="mt-3 font-display text-2xl font-bold tracking-tight md:text-3xl">
+              {countdown.total > 0 ? <>The clock is <span className="text-gradient">ticking.</span></> : <>It's exam day. <span className="text-gradient">All the best!</span></>}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">Every topic you tick today is one step closer.</p>
+          </div>
+          <div className="grid grid-cols-4 gap-2 sm:gap-3">
+            <CountdownCell label="Days" value={countdown.days} />
+            <CountdownCell label="Hours" value={countdown.hours} />
+            <CountdownCell label="Mins" value={countdown.minutes} />
+            <CountdownCell label="Secs" value={countdown.seconds} />
+          </div>
         </div>
       </section>
 
@@ -255,6 +296,15 @@ function UserCard({
         <Tile label="Pending" value={stats.total - stats.completed} />
         <Tile label="Total" value={stats.total} />
       </div>
+    </div>
+  );
+}
+
+function CountdownCell({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="min-w-[64px] rounded-2xl border border-border bg-background/70 px-3 py-3 text-center shadow-card backdrop-blur sm:min-w-[80px] sm:px-4 sm:py-4">
+      <div className="font-display text-2xl font-bold tabular-nums sm:text-4xl">{String(value).padStart(2, "0")}</div>
+      <div className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground sm:text-xs">{label}</div>
     </div>
   );
 }

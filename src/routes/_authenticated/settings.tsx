@@ -10,7 +10,11 @@ import { Switch } from "@/components/ui/switch";
 import { UserAvatar } from "@/components/user-avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, LogOut, RotateCcw } from "lucide-react";
+import { Download, LogOut, RotateCcw, UserX, Mail } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Let's be in sync" }] }),
@@ -24,6 +28,15 @@ function SettingsPage() {
   const me = profiles.find((p) => p.id === user?.id);
   const [name, setName] = useState(me?.name ?? "");
   const [avatar, setAvatar] = useState(me?.avatar_url ?? "");
+  const [removePartner, setRemovePartner] = useState<{ id: string; name: string } | null>(null);
+
+  async function handleRemovePartner() {
+    if (!removePartner) return;
+    const { error } = await supabase.from("profiles").delete().eq("id", removePartner.id);
+    if (error) toast.error(error.message);
+    else toast.success(`Removed ${removePartner.name}`);
+    setRemovePartner(null);
+  }
 
   async function saveProfile() {
     if (!user) return;
@@ -75,6 +88,45 @@ function SettingsPage() {
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+        <h3 className="mb-1 font-display text-lg font-semibold">Study partners</h3>
+        <p className="mb-4 text-xs text-muted-foreground">Everyone currently in this shared study space. Remove duplicates if needed.</p>
+        <ul className="space-y-3">
+          {profiles.map((p) => (
+            <li key={p.id} className="flex items-center gap-3 rounded-xl border border-border bg-background/50 p-3">
+              <UserAvatar profile={p} size={44} />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-display font-semibold">{p.name}</span>
+                  {p.id === user?.id && (
+                    <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">You</span>
+                  )}
+                </div>
+                <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Mail className="h-3 w-3" />
+                  <span className="truncate">{p.email}</span>
+                </div>
+              </div>
+              {p.id !== user?.id && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRemovePartner({ id: p.id, name: p.name })}
+                  className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                >
+                  <UserX className="mr-1 h-4 w-4" /> Remove
+                </Button>
+              )}
+            </li>
+          ))}
+          {profiles.length <= 1 && (
+            <li className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+              No study partner yet. Share the sign-up link with them.
+            </li>
+          )}
+        </ul>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
         <h3 className="mb-4 font-display text-lg font-semibold">Appearance</h3>
         <div className="flex items-center justify-between">
           <div>
@@ -97,6 +149,23 @@ function SettingsPage() {
         <h3 className="mb-4 font-display text-lg font-semibold">Account</h3>
         <Button variant="outline" onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> Sign out</Button>
       </div>
+
+      <AlertDialog open={!!removePartner} onOpenChange={(o) => !o && setRemovePartner(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove {removePartner?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes their profile and progress from the shared study space. Their login account still exists — they can sign in again to rejoin.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRemovePartner} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remove partner
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
