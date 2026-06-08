@@ -9,6 +9,7 @@ import {
 import { useState } from "react";
 import { useTheme } from "@/lib/theme-provider";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -44,16 +45,18 @@ function AuthenticatedLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Mobile top bar */}
-      <div className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background/80 px-4 py-3 backdrop-blur md:hidden">
-        <Link to="/dashboard" className="flex items-center gap-2">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-primary text-white"><Sparkles className="h-4 w-4" /></div>
-          <span className="font-display font-semibold">in sync</span>
-        </Link>
-        <button onClick={() => setOpen((o) => !o)} className="rounded-lg border border-border p-2" aria-label="Toggle menu">
-          {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-        </button>
+      <div className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 md:hidden">
+        <div className="clay flex w-full items-center justify-between px-4 py-2">
+          <Link to="/dashboard" className="flex items-center gap-2">
+            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-primary text-white shadow-clay-sm"><Sparkles className="h-4 w-4" /></div>
+            <span className="font-display font-bold">in sync</span>
+          </Link>
+          <button onClick={() => setOpen((o) => !o)} className="grid h-10 w-10 place-items-center rounded-xl bg-card text-foreground shadow-clay-sm active:scale-95" aria-label="Toggle menu">
+            {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </button>
+        </div>
       </div>
 
       <div className="flex">
@@ -61,18 +64,18 @@ function AuthenticatedLayout() {
         <aside
           className={`${
             open ? "translate-x-0" : "-translate-x-full"
-          } fixed inset-y-0 left-0 z-50 w-72 transform border-r border-border bg-sidebar transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0`}
+          } fixed inset-y-0 left-0 z-50 w-72 transform p-4 transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0`}
         >
-          <div className="flex h-full flex-col p-4">
-            <Link to="/dashboard" className="mb-6 hidden items-center gap-2 px-2 md:flex">
-              <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-primary text-white shadow-glow"><Sparkles className="h-5 w-5" /></div>
+          <div className="clay flex h-full flex-col p-4">
+            <Link to="/dashboard" className="mb-6 hidden items-center gap-2.5 px-2 md:flex">
+              <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-primary text-white shadow-clay-sm"><Sparkles className="h-5 w-5" /></div>
               <div>
-                <div className="font-display text-base font-semibold leading-tight">Let's be</div>
-                <div className="font-display text-base font-semibold leading-tight text-gradient">in sync</div>
+                <div className="font-display text-base font-bold leading-tight">Let's be</div>
+                <div className="font-display text-base font-bold leading-tight text-gradient">in sync</div>
               </div>
             </Link>
 
-            <nav className="flex flex-col gap-1">
+            <nav className="flex flex-col gap-2">
               {nav.map((item) => {
                 const active = pathname === item.to || pathname.startsWith(item.to + "/");
                 return (
@@ -80,11 +83,12 @@ function AuthenticatedLayout() {
                     key={item.to}
                     to={item.to}
                     onClick={() => setOpen(false)}
-                    className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                    className={cn(
+                      "group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all",
                       active
-                        ? "bg-gradient-primary text-white shadow-glow"
-                        : "text-sidebar-foreground hover:bg-sidebar-accent"
-                    }`}
+                        ? "bg-gradient-primary text-white shadow-clay-sm"
+                        : "text-foreground/70 hover:text-foreground hover:-translate-y-0.5 hover:shadow-clay-sm hover:bg-card",
+                    )}
                   >
                     <item.icon className="h-4 w-4" />
                     {item.label}
@@ -93,8 +97,8 @@ function AuthenticatedLayout() {
               })}
             </nav>
 
-            <div className="mt-auto space-y-3">
-              <div className="rounded-2xl border border-sidebar-border bg-card/60 p-3">
+            <div className="mt-auto">
+              <div className="clay-pressed p-3">
                 <div className="flex items-center gap-3">
                   <UserAvatar profile={me} size={40} />
                   <div className="min-w-0 flex-1">
@@ -115,9 +119,9 @@ function AuthenticatedLayout() {
           </div>
         </aside>
 
-        {open && <div className="fixed inset-0 z-40 bg-black/40 md:hidden" onClick={() => setOpen(false)} />}
+        {open && <div className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm md:hidden" onClick={() => setOpen(false)} />}
 
-        <main className="min-h-screen flex-1 px-4 py-6 md:px-8 md:py-10">
+        <main className="min-h-screen flex-1 px-4 py-4 md:px-8 md:py-8">
           <div className="mx-auto max-w-7xl animate-fade-in">
             <Outlet />
           </div>
