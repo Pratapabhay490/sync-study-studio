@@ -82,6 +82,9 @@ function SettingsPage() {
               <Label htmlFor="avatar">Avatar URL</Label>
               <Input id="avatar" value={avatar} onChange={(e) => setAvatar(e.target.value)} placeholder="https://…" />
             </div>
+          </div>
+          <Button onClick={saveProfile} className="bg-gradient-primary text-white">Save</Button>
+        </div>
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
@@ -121,9 +124,6 @@ function SettingsPage() {
             </li>
           )}
         </ul>
-      </div>
-          <Button onClick={saveProfile} className="bg-gradient-primary text-white">Save</Button>
-        </div>
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
