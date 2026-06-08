@@ -300,6 +300,15 @@ function UserCard({
   );
 }
 
+function CountdownCell({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="min-w-[64px] rounded-2xl border border-border bg-background/70 px-3 py-3 text-center shadow-card backdrop-blur sm:min-w-[80px] sm:px-4 sm:py-4">
+      <div className="font-display text-2xl font-bold tabular-nums sm:text-4xl">{String(value).padStart(2, "0")}</div>
+      <div className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground sm:text-xs">{label}</div>
+    </div>
+  );
+}
+
 function Tile({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-xl border border-border bg-background/50 p-3">
