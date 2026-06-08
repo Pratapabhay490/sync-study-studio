@@ -132,6 +132,30 @@ function Dashboard() {
         </div>
       </section>
 
+      {/* NEET PG Countdown */}
+      <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card md:p-8">
+        <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-gradient-primary opacity-15 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-gradient-aurora opacity-20 blur-3xl" />
+        <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground">
+              <CalendarClock className="h-3.5 w-3.5 text-primary" />
+              NEET PG 2026 · 30 August 2026
+            </div>
+            <h2 className="mt-3 font-display text-2xl font-bold tracking-tight md:text-3xl">
+              {countdown.total > 0 ? <>The clock is <span className="text-gradient">ticking.</span></> : <>It's exam day. <span className="text-gradient">All the best!</span></>}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">Every topic you tick today is one step closer.</p>
+          </div>
+          <div className="grid grid-cols-4 gap-2 sm:gap-3">
+            <CountdownCell label="Days" value={countdown.days} />
+            <CountdownCell label="Hours" value={countdown.hours} />
+            <CountdownCell label="Mins" value={countdown.minutes} />
+            <CountdownCell label="Secs" value={countdown.seconds} />
+          </div>
+        </div>
+      </section>
+
       {/* Stat tiles */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile icon={ListTodo} label="Total topics" value={totalTopics} accent="bg-gradient-primary" />
