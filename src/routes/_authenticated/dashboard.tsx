@@ -38,6 +38,7 @@ const QUOTES = [
 function Dashboard() {
   const { user } = useAuth();
   const { profiles, subjects, topics, progress, loading } = useData();
+  const countdown = useCountdown(NEET_PG_DATE);
 
   const me = profiles.find((p) => p.id === user?.id);
   const other = profiles.find((p) => p.id !== user?.id);
