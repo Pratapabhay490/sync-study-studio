@@ -28,6 +28,15 @@ function SettingsPage() {
   const me = profiles.find((p) => p.id === user?.id);
   const [name, setName] = useState(me?.name ?? "");
   const [avatar, setAvatar] = useState(me?.avatar_url ?? "");
+  const [removePartner, setRemovePartner] = useState<{ id: string; name: string } | null>(null);
+
+  async function handleRemovePartner() {
+    if (!removePartner) return;
+    const { error } = await supabase.from("profiles").delete().eq("id", removePartner.id);
+    if (error) toast.error(error.message);
+    else toast.success(`Removed ${removePartner.name}`);
+    setRemovePartner(null);
+  }
 
   async function saveProfile() {
     if (!user) return;
