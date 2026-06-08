@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Mail, Lock, User } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -62,79 +62,85 @@ function AuthPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background">
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Soft floating blobs */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -top-40 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-gradient-aurora opacity-30 blur-3xl" />
+        <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-gradient-aurora opacity-40 blur-3xl animate-float-slow" />
+        <div className="absolute bottom-0 right-10 h-80 w-80 rounded-full bg-gradient-primary opacity-25 blur-3xl" />
+        <div className="absolute top-1/3 right-1/4 h-40 w-40 rounded-full bg-gradient-aishwarya opacity-30 blur-2xl" />
       </div>
+
       <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
-        <Link to="/" className="mb-8 flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-primary text-white shadow-glow">
-            <Sparkles className="h-5 w-5" />
+        <Link to="/" className="mb-8 flex items-center justify-center gap-2">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-primary text-white shadow-clay-sm">
+            <Sparkles className="h-6 w-6" />
           </div>
-          <span className="font-display text-lg font-semibold tracking-tight">Let's be in sync</span>
+          <span className="font-display text-xl font-bold tracking-tight">Let's be in sync</span>
         </Link>
 
-        <div className="rounded-2xl border border-border bg-card/70 p-6 shadow-card backdrop-blur animate-scale-in">
-          <h1 className="font-display text-2xl font-bold">Welcome</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Sign in or create your account to start syncing.</p>
+        <div className="clay p-8 animate-scale-in">
+          <div className="text-center">
+            <h1 className="font-display text-3xl font-bold tracking-tight">Welcome back</h1>
+            <p className="mt-2 text-sm text-muted-foreground">Enter your credentials to access your account</p>
+          </div>
 
           <Tabs defaultValue="signin" className="mt-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign in</TabsTrigger>
-              <TabsTrigger value="signup">Sign up</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 rounded-full bg-input p-1.5 shadow-clay-inset">
+              <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-clay-sm">Sign in</TabsTrigger>
+              <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-clay-sm">Sign up</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="mt-4 space-y-4">
-                <div>
-                  <Label htmlFor="si-email">Email</Label>
-                  <Input id="si-email" type="email" value={signinEmail} onChange={(e) => setSigninEmail(e.target.value)} required />
-                </div>
-                <div>
-                  <Label htmlFor="si-pass">Password</Label>
-                  <Input id="si-pass" type="password" value={signinPassword} onChange={(e) => setSigninPassword(e.target.value)} required />
-                </div>
-                <Button type="submit" disabled={submitting} className="w-full bg-gradient-primary text-white shadow-glow hover:opacity-95">
+              <form onSubmit={handleSignIn} className="mt-6 space-y-4">
+                <FieldWithIcon icon={Mail}>
+                  <Input id="si-email" type="email" placeholder="Enter your email" className="pl-12" value={signinEmail} onChange={(e) => setSigninEmail(e.target.value)} required />
+                </FieldWithIcon>
+                <FieldWithIcon icon={Lock}>
+                  <Input id="si-pass" type="password" placeholder="Enter your password" className="pl-12" value={signinPassword} onChange={(e) => setSigninPassword(e.target.value)} required />
+                </FieldWithIcon>
+                <Button type="submit" disabled={submitting} size="lg" className="mt-2 w-full">
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
                 </Button>
               </form>
             </TabsContent>
 
             <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="mt-4 space-y-4">
-                <div>
-                  <Label htmlFor="su-name">Name</Label>
-                  <Input
-                    id="su-name"
-                    placeholder="Abhay or Aishwarya"
-                    value={signupName}
-                    onChange={(e) => setSignupName(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="su-email">Email</Label>
-                  <Input id="su-email" type="email" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required />
-                </div>
-                <div>
-                  <Label htmlFor="su-pass">Password (min 6 chars)</Label>
-                  <Input
-                    id="su-pass"
-                    type="password"
-                    minLength={6}
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" disabled={submitting} className="w-full bg-gradient-primary text-white shadow-glow hover:opacity-95">
+              <form onSubmit={handleSignUp} className="mt-6 space-y-4">
+                <FieldWithIcon icon={User}>
+                  <Input id="su-name" placeholder="Abhay or Aishwarya" className="pl-12" value={signupName} onChange={(e) => setSignupName(e.target.value)} required />
+                </FieldWithIcon>
+                <FieldWithIcon icon={Mail}>
+                  <Input id="su-email" type="email" placeholder="Enter your email" className="pl-12" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required />
+                </FieldWithIcon>
+                <FieldWithIcon icon={Lock}>
+                  <Input id="su-pass" type="password" placeholder="Create a password (min 6)" minLength={6} className="pl-12" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required />
+                </FieldWithIcon>
+                <Button type="submit" disabled={submitting} size="lg" className="mt-2 w-full">
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create account"}
                 </Button>
               </form>
             </TabsContent>
           </Tabs>
         </div>
+
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          Two minds. One rhythm. Built for Abhay & Aishwarya.
+        </p>
       </div>
     </div>
   );
 }
+
+function FieldWithIcon({ icon: Icon, children }: { icon: typeof Mail; children: React.ReactNode }) {
+  return (
+    <div className="relative">
+      <div className="pointer-events-none absolute left-3 top-1/2 z-10 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-lg bg-gradient-primary text-white shadow-clay-sm">
+        <Icon className="h-3.5 w-3.5" />
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// Hidden label component (unused but kept for a11y reference)
+export const _Label = Label;
