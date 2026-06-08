@@ -7,8 +7,12 @@ import { Input } from "@/components/ui/input";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, BookOpen } from "lucide-react";
+import { Plus, Search, BookOpen, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/subjects/")({
@@ -17,10 +21,11 @@ export const Route = createFileRoute("/_authenticated/subjects/")({
 });
 
 function SubjectsPage() {
-  const { subjects, topics, progress, profiles, addSubject } = useData();
+  const { subjects, topics, progress, profiles, addSubject, deleteSubject } = useData();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
 
   const filtered = subjects.filter((s) => s.name.toLowerCase().includes(q.toLowerCase()));
 
@@ -30,6 +35,13 @@ function SubjectsPage() {
     toast.success(`Added ${newName}`);
     setNewName("");
     setOpen(false);
+  }
+
+  async function handleDelete() {
+    if (!confirmDelete) return;
+    await deleteSubject(confirmDelete.id);
+    toast.success(`Deleted ${confirmDelete.name}`);
+    setConfirmDelete(null);
   }
 
   return (
@@ -87,52 +99,78 @@ function SubjectsPage() {
               : 0;
 
             return (
-              <Link
-                key={s.id}
-                to="/subjects/$id"
-                params={{ id: s.id }}
-                className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card transition hover:-translate-y-0.5 hover:shadow-glow"
-              >
-                <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-primary opacity-10 blur-2xl transition group-hover:opacity-30" />
-                <div className="relative flex items-start justify-between">
-                  <div className="grid h-12 w-12 place-items-center rounded-xl bg-gradient-primary text-white shadow-glow">
-                    <Icon className="h-6 w-6" />
+              <div key={s.id} className="group relative">
+                <Link
+                  to="/subjects/$id"
+                  params={{ id: s.id }}
+                  className="block overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card transition hover:-translate-y-0.5 hover:shadow-glow"
+                >
+                  <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-primary opacity-10 blur-2xl transition group-hover:opacity-30" />
+                  <div className="relative flex items-start justify-between">
+                    <div className="grid h-12 w-12 place-items-center rounded-xl bg-gradient-primary text-white shadow-glow">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <div className="text-right">
+                      <div className="font-display text-2xl font-bold">{combinedPct}%</div>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Combined</div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-display text-2xl font-bold">{combinedPct}%</div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Combined</div>
-                  </div>
-                </div>
-                <h3 className="relative mt-4 font-display text-lg font-semibold">{s.name}</h3>
-                <p className="relative text-xs text-muted-foreground">{total} topics</p>
+                  <h3 className="relative mt-4 font-display text-lg font-semibold">{s.name}</h3>
+                  <p className="relative text-xs text-muted-foreground">{total} topics</p>
 
-                <div className="relative mt-4 space-y-2">
-                  {profiles.slice(0, 2).map((p, i) => (
-                    <div key={p.id} className="space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium">{p.name.split(" ")[0]}</span>
-                        <span className="text-muted-foreground">{pctFor(p.id)}%</span>
+                  <div className="relative mt-4 space-y-2">
+                    {profiles.slice(0, 2).map((p, i) => (
+                      <div key={p.id} className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-medium">{p.name.split(" ")[0]}</span>
+                          <span className="text-muted-foreground">{pctFor(p.id)}%</span>
+                        </div>
+                        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className={`h-full transition-all ${i === 0 ? "bg-gradient-abhay" : "bg-gradient-aishwarya"}`}
+                            style={{ width: `${pctFor(p.id)}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className={`h-full transition-all ${i === 0 ? "bg-gradient-abhay" : "bg-gradient-aishwarya"}`}
-                          style={{ width: `${pctFor(p.id)}%` }}
-                        />
+                    ))}
+                    {!u2 && (
+                      <div className="rounded-lg border border-dashed border-border p-2 text-center text-[11px] text-muted-foreground">
+                        Waiting for study partner
                       </div>
-                    </div>
-                  ))}
-                  {!u2 && (
-                    <div className="rounded-lg border border-dashed border-border p-2 text-center text-[11px] text-muted-foreground">
-                      Waiting for study partner
-                    </div>
-                  )}
-                  {!u1 && null}
-                </div>
-              </Link>
+                    )}
+                    {!u1 && null}
+                  </div>
+                </Link>
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDelete({ id: s.id, name: s.name }); }}
+                  className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full border border-border bg-background/90 text-muted-foreground opacity-0 shadow-card transition hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100"
+                  aria-label={`Delete ${s.name}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             );
           })}
         </div>
       )}
+
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete “{confirmDelete?.name}”?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes the subject and all its topics for both partners. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete subject
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
