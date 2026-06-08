@@ -3,9 +3,25 @@ import { useAuth } from "@/lib/auth-context";
 import { computeUserStats, useData } from "@/lib/data-context";
 import { UserAvatar } from "@/components/user-avatar";
 import { ProgressRing } from "@/components/progress-ring";
-import { Activity, ArrowRight, BookOpen, CheckCircle2, Flame, ListTodo, Sparkles } from "lucide-react";
-import { useMemo } from "react";
-import { formatDistanceToNow, isToday, parseISO, startOfDay, subDays } from "date-fns";
+import { Activity, ArrowRight, BookOpen, CalendarClock, CheckCircle2, Flame, ListTodo, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { differenceInSeconds, formatDistanceToNow, isToday, parseISO, startOfDay, subDays } from "date-fns";
+
+const NEET_PG_DATE = new Date("2026-08-30T09:00:00+05:30");
+
+function useCountdown(target: Date) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const total = Math.max(0, differenceInSeconds(target, now));
+  const days = Math.floor(total / 86400);
+  const hours = Math.floor((total % 86400) / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+  return { days, hours, minutes, seconds, total };
+}
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Let's be in sync" }] }),
