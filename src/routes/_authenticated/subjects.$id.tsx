@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { ProgressRing } from "@/components/progress-ring";
 import { cn } from "@/lib/utils";
+import { celebrate } from "@/lib/celebrate";
 
 export const Route = createFileRoute("/_authenticated/subjects/$id")({
   head: () => ({ meta: [{ title: "Subject — Let's be in sync" }] }),
@@ -227,7 +228,14 @@ function SubjectDetail() {
                   {/* Big clay tick in front */}
                   <button
                     type="button"
-                    onClick={() => toggleTopic(t.id, !myDone)}
+                    onClick={(e) => {
+                      const next = !myDone;
+                      toggleTopic(t.id, next);
+                      if (next) {
+                        const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                        celebrate((r.left + r.width / 2) / window.innerWidth, (r.top + r.height / 2) / window.innerHeight);
+                      }
+                    }}
                     aria-label={myDone ? "Mark as pending" : "Mark as complete"}
                     className={cn(
                       "grid h-10 w-10 shrink-0 place-items-center rounded-2xl transition-all active:scale-95",

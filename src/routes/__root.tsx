@@ -8,6 +8,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth-context";
 import { DataProvider } from "@/lib/data-context";
+import { NotificationsProvider } from "@/lib/notifications-context";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -114,8 +115,10 @@ function RootComponent() {
       <ThemeProvider>
         <AuthProvider>
           <DataProvider>
-            <Outlet />
-            <Toaster richColors position="top-right" />
+            <NotificationsProvider>
+              <Outlet />
+              <Toaster richColors position="top-right" />
+            </NotificationsProvider>
           </DataProvider>
         </AuthProvider>
       </ThemeProvider>
