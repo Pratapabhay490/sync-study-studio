@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useTheme } from "@/lib/theme-provider";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { NotificationCenter } from "@/components/notification-center";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -53,10 +54,17 @@ function AuthenticatedLayout() {
             <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-primary text-white shadow-clay-sm"><Sparkles className="h-4 w-4" /></div>
             <span className="font-display font-bold">in sync</span>
           </Link>
-          <button onClick={() => setOpen((o) => !o)} className="grid h-10 w-10 place-items-center rounded-xl bg-card text-foreground shadow-clay-sm active:scale-95" aria-label="Toggle menu">
-            {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <NotificationCenter />
+            <button onClick={() => setOpen((o) => !o)} className="grid h-10 w-10 place-items-center rounded-xl bg-card text-foreground shadow-clay-sm active:scale-95" aria-label="Toggle menu">
+              {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
+      </div>
+      {/* Desktop floating notification bell */}
+      <div className="pointer-events-none fixed right-6 top-6 z-40 hidden md:block">
+        <div className="pointer-events-auto"><NotificationCenter /></div>
       </div>
 
       <div className="flex">
