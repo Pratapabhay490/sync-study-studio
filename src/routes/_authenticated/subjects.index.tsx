@@ -90,7 +90,7 @@ function SubjectsPage() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button onClick={handleAdd} className="bg-gradient-primary text-white">Add</Button>
+                <Button onClick={handleAdd} disabled={busy} className="bg-gradient-primary text-white">{busy ? "Adding…" : "Add"}</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -159,14 +159,24 @@ function SubjectsPage() {
                     {!u1 && null}
                   </div>
                 </Link>
-                <button
-                  type="button"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDelete({ id: s.id, name: s.name }); }}
-                  className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full border border-border bg-background/90 text-muted-foreground opacity-0 shadow-card transition hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100"
-                  aria-label={`Delete ${s.name}`}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                <div className="absolute right-3 top-3 z-10 flex gap-1.5 opacity-0 transition group-hover:opacity-100">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setRenameTarget({ id: s.id, name: s.name }); }}
+                    className="grid h-9 w-9 place-items-center rounded-full bg-card text-muted-foreground shadow-clay-sm transition hover:-translate-y-0.5 hover:text-foreground"
+                    aria-label={`Rename ${s.name}`}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDelete({ id: s.id, name: s.name }); }}
+                    className="grid h-9 w-9 place-items-center rounded-full bg-card text-muted-foreground shadow-clay-sm transition hover:-translate-y-0.5 hover:bg-destructive hover:text-destructive-foreground"
+                    aria-label={`Delete ${s.name}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             );
           })}
@@ -189,6 +199,30 @@ function SubjectsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!renameTarget} onOpenChange={(o) => !o && setRenameTarget(null)}>
+        <DialogContent className="clay border-0">
+          <DialogHeader><DialogTitle>Rename subject</DialogTitle></DialogHeader>
+          {renameTarget && (
+            <div className="space-y-3">
+              <Label htmlFor="rn">Subject name</Label>
+              <Input
+                id="rn"
+                autoFocus
+                value={renameTarget.name}
+                onChange={(e) => setRenameTarget({ ...renameTarget, name: e.target.value })}
+                onKeyDown={(e) => { if (e.key === "Enter") handleRename(); }}
+              />
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameTarget(null)}>Cancel</Button>
+            <Button onClick={handleRename} disabled={busy} className="bg-gradient-primary text-white">
+              {busy ? "Saving…" : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
