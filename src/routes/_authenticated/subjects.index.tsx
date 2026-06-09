@@ -12,7 +12,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, BookOpen, Trash2 } from "lucide-react";
+import { Plus, Search, BookOpen, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/subjects/")({
@@ -21,17 +21,22 @@ export const Route = createFileRoute("/_authenticated/subjects/")({
 });
 
 function SubjectsPage() {
-  const { subjects, topics, progress, profiles, addSubject, deleteSubject } = useData();
+  const { subjects, topics, progress, profiles, addSubject, deleteSubject, updateSubject } = useData();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const [renameTarget, setRenameTarget] = useState<{ id: string; name: string } | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const filtered = subjects.filter((s) => s.name.toLowerCase().includes(q.toLowerCase()));
 
   async function handleAdd() {
     if (!newName.trim()) return;
-    await addSubject(newName.trim());
+    setBusy(true);
+    const res = await addSubject(newName.trim());
+    setBusy(false);
+    if (res.error) { toast.error(res.error); return; }
     toast.success(`Added ${newName}`);
     setNewName("");
     setOpen(false);
@@ -39,9 +44,22 @@ function SubjectsPage() {
 
   async function handleDelete() {
     if (!confirmDelete) return;
-    await deleteSubject(confirmDelete.id);
-    toast.success(`Deleted ${confirmDelete.name}`);
+    const name = confirmDelete.name;
+    const id = confirmDelete.id;
     setConfirmDelete(null);
+    const res = await deleteSubject(id);
+    if (res.error) toast.error(`Couldn't delete: ${res.error}`);
+    else toast.success(`Deleted ${name}`);
+  }
+
+  async function handleRename() {
+    if (!renameTarget || !renameTarget.name.trim()) return;
+    setBusy(true);
+    const res = await updateSubject(renameTarget.id, { name: renameTarget.name.trim() });
+    setBusy(false);
+    if (res.error) { toast.error(res.error); return; }
+    toast.success("Subject renamed");
+    setRenameTarget(null);
   }
 
   return (
