@@ -6,6 +6,7 @@ import { ProgressRing } from "@/components/progress-ring";
 import { Activity, ArrowRight, BookOpen, CalendarClock, CheckCircle2, Flame, ListTodo, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { differenceInSeconds, formatDistanceToNow, isToday, parseISO, startOfDay, subDays } from "date-fns";
+import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
 
 const NEET_PG_DATE = new Date("2026-08-30T09:00:00+05:30");
 
@@ -88,7 +89,7 @@ function Dashboard() {
   const quote = QUOTES[new Date().getDate() % QUOTES.length];
 
   if (loading) {
-    return <DashboardSkeleton />;
+    return <ClayLoader label="Building your clay dashboard" />;
   }
 
   return (
@@ -96,7 +97,7 @@ function Dashboard() {
       {/* Hero */}
       <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card md:p-10">
         <div className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-gradient-aurora opacity-25 blur-3xl" />
-        <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="relative grid gap-6 lg:grid-cols-[1.1fr_280px_190px] lg:items-center">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs text-muted-foreground">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
@@ -123,7 +124,9 @@ function Dashboard() {
             </div>
           </div>
 
-          <ProgressRing value={overallPct} size={180} stroke={14}>
+          <ClayVisual variant="boy" priority className="order-last mx-auto w-52 lg:order-none lg:w-64" />
+
+          <ProgressRing value={overallPct} size={180} stroke={14} className="mx-auto">
             <div className="text-center">
               <div className="font-display text-4xl font-bold">{overallPct}%</div>
               <div className="text-xs uppercase tracking-wider text-muted-foreground">Combined</div>
@@ -136,7 +139,7 @@ function Dashboard() {
       <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card md:p-8">
         <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-gradient-primary opacity-15 blur-3xl" />
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-gradient-aurora opacity-20 blur-3xl" />
-        <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="relative grid gap-6 lg:grid-cols-[1fr_240px_auto] lg:items-center">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground">
               <CalendarClock className="h-3.5 w-3.5 text-primary" />
@@ -147,6 +150,7 @@ function Dashboard() {
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">Every topic you tick today is one step closer.</p>
           </div>
+          <ClayVisual variant="icons" className="mx-auto hidden w-48 md:block" />
           <div className="grid grid-cols-4 gap-2 sm:gap-3">
             <CountdownCell label="Days" value={countdown.days} />
             <CountdownCell label="Hours" value={countdown.hours} />
