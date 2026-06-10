@@ -5,11 +5,22 @@ import { getSubjectIcon } from "@/lib/subject-icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Plus, Search, BookOpen, Trash2, Pencil } from "lucide-react";
@@ -22,7 +33,16 @@ export const Route = createFileRoute("/_authenticated/subjects/")({
 });
 
 function SubjectsPage() {
-  const { loading, subjects, topics, progress, profiles, addSubject, deleteSubject, updateSubject } = useData();
+  const {
+    loading,
+    subjects,
+    topics,
+    progress,
+    profiles,
+    addSubject,
+    deleteSubject,
+    updateSubject,
+  } = useData();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
@@ -39,7 +59,10 @@ function SubjectsPage() {
     setBusy(true);
     const res = await addSubject(newName.trim());
     setBusy(false);
-    if (res.error) { toast.error(res.error); return; }
+    if (res.error) {
+      toast.error(res.error);
+      return;
+    }
     toast.success(`Added ${newName}`);
     setNewName("");
     setOpen(false);
@@ -60,7 +83,10 @@ function SubjectsPage() {
     setBusy(true);
     const res = await updateSubject(renameTarget.id, { name: renameTarget.name.trim() });
     setBusy(false);
-    if (res.error) { toast.error(res.error); return; }
+    if (res.error) {
+      toast.error(res.error);
+      return;
+    }
     toast.success("Subject renamed");
     setRenameTarget(null);
   }
@@ -70,12 +96,19 @@ function SubjectsPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">Subjects</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{subjects.length} subjects · {topics.length} topics tracked</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {subjects.length} subjects · {topics.length} topics tracked
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <div className="relative flex-1 md:w-72 md:flex-none">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input className="pl-9" placeholder="Search subjects" value={q} onChange={(e) => setQ(e.target.value)} />
+            <Input
+              className="pl-9"
+              placeholder="Search subjects"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -89,11 +122,24 @@ function SubjectsPage() {
               </DialogHeader>
               <div className="space-y-3">
                 <Label htmlFor="sname">Subject name</Label>
-                <Input id="sname" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. NEET PG Bridge" />
+                <Input
+                  id="sname"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="e.g. NEET PG Bridge"
+                />
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button onClick={handleAdd} disabled={busy} className="bg-gradient-primary text-white">{busy ? "Adding…" : "Add"}</Button>
+                <Button variant="outline" onClick={() => setOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleAdd}
+                  disabled={busy}
+                  className="bg-gradient-primary text-white"
+                >
+                  {busy ? "Adding…" : "Add"}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -106,8 +152,12 @@ function SubjectsPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="clay relative min-h-[260px] overflow-hidden p-5 sm:col-span-2 lg:col-span-1">
             <div className="relative z-10 max-w-[15rem]">
-              <h2 className="font-display text-xl font-bold">Pick a subject, then edit its topics.</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Subject rename and delete buttons are now always visible on every card.</p>
+              <h2 className="font-display text-xl font-bold">
+                Pick a subject, then edit its topics.
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Subject rename and delete buttons are now always visible on every card.
+              </p>
             </div>
             <ClayVisual variant="girl" className="absolute bottom-0 right-1 w-40 sm:w-48" />
           </div>
@@ -117,13 +167,20 @@ function SubjectsPage() {
             const Icon = getSubjectIcon(s.icon);
             const pctFor = (uid?: string) => {
               if (!uid || total === 0) return 0;
-              const done = progress.filter((p) => p.user_id === uid && p.completed && sTopics.some((t) => t.id === p.topic_id)).length;
+              const done = progress.filter(
+                (p) => p.user_id === uid && p.completed && sTopics.some((t) => t.id === p.topic_id),
+              ).length;
               return Math.round((done / total) * 100);
             };
             const u1 = profiles[0]?.id;
             const u2 = profiles[1]?.id;
             const combinedPct = total
-              ? Math.round((sTopics.filter((t) => progress.some((p) => p.topic_id === t.id && p.completed)).length / total) * 100)
+              ? Math.round(
+                  (sTopics.filter((t) => progress.some((p) => p.topic_id === t.id && p.completed))
+                    .length /
+                    total) *
+                    100,
+                )
               : 0;
 
             return (
@@ -140,7 +197,9 @@ function SubjectsPage() {
                     </div>
                     <div className="pr-24 text-right">
                       <div className="font-display text-2xl font-bold">{combinedPct}%</div>
-                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Combined</div>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Combined
+                      </div>
                     </div>
                   </div>
                   <h3 className="relative mt-4 font-display text-lg font-semibold">{s.name}</h3>
@@ -172,7 +231,11 @@ function SubjectsPage() {
                 <div className="absolute right-3 top-3 z-10 flex gap-1.5 opacity-100 transition md:opacity-90 md:group-hover:opacity-100">
                   <button
                     type="button"
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setRenameTarget({ id: s.id, name: s.name }); }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setRenameTarget({ id: s.id, name: s.name });
+                    }}
                     className="grid h-10 w-10 place-items-center rounded-full bg-card text-primary shadow-clay-sm transition hover:-translate-y-0.5 hover:text-foreground"
                     aria-label={`Rename ${s.name}`}
                   >
@@ -180,7 +243,11 @@ function SubjectsPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDelete({ id: s.id, name: s.name }); }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setConfirmDelete({ id: s.id, name: s.name });
+                    }}
                     className="grid h-10 w-10 place-items-center rounded-full bg-card text-destructive shadow-clay-sm transition hover:-translate-y-0.5 hover:bg-destructive hover:text-destructive-foreground"
                     aria-label={`Delete ${s.name}`}
                   >
@@ -203,7 +270,10 @@ function SubjectsPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete subject
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -212,7 +282,9 @@ function SubjectsPage() {
 
       <Dialog open={!!renameTarget} onOpenChange={(o) => !o && setRenameTarget(null)}>
         <DialogContent className="clay border-0">
-          <DialogHeader><DialogTitle>Rename subject</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Rename subject</DialogTitle>
+          </DialogHeader>
           {renameTarget && (
             <div className="space-y-3">
               <Label htmlFor="rn">Subject name</Label>
@@ -221,13 +293,21 @@ function SubjectsPage() {
                 autoFocus
                 value={renameTarget.name}
                 onChange={(e) => setRenameTarget({ ...renameTarget, name: e.target.value })}
-                onKeyDown={(e) => { if (e.key === "Enter") handleRename(); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleRename();
+                }}
               />
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRenameTarget(null)}>Cancel</Button>
-            <Button onClick={handleRename} disabled={busy} className="bg-gradient-primary text-white">
+            <Button variant="outline" onClick={() => setRenameTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRename}
+              disabled={busy}
+              className="bg-gradient-primary text-white"
+            >
               {busy ? "Saving…" : "Save"}
             </Button>
           </DialogFooter>
@@ -240,7 +320,9 @@ function SubjectsPage() {
 function EmptyState() {
   return (
     <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center">
-      <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-gradient-primary text-white"><BookOpen className="h-6 w-6" /></div>
+      <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-gradient-primary text-white">
+        <BookOpen className="h-6 w-6" />
+      </div>
       <h3 className="mt-4 font-display text-lg font-semibold">No subjects found</h3>
       <p className="text-sm text-muted-foreground">Try a different search or add a new subject.</p>
     </div>

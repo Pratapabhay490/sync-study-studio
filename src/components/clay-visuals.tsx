@@ -12,13 +12,35 @@ type ClayVisualProps = {
 
 export function ClayVisual({ variant = "boy", className, priority = false }: ClayVisualProps) {
   const source = variant === "girl" ? girlDoctor : variant === "icons" ? medicalIcons : boyReading;
-  const alt = variant === "girl" ? "3D clay girl doctor with stethoscope" : variant === "icons" ? "3D clay medical study icons" : "3D clay boy reading a medical book";
+  const alt =
+    variant === "girl"
+      ? "3D clay girl doctor with stethoscope"
+      : variant === "icons"
+        ? "3D clay medical study icons"
+        : "3D clay boy reading a medical book";
 
   if (variant === "duo") {
     return (
-      <div className={cn("pointer-events-none relative h-56 w-full sm:h-64", className)} aria-hidden="true">
-        <img src={boyReading} alt="" width={1024} height={1024} loading={priority ? "eager" : "lazy"} className="clay-character absolute bottom-0 left-2 w-36 drop-shadow-2xl sm:w-44" />
-        <img src={girlDoctor} alt="" width={1024} height={1024} loading="lazy" className="clay-character clay-character-delay absolute bottom-0 right-2 w-32 drop-shadow-2xl sm:w-40" />
+      <div
+        className={cn("pointer-events-none relative h-56 w-full sm:h-64", className)}
+        aria-hidden="true"
+      >
+        <img
+          src={boyReading}
+          alt=""
+          width={1024}
+          height={1024}
+          loading={priority ? "eager" : "lazy"}
+          className="clay-character absolute bottom-0 left-2 w-36 drop-shadow-2xl sm:w-44"
+        />
+        <img
+          src={girlDoctor}
+          alt=""
+          width={1024}
+          height={1024}
+          loading="lazy"
+          className="clay-character clay-character-delay absolute bottom-0 right-2 w-32 drop-shadow-2xl sm:w-40"
+        />
         <FloatingClayIcon className="left-[42%] top-4" icon="stethoscope" />
         <FloatingClayIcon className="right-[18%] top-10 animation-delay-2" icon="heart" />
       </div>
@@ -27,17 +49,45 @@ export function ClayVisual({ variant = "boy", className, priority = false }: Cla
 
   return (
     <div className={cn("pointer-events-none relative", className)}>
-      <img src={source} alt={alt} width={1024} height={1024} loading={priority ? "eager" : "lazy"} className="clay-character relative z-10 mx-auto w-full max-w-[260px] drop-shadow-2xl" />
+      <img
+        src={source}
+        alt={alt}
+        width={1024}
+        height={1024}
+        loading={priority ? "eager" : "lazy"}
+        className="clay-character relative z-10 mx-auto w-full max-w-[260px] drop-shadow-2xl"
+      />
       <FloatingClayIcon className="left-2 top-4" icon="sparkles" />
-      <FloatingClayIcon className="bottom-8 right-4 animation-delay-2" icon={variant === "icons" ? "book" : "stethoscope"} />
+      <FloatingClayIcon
+        className="bottom-8 right-4 animation-delay-2"
+        icon={variant === "icons" ? "book" : "stethoscope"}
+      />
     </div>
   );
 }
 
-function FloatingClayIcon({ className, icon }: { className?: string; icon: "sparkles" | "stethoscope" | "heart" | "book" }) {
-  const Icon = icon === "stethoscope" ? Stethoscope : icon === "heart" ? HeartPulse : icon === "book" ? BookOpen : Sparkles;
+function FloatingClayIcon({
+  className,
+  icon,
+}: {
+  className?: string;
+  icon: "sparkles" | "stethoscope" | "heart" | "book";
+}) {
+  const Icon =
+    icon === "stethoscope"
+      ? Stethoscope
+      : icon === "heart"
+        ? HeartPulse
+        : icon === "book"
+          ? BookOpen
+          : Sparkles;
   return (
-    <div className={cn("clay-floater absolute grid h-12 w-12 place-items-center rounded-2xl bg-card text-primary shadow-clay-sm", className)}>
+    <div
+      className={cn(
+        "clay-floater absolute grid h-12 w-12 place-items-center rounded-2xl bg-card text-primary shadow-clay-sm",
+        className,
+      )}
+    >
       <Icon className="h-5 w-5" />
     </div>
   );
