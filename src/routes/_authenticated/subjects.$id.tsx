@@ -85,6 +85,31 @@ function SubjectDetail() {
     setOpenBulk(false);
   }
 
+  async function handleSubjectRename() {
+    if (!subject || !subjectRename.trim()) return;
+    setBusy(true);
+    const res = await updateSubject(subject.id, { name: subjectRename.trim() });
+    setBusy(false);
+    if (res.error) {
+      toast.error(`Couldn't rename: ${res.error}`);
+      return;
+    }
+    toast.success("Subject renamed");
+    setSubjectRename("");
+  }
+
+  async function handleSubjectDelete() {
+    if (!subject) return;
+    const res = await deleteSubject(subject.id);
+    if (res.error) {
+      toast.error(`Couldn't delete: ${res.error}`);
+      return;
+    }
+    toast.success("Subject deleted");
+    setSubjectDeleteOpen(false);
+    navigate({ to: "/subjects" });
+  }
+
   if (loading) return <ClayLoader label="Opening topic list" />;
 
   if (!subject) {
