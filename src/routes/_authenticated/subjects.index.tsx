@@ -14,6 +14,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Plus, Search, BookOpen, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
 
 export const Route = createFileRoute("/_authenticated/subjects/")({
   head: () => ({ meta: [{ title: "Subjects — Let's be in sync" }] }),
@@ -21,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/subjects/")({
 });
 
 function SubjectsPage() {
-  const { subjects, topics, progress, profiles, addSubject, deleteSubject, updateSubject } = useData();
+  const { loading, subjects, topics, progress, profiles, addSubject, deleteSubject, updateSubject } = useData();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
@@ -30,6 +31,8 @@ function SubjectsPage() {
   const [busy, setBusy] = useState(false);
 
   const filtered = subjects.filter((s) => s.name.toLowerCase().includes(q.toLowerCase()));
+
+  if (loading) return <ClayLoader label="Preparing your subjects" />;
 
   async function handleAdd() {
     if (!newName.trim()) return;
@@ -101,6 +104,13 @@ function SubjectsPage() {
         <EmptyState />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="clay relative min-h-[260px] overflow-hidden p-5 sm:col-span-2 lg:col-span-1">
+            <div className="relative z-10 max-w-[15rem]">
+              <h2 className="font-display text-xl font-bold">Pick a subject, then edit its topics.</h2>
+              <p className="mt-2 text-sm text-muted-foreground">Subject rename and delete buttons are now always visible on every card.</p>
+            </div>
+            <ClayVisual variant="girl" className="absolute bottom-0 right-1 w-40 sm:w-48" />
+          </div>
           {filtered.map((s) => {
             const sTopics = topics.filter((t) => t.subject_id === s.id);
             const total = sTopics.length;
@@ -121,7 +131,7 @@ function SubjectsPage() {
                 <Link
                   to="/subjects/$id"
                   params={{ id: s.id }}
-                  className="block overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card transition hover:-translate-y-0.5 hover:shadow-glow"
+                  className="block min-h-[268px] overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card transition hover:-translate-y-0.5 hover:shadow-glow"
                 >
                   <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-primary opacity-10 blur-2xl transition group-hover:opacity-30" />
                   <div className="relative flex items-start justify-between">
@@ -159,11 +169,11 @@ function SubjectsPage() {
                     {!u1 && null}
                   </div>
                 </Link>
-                <div className="absolute right-3 top-3 z-10 flex gap-1.5 opacity-0 transition group-hover:opacity-100">
+                <div className="absolute right-3 top-3 z-10 flex gap-1.5 opacity-100 transition md:opacity-90 md:group-hover:opacity-100">
                   <button
                     type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setRenameTarget({ id: s.id, name: s.name }); }}
-                    className="grid h-9 w-9 place-items-center rounded-full bg-card text-muted-foreground shadow-clay-sm transition hover:-translate-y-0.5 hover:text-foreground"
+                    className="grid h-10 w-10 place-items-center rounded-full bg-card text-primary shadow-clay-sm transition hover:-translate-y-0.5 hover:text-foreground"
                     aria-label={`Rename ${s.name}`}
                   >
                     <Pencil className="h-4 w-4" />
@@ -171,7 +181,7 @@ function SubjectsPage() {
                   <button
                     type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDelete({ id: s.id, name: s.name }); }}
-                    className="grid h-9 w-9 place-items-center rounded-full bg-card text-muted-foreground shadow-clay-sm transition hover:-translate-y-0.5 hover:bg-destructive hover:text-destructive-foreground"
+                    className="grid h-10 w-10 place-items-center rounded-full bg-card text-destructive shadow-clay-sm transition hover:-translate-y-0.5 hover:bg-destructive hover:text-destructive-foreground"
                     aria-label={`Delete ${s.name}`}
                   >
                     <Trash2 className="h-4 w-4" />
