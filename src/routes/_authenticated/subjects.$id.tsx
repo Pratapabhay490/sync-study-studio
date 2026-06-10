@@ -228,8 +228,12 @@ function SubjectDetail() {
         </div>
 
         {visible.length === 0 ? (
-          <div className="p-12 text-center text-sm text-muted-foreground">
-            {editMode ? "No topics yet. Click Add topic to create your first one." : "No topics match your filter."}
+          <div className="grid gap-4 p-8 text-center text-sm text-muted-foreground md:grid-cols-[1fr_220px] md:items-center md:text-left">
+            <div>
+              <div className="font-display text-xl font-bold text-foreground">{editMode ? "Ready for your first topic" : "No topics match this view"}</div>
+              <p className="mt-1">{editMode ? "Use Add topic or Bulk add from the top-right controls." : "Try another filter or search term."}</p>
+            </div>
+            <ClayVisual variant="icons" className="mx-auto w-44" />
           </div>
         ) : (
           <ul className="divide-y divide-border/60">
@@ -320,6 +324,37 @@ function SubjectDetail() {
       </div>
 
       <div className="text-xs text-muted-foreground">Showing {visible.length} of {sTopics.length} topics</div>
+
+      <Dialog open={!!subjectRename} onOpenChange={(o) => !o && setSubjectRename("")}>
+        <DialogContent className="clay border-0">
+          <DialogHeader><DialogTitle>Rename subject</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <Label htmlFor="subject-name">Subject name</Label>
+            <Input id="subject-name" autoFocus value={subjectRename} onChange={(e) => setSubjectRename(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void handleSubjectRename(); }} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSubjectRename("")}>Cancel</Button>
+            <Button onClick={handleSubjectRename} disabled={busy} className="bg-gradient-primary text-white">{busy ? "Saving…" : "Save"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={subjectDeleteOpen} onOpenChange={setSubjectDeleteOpen}>
+        <AlertDialogContent className="clay border-0">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete “{subject.name}”?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes the subject, all topics, and related progress for both partners. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSubjectDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete subject
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={!!editTopic} onOpenChange={(o) => !o && setEditTopic(null)}>
         <DialogContent className="clay border-0">
