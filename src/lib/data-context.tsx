@@ -115,25 +115,46 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const addTopic = useCallback(async (subjectId: string, topicName: string, description?: string) => {
     if (!user) return;
-    await supabase.from("topics").insert({ subject_id: subjectId, topic_name: topicName, description: description ?? null, added_by: user.id });
+    const { data, error } = await supabase
+      .from("topics")
+      .insert({ subject_id: subjectId, topic_name: topicName, description: description ?? null, added_by: user.id })
+      .select("*")
+      .single();
+    if (error) throw error;
+    if (data) setTopics((prev) => [...prev.filter((t) => t.id !== data.id), data as Topic]);
   }, [user]);
 
   const bulkAddTopics = useCallback(async (subjectId: string, topicNames: string[]) => {
     if (!user) return;
     const rows = topicNames.map((n) => n.trim()).filter(Boolean).map((topic_name) => ({ subject_id: subjectId, topic_name, added_by: user.id }));
     if (rows.length === 0) return;
-    await supabase.from("topics").insert(rows);
+    const { data, error } = await supabase.from("topics").insert(rows).select("*");
+    if (error) throw error;
+    if (data) setTopics((prev) => [...prev, ...(data as Topic[])]);
   }, [user]);
 
   const updateTopic = useCallback(async (topicId: string, updates: { topic_name?: string; description?: string | null }) => {
+    const snapshot = topics;
     setTopics((prev) => prev.map((t) => (t.id === topicId ? { ...t, ...updates } as Topic : t)));
-    await supabase.from("topics").update(updates).eq("id", topicId);
-  }, []);
+    const { error } = await supabase.from("topics").update(updates).eq("id", topicId);
+    if (error) {
+      setTopics(snapshot);
+      throw error;
+    }
+  }, [topics]);
 
   const deleteTopic = useCallback(async (topicId: string) => {
+    const topicsSnap = topics;
+    const progressSnap = progress;
     setTopics((prev) => prev.filter((t) => t.id !== topicId));
-    await supabase.from("topics").delete().eq("id", topicId);
-  }, []);
+    setProgress((prev) => prev.filter((p) => p.topic_id !== topicId));
+    const { error } = await supabase.from("topics").delete().eq("id", topicId);
+    if (error) {
+      setTopics(topicsSnap);
+      setProgress(progressSnap);
+      throw error;
+    }
+  }, [topics, progress]);
 
   const addSubject = useCallback(async (name: string, icon?: string) => {
     if (!user) return { error: "Not signed in" };
