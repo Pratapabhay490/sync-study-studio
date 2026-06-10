@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useData } from "@/lib/data-context";
@@ -21,6 +21,7 @@ import { formatDistanceToNow, parseISO } from "date-fns";
 import { ProgressRing } from "@/components/progress-ring";
 import { cn } from "@/lib/utils";
 import { celebrate } from "@/lib/celebrate";
+import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
 
 export const Route = createFileRoute("/_authenticated/subjects/$id")({
   head: () => ({ meta: [{ title: "Subject — Let's be in sync" }] }),
@@ -29,8 +30,9 @@ export const Route = createFileRoute("/_authenticated/subjects/$id")({
 
 function SubjectDetail() {
   const { id } = useParams({ from: "/_authenticated/subjects/$id" });
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const { subjects, topics, progress, profiles, addTopic, bulkAddTopics, updateTopic, deleteTopic, toggleTopic } = useData();
+  const { loading, subjects, topics, progress, profiles, addTopic, bulkAddTopics, updateTopic, deleteTopic, toggleTopic, updateSubject, deleteSubject } = useData();
 
   const subject = subjects.find((s) => s.id === id);
   const sTopics = useMemo(() => topics.filter((t) => t.subject_id === id), [topics, id]);
@@ -45,6 +47,9 @@ function SubjectDetail() {
   const [bulkText, setBulkText] = useState("");
   const [editTopic, setEditTopic] = useState<null | { id: string; name: string; description: string }>(null);
   const [confirmDelete, setConfirmDelete] = useState<null | { id: string; name: string }>(null);
+  const [subjectRename, setSubjectRename] = useState("");
+  const [subjectDeleteOpen, setSubjectDeleteOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const Icon = getSubjectIcon(subject?.icon);
 
@@ -80,6 +85,8 @@ function SubjectDetail() {
     setOpenBulk(false);
   }
 
+  if (loading) return <ClayLoader label="Opening topic list" />;
+
   if (!subject) {
     return (
       <div className="space-y-4">
@@ -109,7 +116,13 @@ function SubjectDetail() {
               <p className="text-sm text-muted-foreground">{sTopics.length} topics</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3 md:justify-end">
+            <Button variant="outline" onClick={() => setSubjectRename(subject.name)} className="shadow-clay-sm">
+              <Pencil className="h-4 w-4" /> Rename subject
+            </Button>
+            <Button variant="destructive" onClick={() => setSubjectDeleteOpen(true)} className="shadow-clay-sm">
+              <Trash2 className="h-4 w-4" /> Delete subject
+            </Button>
             {stats.map((s, i) => (
               <ProgressRing
                 key={s.profile.id}
