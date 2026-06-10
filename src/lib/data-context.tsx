@@ -1,4 +1,13 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./auth-context";
 
@@ -42,10 +51,16 @@ interface DataContextValue {
   toggleTopic: (topicId: string, completed: boolean) => Promise<void>;
   addTopic: (subjectId: string, topicName: string, description?: string) => Promise<void>;
   bulkAddTopics: (subjectId: string, topicNames: string[]) => Promise<void>;
-  updateTopic: (topicId: string, updates: { topic_name?: string; description?: string | null }) => Promise<void>;
+  updateTopic: (
+    topicId: string,
+    updates: { topic_name?: string; description?: string | null },
+  ) => Promise<void>;
   deleteTopic: (topicId: string) => Promise<void>;
   addSubject: (name: string, icon?: string) => Promise<{ error?: string }>;
-  updateSubject: (id: string, updates: { name?: string; icon?: string }) => Promise<{ error?: string }>;
+  updateSubject: (
+    id: string,
+    updates: { name?: string; icon?: string },
+  ) => Promise<{ error?: string }>;
   deleteSubject: (id: string) => Promise<{ error?: string }>;
   resetMyProgress: () => Promise<void>;
 }
@@ -88,7 +103,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
       .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, debouncedRefresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "subjects" }, debouncedRefresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "topics" }, debouncedRefresh)
-      .on("postgres_changes", { event: "*", schema: "public", table: "topic_progress" }, debouncedRefresh)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "topic_progress" },
+        debouncedRefresh,
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -101,71 +120,153 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const existing = progress.find((p) => p.topic_id === topicId && p.user_id === user.id);
       const completed_at = completed ? new Date().toISOString() : null;
       setProgress((prev) => {
-        if (existing) return prev.map((p) => (p.id === existing.id ? { ...p, completed, completed_at } : p));
-        return [...prev, { id: `tmp-${topicId}`, topic_id: topicId, user_id: user.id, completed, completed_at, updated_at: new Date().toISOString() }];
+        if (existing)
+          return prev.map((p) => (p.id === existing.id ? { ...p, completed, completed_at } : p));
+        return [
+          ...prev,
+          {
+            id: `tmp-${topicId}`,
+            topic_id: topicId,
+            user_id: user.id,
+            completed,
+            completed_at,
+            updated_at: new Date().toISOString(),
+          },
+        ];
       });
       if (existing) {
-        await supabase.from("topic_progress").update({ completed, completed_at }).eq("id", existing.id);
+        await supabase
+          .from("topic_progress")
+          .update({ completed, completed_at })
+          .eq("id", existing.id);
       } else {
-        await supabase.from("topic_progress").insert({ topic_id: topicId, user_id: user.id, completed, completed_at });
+        await supabase
+          .from("topic_progress")
+          .insert({ topic_id: topicId, user_id: user.id, completed, completed_at });
       }
     },
     [user, progress],
   );
 
-  const addTopic = useCallback(async (subjectId: string, topicName: string, description?: string) => {
-    if (!user) return;
-    await supabase.from("topics").insert({ subject_id: subjectId, topic_name: topicName, description: description ?? null, added_by: user.id });
-  }, [user]);
+  const addTopic = useCallback(
+    async (subjectId: string, topicName: string, description?: string) => {
+      if (!user) return;
+      const { data, error } = await supabase
+        .from("topics")
+        .insert({
+          subject_id: subjectId,
+          topic_name: topicName,
+          description: description ?? null,
+          added_by: user.id,
+        })
+        .select("*")
+        .single();
+      if (error) throw error;
+      if (data) setTopics((prev) => [...prev.filter((t) => t.id !== data.id), data as Topic]);
+    },
+    [user],
+  );
 
-  const bulkAddTopics = useCallback(async (subjectId: string, topicNames: string[]) => {
-    if (!user) return;
-    const rows = topicNames.map((n) => n.trim()).filter(Boolean).map((topic_name) => ({ subject_id: subjectId, topic_name, added_by: user.id }));
-    if (rows.length === 0) return;
-    await supabase.from("topics").insert(rows);
-  }, [user]);
+  const bulkAddTopics = useCallback(
+    async (subjectId: string, topicNames: string[]) => {
+      if (!user) return;
+      const rows = topicNames
+        .map((n) => n.trim())
+        .filter(Boolean)
+        .map((topic_name) => ({ subject_id: subjectId, topic_name, added_by: user.id }));
+      if (rows.length === 0) return;
+      const { data, error } = await supabase.from("topics").insert(rows).select("*");
+      if (error) throw error;
+      if (data) setTopics((prev) => [...prev, ...(data as Topic[])]);
+    },
+    [user],
+  );
 
-  const updateTopic = useCallback(async (topicId: string, updates: { topic_name?: string; description?: string | null }) => {
-    setTopics((prev) => prev.map((t) => (t.id === topicId ? { ...t, ...updates } as Topic : t)));
-    await supabase.from("topics").update(updates).eq("id", topicId);
-  }, []);
+  const updateTopic = useCallback(
+    async (topicId: string, updates: { topic_name?: string; description?: string | null }) => {
+      const snapshot = topics;
+      setTopics((prev) =>
+        prev.map((t) => (t.id === topicId ? ({ ...t, ...updates } as Topic) : t)),
+      );
+      const { error } = await supabase.from("topics").update(updates).eq("id", topicId);
+      if (error) {
+        setTopics(snapshot);
+        throw error;
+      }
+    },
+    [topics],
+  );
 
-  const deleteTopic = useCallback(async (topicId: string) => {
-    setTopics((prev) => prev.filter((t) => t.id !== topicId));
-    await supabase.from("topics").delete().eq("id", topicId);
-  }, []);
+  const deleteTopic = useCallback(
+    async (topicId: string) => {
+      const topicsSnap = topics;
+      const progressSnap = progress;
+      setTopics((prev) => prev.filter((t) => t.id !== topicId));
+      setProgress((prev) => prev.filter((p) => p.topic_id !== topicId));
+      const { error } = await supabase.from("topics").delete().eq("id", topicId);
+      if (error) {
+        setTopics(topicsSnap);
+        setProgress(progressSnap);
+        throw error;
+      }
+    },
+    [topics, progress],
+  );
 
-  const addSubject = useCallback(async (name: string, icon?: string) => {
-    if (!user) return { error: "Not signed in" };
-    const { error } = await supabase.from("subjects").insert({ name, icon: icon ?? "BookOpen", created_by: user.id });
-    if (error) return { error: error.message };
-    return {};
-  }, [user]);
+  const addSubject = useCallback(
+    async (name: string, icon?: string) => {
+      if (!user) return { error: "Not signed in" };
+      const { data, error } = await supabase
+        .from("subjects")
+        .insert({ name, icon: icon ?? "BookOpen", created_by: user.id })
+        .select("*")
+        .single();
+      if (error) return { error: error.message };
+      if (data)
+        setSubjects((prev) =>
+          [...prev.filter((s) => s.id !== data.id), data as Subject].sort((a, b) =>
+            a.name.localeCompare(b.name),
+          ),
+        );
+      return {};
+    },
+    [user],
+  );
 
-  const updateSubject = useCallback(async (id: string, updates: { name?: string; icon?: string }) => {
-    const snapshot = subjects;
-    setSubjects((prev) => prev.map((s) => (s.id === id ? { ...s, ...updates } as Subject : s)));
-    const { error } = await supabase.from("subjects").update(updates).eq("id", id);
-    if (error) {
-      setSubjects(snapshot);
-      return { error: error.message };
-    }
-    return {};
-  }, [subjects]);
+  const updateSubject = useCallback(
+    async (id: string, updates: { name?: string; icon?: string }) => {
+      const snapshot = subjects;
+      setSubjects((prev) => prev.map((s) => (s.id === id ? ({ ...s, ...updates } as Subject) : s)));
+      const { error } = await supabase.from("subjects").update(updates).eq("id", id);
+      if (error) {
+        setSubjects(snapshot);
+        return { error: error.message };
+      }
+      return {};
+    },
+    [subjects],
+  );
 
-  const deleteSubject = useCallback(async (id: string) => {
-    const snapshot = subjects;
-    const topicsSnap = topics;
-    setSubjects((prev) => prev.filter((s) => s.id !== id));
-    setTopics((prev) => prev.filter((t) => t.subject_id !== id));
-    const { error } = await supabase.from("subjects").delete().eq("id", id);
-    if (error) {
-      setSubjects(snapshot);
-      setTopics(topicsSnap);
-      return { error: error.message };
-    }
-    return {};
-  }, [subjects, topics]);
+  const deleteSubject = useCallback(
+    async (id: string) => {
+      const snapshot = subjects;
+      const topicsSnap = topics;
+      const progressSnap = progress;
+      const topicIds = new Set(topics.filter((t) => t.subject_id === id).map((t) => t.id));
+      setSubjects((prev) => prev.filter((s) => s.id !== id));
+      setTopics((prev) => prev.filter((t) => t.subject_id !== id));
+      setProgress((prev) => prev.filter((p) => !topicIds.has(p.topic_id)));
+      const { error } = await supabase.from("subjects").delete().eq("id", id);
+      if (error) {
+        setSubjects(snapshot);
+        setTopics(topicsSnap);
+        setProgress(progressSnap);
+        return { error: error.message };
+      }
+      return {};
+    },
+    [subjects, topics, progress],
+  );
 
   const resetMyProgress = useCallback(async () => {
     if (!user) return;
@@ -173,8 +274,40 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const value = useMemo(
-    () => ({ loading, profiles, subjects, topics, progress, refresh, toggleTopic, addTopic, bulkAddTopics, updateTopic, deleteTopic, addSubject, updateSubject, deleteSubject, resetMyProgress }),
-    [loading, profiles, subjects, topics, progress, refresh, toggleTopic, addTopic, bulkAddTopics, updateTopic, deleteTopic, addSubject, updateSubject, deleteSubject, resetMyProgress],
+    () => ({
+      loading,
+      profiles,
+      subjects,
+      topics,
+      progress,
+      refresh,
+      toggleTopic,
+      addTopic,
+      bulkAddTopics,
+      updateTopic,
+      deleteTopic,
+      addSubject,
+      updateSubject,
+      deleteSubject,
+      resetMyProgress,
+    }),
+    [
+      loading,
+      profiles,
+      subjects,
+      topics,
+      progress,
+      refresh,
+      toggleTopic,
+      addTopic,
+      bulkAddTopics,
+      updateTopic,
+      deleteTopic,
+      addSubject,
+      updateSubject,
+      deleteSubject,
+      resetMyProgress,
+    ],
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
@@ -192,14 +325,23 @@ export function computeUserStats(userId: string, topics: Topic[], progress: Topi
   return { total, completed, pct: total ? Math.round((completed / total) * 100) : 0 };
 }
 
-export function computeSubjectStats(subjectId: string, topics: Topic[], progress: TopicProgress[], userIds: string[]) {
+export function computeSubjectStats(
+  subjectId: string,
+  topics: Topic[],
+  progress: TopicProgress[],
+  userIds: string[],
+) {
   const subjectTopics = topics.filter((t) => t.subject_id === subjectId);
   const total = subjectTopics.length;
   const topicIds = new Set(subjectTopics.map((t) => t.id));
   const completedByUser: Record<string, number> = {};
   for (const uid of userIds) {
-    completedByUser[uid] = progress.filter((p) => p.user_id === uid && p.completed && topicIds.has(p.topic_id)).length;
+    completedByUser[uid] = progress.filter(
+      (p) => p.user_id === uid && p.completed && topicIds.has(p.topic_id),
+    ).length;
   }
-  const anyCompleted = subjectTopics.filter((t) => progress.some((p) => p.topic_id === t.id && p.completed && userIds.includes(p.user_id))).length;
+  const anyCompleted = subjectTopics.filter((t) =>
+    progress.some((p) => p.topic_id === t.id && p.completed && userIds.includes(p.user_id)),
+  ).length;
   return { total, completedByUser, anyCompleted };
 }

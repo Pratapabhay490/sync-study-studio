@@ -3,9 +3,26 @@ import { useAuth } from "@/lib/auth-context";
 import { computeUserStats, useData } from "@/lib/data-context";
 import { UserAvatar } from "@/components/user-avatar";
 import { ProgressRing } from "@/components/progress-ring";
-import { Activity, ArrowRight, BookOpen, CalendarClock, CheckCircle2, Flame, ListTodo, Sparkles } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  BookOpen,
+  CalendarClock,
+  CheckCircle2,
+  Flame,
+  ListTodo,
+  Sparkles,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { differenceInSeconds, formatDistanceToNow, isToday, parseISO, startOfDay, subDays } from "date-fns";
+import {
+  differenceInSeconds,
+  formatDistanceToNow,
+  isToday,
+  parseISO,
+  startOfDay,
+  subDays,
+} from "date-fns";
+import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
 
 const NEET_PG_DATE = new Date("2026-08-30T09:00:00+05:30");
 
@@ -43,14 +60,21 @@ function Dashboard() {
   const me = profiles.find((p) => p.id === user?.id);
   const other = profiles.find((p) => p.id !== user?.id);
 
-  const myStats = useMemo(() => (user ? computeUserStats(user.id, topics, progress) : { total: 0, completed: 0, pct: 0 }), [user, topics, progress]);
+  const myStats = useMemo(
+    () => (user ? computeUserStats(user.id, topics, progress) : { total: 0, completed: 0, pct: 0 }),
+    [user, topics, progress],
+  );
   const otherStats = useMemo(
-    () => (other ? computeUserStats(other.id, topics, progress) : { total: 0, completed: 0, pct: 0 }),
+    () =>
+      other ? computeUserStats(other.id, topics, progress) : { total: 0, completed: 0, pct: 0 },
     [other, topics, progress],
   );
 
   const totalTopics = topics.length;
-  const totalCompleted = useMemo(() => new Set(progress.filter((p) => p.completed).map((p) => p.topic_id)).size, [progress]);
+  const totalCompleted = useMemo(
+    () => new Set(progress.filter((p) => p.completed).map((p) => p.topic_id)).size,
+    [progress],
+  );
   const overallPct = totalTopics ? Math.round((totalCompleted / totalTopics) * 100) : 0;
   const pending = totalTopics - totalCompleted;
 
@@ -72,7 +96,16 @@ function Dashboard() {
   }, [user, progress]);
 
   const completedToday = useMemo(
-    () => (user ? progress.filter((p) => p.user_id === user.id && p.completed && p.completed_at && isToday(parseISO(p.completed_at))).length : 0),
+    () =>
+      user
+        ? progress.filter(
+            (p) =>
+              p.user_id === user.id &&
+              p.completed &&
+              p.completed_at &&
+              isToday(parseISO(p.completed_at)),
+          ).length
+        : 0,
     [user, progress],
   );
 
@@ -88,7 +121,7 @@ function Dashboard() {
   const quote = QUOTES[new Date().getDate() % QUOTES.length];
 
   if (loading) {
-    return <DashboardSkeleton />;
+    return <ClayLoader label="Building your clay dashboard" />;
   }
 
   return (
@@ -96,14 +129,15 @@ function Dashboard() {
       {/* Hero */}
       <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card md:p-10">
         <div className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-gradient-aurora opacity-25 blur-3xl" />
-        <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="relative grid gap-6 lg:grid-cols-[1.1fr_280px_190px] lg:items-center">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs text-muted-foreground">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
               {quote}
             </div>
             <h1 className="mt-4 font-display text-3xl font-bold tracking-tight md:text-5xl">
-              Hey {me?.name?.split(" ")[0] ?? "there"}, <span className="text-gradient">let's lock in.</span>
+              Hey {me?.name?.split(" ")[0] ?? "there"},{" "}
+              <span className="text-gradient">let's lock in.</span>
             </h1>
             <p className="mt-2 text-sm text-muted-foreground md:text-base">
               {completedToday > 0
@@ -117,13 +151,22 @@ function Dashboard() {
               >
                 Open subjects <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link to="/analytics" className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-semibold">
+              <Link
+                to="/analytics"
+                className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-semibold"
+              >
                 View analytics
               </Link>
             </div>
           </div>
 
-          <ProgressRing value={overallPct} size={180} stroke={14}>
+          <ClayVisual
+            variant="boy"
+            priority
+            className="order-last mx-auto w-52 lg:order-none lg:w-64"
+          />
+
+          <ProgressRing value={overallPct} size={180} stroke={14} className="mx-auto">
             <div className="text-center">
               <div className="font-display text-4xl font-bold">{overallPct}%</div>
               <div className="text-xs uppercase tracking-wider text-muted-foreground">Combined</div>
@@ -136,17 +179,28 @@ function Dashboard() {
       <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card md:p-8">
         <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-gradient-primary opacity-15 blur-3xl" />
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-gradient-aurora opacity-20 blur-3xl" />
-        <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="relative grid gap-6 lg:grid-cols-[1fr_240px_auto] lg:items-center">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground">
               <CalendarClock className="h-3.5 w-3.5 text-primary" />
               NEET PG 2026 · 30 August 2026
             </div>
             <h2 className="mt-3 font-display text-2xl font-bold tracking-tight md:text-3xl">
-              {countdown.total > 0 ? <>The clock is <span className="text-gradient">ticking.</span></> : <>It's exam day. <span className="text-gradient">All the best!</span></>}
+              {countdown.total > 0 ? (
+                <>
+                  The clock is <span className="text-gradient">ticking.</span>
+                </>
+              ) : (
+                <>
+                  It's exam day. <span className="text-gradient">All the best!</span>
+                </>
+              )}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">Every topic you tick today is one step closer.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Every topic you tick today is one step closer.
+            </p>
           </div>
+          <ClayVisual variant="icons" className="mx-auto hidden w-48 md:block" />
           <div className="grid grid-cols-4 gap-2 sm:gap-3">
             <CountdownCell label="Days" value={countdown.days} />
             <CountdownCell label="Hours" value={countdown.hours} />
@@ -158,10 +212,25 @@ function Dashboard() {
 
       {/* Stat tiles */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile icon={ListTodo} label="Total topics" value={totalTopics} accent="bg-gradient-primary" />
-        <StatTile icon={CheckCircle2} label="Completed" value={totalCompleted} accent="bg-gradient-abhay" />
+        <StatTile
+          icon={ListTodo}
+          label="Total topics"
+          value={totalTopics}
+          accent="bg-gradient-primary"
+        />
+        <StatTile
+          icon={CheckCircle2}
+          label="Completed"
+          value={totalCompleted}
+          accent="bg-gradient-abhay"
+        />
         <StatTile icon={BookOpen} label="Pending" value={pending} accent="bg-gradient-aishwarya" />
-        <StatTile icon={Flame} label="Your streak" value={`${myStreak}d`} accent="bg-gradient-aurora" />
+        <StatTile
+          icon={Flame}
+          label="Your streak"
+          value={`${myStreak}d`}
+          accent="bg-gradient-aurora"
+        />
       </section>
 
       {/* Side-by-side */}
@@ -175,12 +244,16 @@ function Dashboard() {
         <div className="rounded-2xl border border-border bg-card p-6 shadow-card lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-display text-lg font-semibold">Subjects at a glance</h3>
-            <Link to="/subjects" className="text-xs font-medium text-primary hover:underline">View all</Link>
+            <Link to="/subjects" className="text-xs font-medium text-primary hover:underline">
+              View all
+            </Link>
           </div>
           <div className="space-y-3">
             {subjects.slice(0, 6).map((s) => {
               const sTopics = topics.filter((t) => t.subject_id === s.id);
-              const sComp = progress.filter((p) => p.completed && sTopics.some((t) => t.id === p.topic_id)).length;
+              const sComp = progress.filter(
+                (p) => p.completed && sTopics.some((t) => t.id === p.topic_id),
+              ).length;
               const total = sTopics.length * Math.max(profiles.length, 1);
               const pct = total ? Math.round((sComp / total) * 100) : 0;
               return (
@@ -196,7 +269,10 @@ function Dashboard() {
                   </div>
                   <div className="flex w-40 items-center gap-2">
                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                      <div className="h-full bg-gradient-primary transition-all" style={{ width: `${pct}%` }} />
+                      <div
+                        className="h-full bg-gradient-primary transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
                     </div>
                     <span className="w-10 text-right text-xs font-semibold">{pct}%</span>
                   </div>
@@ -211,7 +287,9 @@ function Dashboard() {
             <Activity className="h-4 w-4 text-primary" /> Recent activity
           </h3>
           {recent.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No completions yet — start ticking topics!</p>
+            <p className="text-sm text-muted-foreground">
+              No completions yet — start ticking topics!
+            </p>
           ) : (
             <ul className="space-y-3">
               {recent.map((p) => {
@@ -223,12 +301,17 @@ function Dashboard() {
                     <UserAvatar profile={who} size={28} />
                     <div className="min-w-0 flex-1 text-sm">
                       <div className="truncate">
-                        <span className="font-semibold">{who?.name?.split(" ")[0] ?? "Someone"}</span>
+                        <span className="font-semibold">
+                          {who?.name?.split(" ")[0] ?? "Someone"}
+                        </span>
                         <span className="text-muted-foreground"> finished </span>
                         <span className="font-medium">{topic?.topic_name}</span>
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {subject?.name} · {p.completed_at ? formatDistanceToNow(parseISO(p.completed_at), { addSuffix: true }) : ""}
+                        {subject?.name} ·{" "}
+                        {p.completed_at
+                          ? formatDistanceToNow(parseISO(p.completed_at), { addSuffix: true })
+                          : ""}
                       </div>
                     </div>
                   </li>
@@ -242,10 +325,22 @@ function Dashboard() {
   );
 }
 
-function StatTile({ icon: Icon, label, value, accent }: { icon: typeof Activity; label: string; value: number | string; accent: string }) {
+function StatTile({
+  icon: Icon,
+  label,
+  value,
+  accent,
+}: {
+  icon: typeof Activity;
+  label: string;
+  value: number | string;
+  accent: string;
+}) {
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card transition hover:shadow-glow">
-      <div className={`absolute -right-6 -top-6 h-20 w-20 rounded-full ${accent} opacity-20 blur-2xl transition group-hover:opacity-40`} />
+      <div
+        className={`absolute -right-6 -top-6 h-20 w-20 rounded-full ${accent} opacity-20 blur-2xl transition group-hover:opacity-40`}
+      />
       <div className="relative flex items-start justify-between">
         <div>
           <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
@@ -273,12 +368,16 @@ function UserCard({
   const grad = accent === "abhay" ? "bg-gradient-abhay" : "bg-gradient-aishwarya";
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-card">
-      <div className={`pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full ${grad} opacity-20 blur-3xl`} />
+      <div
+        className={`pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full ${grad} opacity-20 blur-3xl`}
+      />
       <div className="relative flex items-center gap-4">
         <UserAvatar profile={profile as never} size={56} ring />
         <div className="flex-1">
           <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
-          <div className="font-display text-xl font-semibold">{profile?.name ?? "Waiting to join…"}</div>
+          <div className="font-display text-xl font-semibold">
+            {profile?.name ?? "Waiting to join…"}
+          </div>
         </div>
         <ProgressRing
           value={stats.pct}
@@ -303,8 +402,12 @@ function UserCard({
 function CountdownCell({ label, value }: { label: string; value: number }) {
   return (
     <div className="min-w-[64px] rounded-2xl border border-border bg-background/70 px-3 py-3 text-center shadow-card backdrop-blur sm:min-w-[80px] sm:px-4 sm:py-4">
-      <div className="font-display text-2xl font-bold tabular-nums sm:text-4xl">{String(value).padStart(2, "0")}</div>
-      <div className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground sm:text-xs">{label}</div>
+      <div className="font-display text-2xl font-bold tabular-nums sm:text-4xl">
+        {String(value).padStart(2, "0")}
+      </div>
+      <div className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground sm:text-xs">
+        {label}
+      </div>
     </div>
   );
 }
