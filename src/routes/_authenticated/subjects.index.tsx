@@ -138,7 +138,7 @@ function SubjectsPage() {
                     <div className="grid h-12 w-12 place-items-center rounded-xl bg-gradient-primary text-white shadow-glow">
                       <Icon className="h-6 w-6" />
                     </div>
-                    <div className="text-right">
+                    <div className="pr-24 text-right">
                       <div className="font-display text-2xl font-bold">{combinedPct}%</div>
                       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Combined</div>
                     </div>
