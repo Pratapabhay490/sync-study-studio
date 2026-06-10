@@ -158,8 +158,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const addSubject = useCallback(async (name: string, icon?: string) => {
     if (!user) return { error: "Not signed in" };
-    const { error } = await supabase.from("subjects").insert({ name, icon: icon ?? "BookOpen", created_by: user.id });
+    const { data, error } = await supabase
+      .from("subjects")
+      .insert({ name, icon: icon ?? "BookOpen", created_by: user.id })
+      .select("*")
+      .single();
     if (error) return { error: error.message };
+    if (data) setSubjects((prev) => [...prev.filter((s) => s.id !== data.id), data as Subject].sort((a, b) => a.name.localeCompare(b.name)));
     return {};
   }, [user]);
 
@@ -177,16 +182,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const deleteSubject = useCallback(async (id: string) => {
     const snapshot = subjects;
     const topicsSnap = topics;
+    const progressSnap = progress;
+    const topicIds = new Set(topics.filter((t) => t.subject_id === id).map((t) => t.id));
     setSubjects((prev) => prev.filter((s) => s.id !== id));
     setTopics((prev) => prev.filter((t) => t.subject_id !== id));
+    setProgress((prev) => prev.filter((p) => !topicIds.has(p.topic_id)));
     const { error } = await supabase.from("subjects").delete().eq("id", id);
     if (error) {
       setSubjects(snapshot);
       setTopics(topicsSnap);
+      setProgress(progressSnap);
       return { error: error.message };
     }
     return {};
-  }, [subjects, topics]);
+  }, [subjects, topics, progress]);
 
   const resetMyProgress = useCallback(async () => {
     if (!user) return;
