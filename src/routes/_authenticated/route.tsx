@@ -91,7 +91,11 @@ function AuthenticatedLayout() {
                   <Link
                     key={item.to}
                     to={item.to}
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      document.documentElement.style.setProperty("--page-origin-x", "50%");
+                      document.documentElement.style.setProperty("--page-origin-y", "30%");
+                      setOpen(false);
+                    }}
                     className={cn(
                       "group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all",
                       active
