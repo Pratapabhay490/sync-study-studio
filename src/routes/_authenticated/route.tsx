@@ -11,6 +11,7 @@ import { useTheme } from "@/lib/theme-provider";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { NotificationCenter } from "@/components/notification-center";
+import { AnimatePresence, motion } from "framer-motion";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -90,7 +91,11 @@ function AuthenticatedLayout() {
                   <Link
                     key={item.to}
                     to={item.to}
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      document.documentElement.style.setProperty("--page-origin-x", "50%");
+                      document.documentElement.style.setProperty("--page-origin-y", "30%");
+                      setOpen(false);
+                    }}
                     className={cn(
                       "group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all",
                       active
@@ -130,8 +135,19 @@ function AuthenticatedLayout() {
         {open && <div className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm md:hidden" onClick={() => setOpen(false)} />}
 
         <main className="min-h-screen flex-1 px-4 py-4 md:px-8 md:py-8">
-          <div className="mx-auto max-w-7xl animate-fade-in">
-            <Outlet />
+          <div className="mx-auto max-w-7xl">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={pathname}
+                initial={{ opacity: 0, scale: 0.96, y: 8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98, y: -4 }}
+                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                style={{ transformOrigin: "var(--page-origin-x, 50%) var(--page-origin-y, 30%)" }}
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
           </div>
         </main>
       </div>

@@ -188,6 +188,12 @@ function SubjectsPage() {
                 <Link
                   to="/subjects/$id"
                   params={{ id: s.id }}
+                  onClick={(e) => {
+                    const x = (e.clientX / window.innerWidth) * 100;
+                    const y = (e.clientY / window.innerHeight) * 100;
+                    document.documentElement.style.setProperty("--page-origin-x", `${x}%`);
+                    document.documentElement.style.setProperty("--page-origin-y", `${y}%`);
+                  }}
                   className="block min-h-[268px] overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card transition hover:-translate-y-0.5 hover:shadow-glow"
                 >
                   <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-primary opacity-10 blur-2xl transition group-hover:opacity-30" />

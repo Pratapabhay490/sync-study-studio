@@ -22,7 +22,7 @@ import {
   startOfDay,
   subDays,
 } from "date-fns";
-import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
+import { ClayLoader, ClayVisual, ClayWalkingStrip } from "@/components/clay-visuals";
 
 const NEET_PG_DATE = new Date("2026-08-30T09:00:00+05:30");
 
@@ -173,6 +173,8 @@ function Dashboard() {
             </div>
           </ProgressRing>
         </div>
+        {/* Boy strolling along the bottom of the hero — contextual, not random */}
+        <ClayWalkingStrip className="mt-6" />
       </section>
 
       {/* NEET PG Countdown */}
@@ -200,7 +202,7 @@ function Dashboard() {
               Every topic you tick today is one step closer.
             </p>
           </div>
-          <ClayVisual variant="icons" className="mx-auto hidden w-48 md:block" />
+          <div aria-hidden className="hidden" />
           <div className="grid grid-cols-4 gap-2 sm:gap-3">
             <CountdownCell label="Days" value={countdown.days} />
             <CountdownCell label="Hours" value={countdown.hours} />
