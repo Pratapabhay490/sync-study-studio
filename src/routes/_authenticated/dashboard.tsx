@@ -173,6 +173,8 @@ function Dashboard() {
             </div>
           </ProgressRing>
         </div>
+        {/* Boy strolling along the bottom of the hero — contextual, not random */}
+        <ClayWalkingStrip className="mt-6" />
       </section>
 
       {/* NEET PG Countdown */}
