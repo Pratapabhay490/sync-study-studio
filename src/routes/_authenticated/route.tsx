@@ -131,8 +131,19 @@ function AuthenticatedLayout() {
         {open && <div className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm md:hidden" onClick={() => setOpen(false)} />}
 
         <main className="min-h-screen flex-1 px-4 py-4 md:px-8 md:py-8">
-          <div className="mx-auto max-w-7xl animate-fade-in">
-            <Outlet />
+          <div className="mx-auto max-w-7xl">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={pathname}
+                initial={{ opacity: 0, scale: 0.96, y: 8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98, y: -4 }}
+                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                style={{ transformOrigin: "var(--page-origin-x, 50%) var(--page-origin-y, 30%)" }}
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
           </div>
         </main>
       </div>
