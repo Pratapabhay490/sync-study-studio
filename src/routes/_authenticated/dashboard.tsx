@@ -202,7 +202,7 @@ function Dashboard() {
               Every topic you tick today is one step closer.
             </p>
           </div>
-          <ClayVisual variant="icons" className="mx-auto hidden w-48 md:block" />
+          <div aria-hidden className="hidden" />
           <div className="grid grid-cols-4 gap-2 sm:gap-3">
             <CountdownCell label="Days" value={countdown.days} />
             <CountdownCell label="Hours" value={countdown.hours} />
