@@ -420,6 +420,18 @@
 @utility clay-character-delay {
   animation-delay: 1.4s;
 }
+@utility clay-walker {
+  animation: clay-walk 24s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+@utility clay-stepper {
+  animation: clay-step 0.9s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+@utility clay-peeker {
+  animation: clay-peek 5.5s ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
 @utility clay-floater {
   animation: clay-float 4.8s ease-in-out infinite;
 }
@@ -447,6 +459,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .clay-character,
+  .clay-walker,
+  .clay-stepper,
+  .clay-peeker,
   .clay-floater,
   .clay-loader-orb,
   .clay-dot {
