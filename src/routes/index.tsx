@@ -100,7 +100,7 @@ function Landing() {
               className="relative w-full max-w-[560px] mx-auto animate-float-slow drop-shadow-[0_30px_50px_rgba(15,23,42,0.25)]"
             />
             {/* floating mini-cards */}
-            <div className="clay absolute -left-2 top-10 hidden rounded-2xl border-0 px-3 py-2 shadow-clay-sm md:flex items-center gap-2 animate-float">
+            <div className="clay absolute -left-2 top-10 hidden rounded-2xl border-0 px-3 py-2 shadow-clay-sm md:flex items-center gap-2 animate-float-slow">
               <img src={clayStreak} alt="" width={32} height={32} className="h-8 w-8" />
               <div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Streak</div>
