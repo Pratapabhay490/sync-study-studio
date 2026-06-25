@@ -6,11 +6,7 @@ import { ProgressRing } from "@/components/progress-ring";
 import {
   Activity,
   ArrowRight,
-  BookOpen,
   CalendarClock,
-  CheckCircle2,
-  Flame,
-  ListTodo,
   Sparkles,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
