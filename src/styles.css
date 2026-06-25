@@ -214,9 +214,9 @@
   html.dark,
   body.dark {
     background-image:
-      radial-gradient(900px 600px at 8% -10%, oklch(0.4 0.14 250 / 0.35), transparent 60%),
-      radial-gradient(700px 500px at 110% 10%, oklch(0.4 0.14 290 / 0.3), transparent 60%),
-      radial-gradient(800px 600px at 50% 120%, oklch(0.4 0.12 220 / 0.3), transparent 60%);
+      radial-gradient(900px 600px at 8% -10%, oklch(0.32 0.14 250 / 0.35), transparent 60%),
+      radial-gradient(700px 500px at 110% 10%, oklch(0.3 0.14 290 / 0.28), transparent 60%),
+      radial-gradient(800px 600px at 50% 120%, oklch(0.3 0.12 220 / 0.25), transparent 60%);
   }
   body {
     font-family: var(--font-sans);
