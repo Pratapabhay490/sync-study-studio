@@ -130,6 +130,7 @@ function SettingsPage() {
           </Button>
         </div>
 
+        <ul className="space-y-3">
           {profiles.map((p) => (
             <li key={p.id} className="flex items-center gap-3 rounded-xl border border-border bg-background/50 p-3">
               <UserAvatar profile={p} size={44} />
