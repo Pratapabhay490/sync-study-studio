@@ -129,9 +129,14 @@ function SettingsPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-        <h3 className="mb-1 font-display text-lg font-semibold">Study partners</h3>
-        <p className="mb-4 text-xs text-muted-foreground">Add a partner by their account email to share progress and analytics with them.</p>
+      <div className="clay rounded-3xl border-0 p-6">
+        <div className="mb-4 flex items-start gap-3">
+          <img src={clayPartners} alt="" width={56} height={56} className="h-12 w-12 shrink-0 drop-shadow-md" />
+          <div>
+            <h3 className="font-display text-lg font-semibold">Study partners</h3>
+            <p className="text-xs text-muted-foreground">Add a partner by their account email to share progress and analytics.</p>
+          </div>
+        </div>
 
         <div className="mb-5 flex flex-col gap-2 sm:flex-row">
           <Input
