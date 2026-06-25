@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useData } from "@/lib/data-context";
-import { getSubjectIcon } from "@/lib/subject-icons";
+import { getSubjectClayIcon } from "@/lib/subject-icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -153,7 +153,7 @@ function SubjectsPage() {
           {filtered.map((s) => {
             const sTopics = topics.filter((t) => t.subject_id === s.id);
             const total = sTopics.length;
-            const Icon = getSubjectIcon(s.icon);
+            const clayIconSrc = getSubjectClayIcon(s.icon);
             const pctFor = (uid?: string) => {
               if (!uid || total === 0) return 0;
               const done = progress.filter(
@@ -187,8 +187,15 @@ function SubjectsPage() {
                 >
                   <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-primary opacity-10 blur-2xl transition group-hover:opacity-30" />
                   <div className="relative flex items-start justify-between">
-                    <div className="grid h-12 w-12 place-items-center rounded-xl bg-gradient-primary text-white shadow-glow">
-                      <Icon className="h-6 w-6" />
+                    <div className="grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 shadow-clay-sm transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105">
+                      <img
+                        src={clayIconSrc}
+                        alt=""
+                        width={64}
+                        height={64}
+                        loading="lazy"
+                        className="h-14 w-14 object-contain drop-shadow-md"
+                      />
                     </div>
                     <div className="pr-24 text-right">
                       <div className="font-display text-2xl font-bold">{combinedPct}%</div>
