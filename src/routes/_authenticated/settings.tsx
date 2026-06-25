@@ -224,26 +224,31 @@ function SettingsPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-        <h3 className="mb-4 font-display text-lg font-semibold">Appearance</h3>
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium">Dark mode</div>
-            <div className="text-xs text-muted-foreground">Switch between premium dark and light themes</div>
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="clay rounded-3xl border-0 p-6">
+          <h3 className="mb-4 font-display text-lg font-semibold">Appearance</h3>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">Dark mode</div>
+              <div className="text-xs text-muted-foreground">Switch between premium dark and light themes</div>
+            </div>
+            <Switch checked={theme === "dark"} onCheckedChange={toggle} />
           </div>
-          <Switch checked={theme === "dark"} onCheckedChange={toggle} />
+        </div>
+
+        <div className="clay rounded-3xl border-0 p-6">
+          <div className="mb-4 flex items-start gap-3">
+            <img src={clayProgress} alt="" width={48} height={48} className="h-10 w-10 shrink-0 drop-shadow-md" />
+            <h3 className="font-display text-lg font-semibold">Your data</h3>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="outline" onClick={exportData}><Download className="mr-2 h-4 w-4" /> Export JSON</Button>
+            <Button variant="outline" onClick={handleReset}><RotateCcw className="mr-2 h-4 w-4" /> Reset my progress</Button>
+          </div>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-        <h3 className="mb-4 font-display text-lg font-semibold">Data</h3>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="outline" onClick={exportData}><Download className="mr-2 h-4 w-4" /> Export JSON</Button>
-          <Button variant="outline" onClick={handleReset}><RotateCcw className="mr-2 h-4 w-4" /> Reset my progress</Button>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+      <div className="clay rounded-3xl border-0 p-6">
         <h3 className="mb-4 font-display text-lg font-semibold">Account</h3>
         <Button variant="outline" onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> Sign out</Button>
       </div>
