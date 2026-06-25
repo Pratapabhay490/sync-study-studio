@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { UserAvatar } from "@/components/user-avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, LogOut, RotateCcw, UserX, Mail, Bell, BellOff, Send } from "lucide-react";
+import { Download, LogOut, RotateCcw, UserX, Mail, Bell, BellOff, Send, UserPlus, Loader2 } from "lucide-react";
 import { useNotifications } from "@/lib/notifications-context";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -31,13 +31,36 @@ function SettingsPage() {
   const [name, setName] = useState(me?.name ?? "");
   const [avatar, setAvatar] = useState(me?.avatar_url ?? "");
   const [removePartner, setRemovePartner] = useState<{ id: string; name: string } | null>(null);
+  const [partnerEmail, setPartnerEmail] = useState("");
+  const [addingPartner, setAddingPartner] = useState(false);
 
   async function handleRemovePartner() {
     if (!removePartner) return;
-    const { error } = await supabase.from("profiles").delete().eq("id", removePartner.id);
+    const { error } = await (supabase.rpc as any)("remove_study_partner", {
+      p_partner_id: removePartner.id,
+    });
     if (error) toast.error(error.message);
-    else toast.success(`Removed ${removePartner.name}`);
+    else toast.success(`Removed ${removePartner.name} as a study partner`);
     setRemovePartner(null);
+  }
+
+  async function handleAddPartner() {
+    const email = partnerEmail.trim();
+    if (!email) return;
+    setAddingPartner(true);
+    const { error } = await (supabase.rpc as any)("add_study_partner_by_email", { p_email: email });
+    setAddingPartner(false);
+    if (error) {
+      const msg = error.message?.includes("user_not_found")
+        ? "No account found with that email. Ask them to sign up first."
+        : error.message?.includes("cannot_partner_self")
+        ? "You can't add yourself as a partner."
+        : error.message;
+      toast.error(msg);
+      return;
+    }
+    toast.success(`Added ${email} as a study partner 🎉`);
+    setPartnerEmail("");
   }
 
   async function saveProfile() {
@@ -91,7 +114,22 @@ function SettingsPage() {
 
       <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
         <h3 className="mb-1 font-display text-lg font-semibold">Study partners</h3>
-        <p className="mb-4 text-xs text-muted-foreground">Everyone currently in this shared study space. Remove duplicates if needed.</p>
+        <p className="mb-4 text-xs text-muted-foreground">Add a partner by their account email to share progress and analytics with them.</p>
+
+        <div className="mb-5 flex flex-col gap-2 sm:flex-row">
+          <Input
+            type="email"
+            value={partnerEmail}
+            onChange={(e) => setPartnerEmail(e.target.value)}
+            placeholder="partner@example.com"
+            onKeyDown={(e) => e.key === "Enter" && handleAddPartner()}
+          />
+          <Button onClick={handleAddPartner} disabled={addingPartner || !partnerEmail.trim()} className="bg-gradient-primary text-white">
+            {addingPartner ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
+            Add partner
+          </Button>
+        </div>
+
         <ul className="space-y-3">
           {profiles.map((p) => (
             <li key={p.id} className="flex items-center gap-3 rounded-xl border border-border bg-background/50 p-3">
