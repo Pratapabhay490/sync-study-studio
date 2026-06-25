@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { UserAvatar } from "@/components/user-avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, LogOut, RotateCcw, UserX, Mail, Bell, BellOff, Send } from "lucide-react";
+import { Download, LogOut, RotateCcw, UserX, Mail, Bell, BellOff, Send, UserPlus, Loader2 } from "lucide-react";
 import { useNotifications } from "@/lib/notifications-context";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
