@@ -150,17 +150,6 @@ function SubjectsPage() {
         <EmptyState />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="clay relative min-h-[260px] overflow-hidden p-5 sm:col-span-2 lg:col-span-1">
-            <div className="relative z-10 max-w-[15rem]">
-              <h2 className="font-display text-xl font-bold">
-                Pick a subject, then edit its topics.
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Subject rename and delete buttons are now always visible on every card.
-              </p>
-            </div>
-            <ClayVisual variant="girl" className="absolute bottom-0 right-1 w-40 sm:w-48" />
-          </div>
           {filtered.map((s) => {
             const sTopics = topics.filter((t) => t.subject_id === s.id);
             const total = sTopics.length;
