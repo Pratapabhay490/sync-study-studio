@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_tasks: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          done: boolean
+          id: string
+          position: number
+          task_date: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          done?: boolean
+          id?: string
+          position?: number
+          task_date?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          done?: boolean
+          id?: string
+          position?: number
+          task_date?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notification_queue: {
         Row: {
           body: string
