@@ -16,6 +16,10 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import claySettings from "@/assets/clay-settings-mascot.png";
+import clayPartners from "@/assets/clay-icon-partners.png";
+import clayBell from "@/assets/clay-bell.png";
+import clayProgress from "@/assets/clay-icon-progress.png";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Let's be in sync" }] }),
