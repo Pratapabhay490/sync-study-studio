@@ -22,7 +22,7 @@ import {
   startOfDay,
   subDays,
 } from "date-fns";
-import { ClayLoader, ClayVisual, ClayWalkingStrip } from "@/components/clay-visuals";
+import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
 import { PokeButton } from "@/components/poke-button";
 
 const NEET_PG_DATE = new Date("2026-08-30T09:00:00+05:30");
