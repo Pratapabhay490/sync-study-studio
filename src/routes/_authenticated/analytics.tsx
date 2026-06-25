@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState, useEffect } from "react";
 import { useData } from "@/lib/data-context";
 import { useAuth } from "@/lib/auth-context";
-import { supabase } from "@/integrations/supabase/client";
+import { analyzeStudyProgress, type AIInsight } from "@/lib/analytics-ai.functions";
 import {
   BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, LineChart, Line,
   CartesianGrid, Legend, RadialBarChart, RadialBar, PolarAngleAxis,
@@ -16,16 +17,10 @@ export const Route = createFileRoute("/_authenticated/analytics")({
   component: AnalyticsPage,
 });
 
-interface AIInsight {
-  headline?: string;
-  summary?: string;
-  bullets?: string[];
-  next_actions?: string[];
-}
-
 function AnalyticsPage() {
   const { subjects, topics, progress, profiles } = useData();
   const { user } = useAuth();
+  const analyzeProgress = useServerFn(analyzeStudyProgress);
 
   const me = profiles.find((p) => p.id === user?.id);
   const partner = profiles.find((p) => p.id !== user?.id);
@@ -106,13 +101,11 @@ function AnalyticsPage() {
         weak_subjects: rankings.bottom.slice(0, 5),
         last_7_days: weekly.slice(-7),
       };
-      const { data, error } = await supabase.functions.invoke("gemini-analyze", {
-        body: { kind: "insights", payload },
-      });
-      if (error) throw error;
+      const data = await analyzeProgress({ data: { kind: "insights", payload } });
       setInsight(data as AIInsight);
     } catch (e) {
-      setAiError(e instanceof Error ? e.message : "Could not reach AI coach.");
+      console.warn("AI coach request failed", e);
+      setAiError("The AI coach could not analyse this attempt. Please try again in a moment.");
     } finally {
       setLoadingAI(false);
     }

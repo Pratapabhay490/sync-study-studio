@@ -19,16 +19,16 @@ async function callLovable(prompt: string) {
   const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      "Lovable-API-Key": LOVABLE_API_KEY ?? "",
+      "X-Lovable-AIG-SDK": "supabase-edge-function",
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
+      model: "google/gemini-3-flash-preview",
       messages: [
         { role: "system", content: SYS },
         { role: "user", content: prompt },
       ],
-      response_format: { type: "json_object" },
     }),
   });
   if (!res.ok) {
