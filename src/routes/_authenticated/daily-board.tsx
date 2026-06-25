@@ -134,7 +134,7 @@ function DailyBoardPage() {
 
 interface ColumnProps {
   ownerId: string;
-  profile: { id: string; name: string; email: string | null; avatar_url: string | null } | undefined;
+  profile: { id: string; name: string; email: string | null; avatar_url: string | null } | undefined | null;
   isMe: boolean;
   date: string;
   tasks: DailyTask[];
