@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const StudyStatsSchema = z.object({
   name: z.string().optional(),
@@ -93,6 +94,7 @@ function extractJson(text: string) {
 }
 
 export const analyzeStudyProgress = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => AnalyzeInputSchema.parse(input))
   .handler(async ({ data }) => {
     const fallback = fallbackInsight(data.payload);
