@@ -78,12 +78,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     const [p, s, t, pr] = await Promise.all([
-      supabase.from("profiles").select("*").order("created_at"),
+      supabase.rpc("list_visible_profiles"),
       supabase.from("subjects").select("*").order("name"),
       supabase.from("topics").select("*").order("created_at"),
       supabase.from("topic_progress").select("*"),
     ]);
-    if (p.data) setProfiles(p.data as Profile[]);
+    if (p.data) setProfiles(p.data as unknown as Profile[]);
     if (s.data) setSubjects(s.data as Subject[]);
     if (t.data) setTopics(t.data as Topic[]);
     if (pr.data) setProgress(pr.data as TopicProgress[]);
