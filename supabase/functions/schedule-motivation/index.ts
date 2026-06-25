@@ -26,8 +26,23 @@ function pick(arr: { t: string; b: string }[]) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+const CRON_SECRET = Deno.env.get("CRON_SECRET");
+
+function authorized(req: Request) {
+  if (!CRON_SECRET) return false;
+  const h = req.headers.get("Authorization") ?? req.headers.get("authorization") ?? "";
+  const token = h.toLowerCase().startsWith("bearer ") ? h.slice(7).trim() : "";
+  return token === CRON_SECRET;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (!authorized(req)) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
   const { data: users } = await supabase.from("profiles").select("id, name");
