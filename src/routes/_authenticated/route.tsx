@@ -4,7 +4,7 @@ import { useData } from "@/lib/data-context";
 import { UserAvatar } from "@/components/user-avatar";
 import { Button } from "@/components/ui/button";
 import {
-  Activity, BarChart3, BookOpen, LayoutDashboard, LogOut, Menu, Moon, Settings, Sparkles, Sun, X,
+  Activity, BarChart3, BookOpen, LayoutDashboard, ListChecks, LogOut, Menu, Moon, Settings, Sparkles, Sun, X,
 } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "@/lib/theme-provider";
@@ -26,6 +26,7 @@ export const Route = createFileRoute("/_authenticated")({
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/subjects", label: "Subjects", icon: BookOpen },
+  { to: "/daily-board", label: "Daily Board", icon: ListChecks },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/activity", label: "Activity", icon: Activity },
   { to: "/settings", label: "Settings", icon: Settings },
