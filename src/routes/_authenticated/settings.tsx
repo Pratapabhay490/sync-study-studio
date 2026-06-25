@@ -16,6 +16,10 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import claySettings from "@/assets/clay-settings-mascot.png";
+import clayPartners from "@/assets/clay-icon-partners.png";
+import clayBell from "@/assets/clay-bell.png";
+import clayProgress from "@/assets/clay-icon-progress.png";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Let's be in sync" }] }),
@@ -89,12 +93,25 @@ function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">Settings</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Manage your profile, theme, and data.</p>
+      {/* Hero header with mascot */}
+      <div className="clay relative overflow-hidden rounded-3xl border-0 p-6 md:p-8">
+        <div className="pointer-events-none absolute -right-10 -top-10 h-56 w-56 rounded-full bg-gradient-aurora opacity-30 blur-3xl" />
+        <div className="relative flex items-center gap-5">
+          <img
+            src={claySettings}
+            alt=""
+            width={140}
+            height={140}
+            className="h-24 w-24 shrink-0 animate-float-slow drop-shadow-xl md:h-32 md:w-32"
+          />
+          <div>
+            <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">Settings</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Tune your profile, partners, notifications, and data.</p>
+          </div>
+        </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+      <div className="clay rounded-3xl border-0 p-6">
         <h3 className="mb-4 font-display text-lg font-semibold">Profile</h3>
         <div className="flex flex-col gap-4 md:flex-row md:items-end">
           <UserAvatar profile={{ ...me!, name, avatar_url: avatar || null }} size={64} ring />
@@ -112,9 +129,14 @@ function SettingsPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-        <h3 className="mb-1 font-display text-lg font-semibold">Study partners</h3>
-        <p className="mb-4 text-xs text-muted-foreground">Add a partner by their account email to share progress and analytics with them.</p>
+      <div className="clay rounded-3xl border-0 p-6">
+        <div className="mb-4 flex items-start gap-3">
+          <img src={clayPartners} alt="" width={56} height={56} className="h-12 w-12 shrink-0 drop-shadow-md" />
+          <div>
+            <h3 className="font-display text-lg font-semibold">Study partners</h3>
+            <p className="text-xs text-muted-foreground">Add a partner by their account email to share progress and analytics.</p>
+          </div>
+        </div>
 
         <div className="mb-5 flex flex-col gap-2 sm:flex-row">
           <Input
@@ -166,11 +188,16 @@ function SettingsPage() {
         </ul>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-        <h3 className="mb-1 font-display text-lg font-semibold">Push notifications</h3>
-        <p className="mb-4 text-xs text-muted-foreground">
-          Get notified when your partner finishes a topic, when they poke you, and 5 daily motivational nudges — even when this tab is closed.
-        </p>
+      <div className="clay rounded-3xl border-0 p-6">
+        <div className="mb-4 flex items-start gap-3">
+          <img src={clayBell} alt="" width={56} height={56} className="h-12 w-12 shrink-0 animate-float-slow drop-shadow-md" />
+          <div>
+            <h3 className="font-display text-lg font-semibold">Push notifications</h3>
+            <p className="text-xs text-muted-foreground">
+              Get notified when your partner finishes a topic, when they poke you, and 5 daily motivational nudges — even when this tab is closed.
+            </p>
+          </div>
+        </div>
         <div className="flex flex-wrap items-center gap-3">
           {pushEnabled ? (
             <>
@@ -197,26 +224,31 @@ function SettingsPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-        <h3 className="mb-4 font-display text-lg font-semibold">Appearance</h3>
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium">Dark mode</div>
-            <div className="text-xs text-muted-foreground">Switch between premium dark and light themes</div>
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="clay rounded-3xl border-0 p-6">
+          <h3 className="mb-4 font-display text-lg font-semibold">Appearance</h3>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">Dark mode</div>
+              <div className="text-xs text-muted-foreground">Switch between premium dark and light themes</div>
+            </div>
+            <Switch checked={theme === "dark"} onCheckedChange={toggle} />
           </div>
-          <Switch checked={theme === "dark"} onCheckedChange={toggle} />
+        </div>
+
+        <div className="clay rounded-3xl border-0 p-6">
+          <div className="mb-4 flex items-start gap-3">
+            <img src={clayProgress} alt="" width={48} height={48} className="h-10 w-10 shrink-0 drop-shadow-md" />
+            <h3 className="font-display text-lg font-semibold">Your data</h3>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="outline" onClick={exportData}><Download className="mr-2 h-4 w-4" /> Export JSON</Button>
+            <Button variant="outline" onClick={handleReset}><RotateCcw className="mr-2 h-4 w-4" /> Reset my progress</Button>
+          </div>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-        <h3 className="mb-4 font-display text-lg font-semibold">Data</h3>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="outline" onClick={exportData}><Download className="mr-2 h-4 w-4" /> Export JSON</Button>
-          <Button variant="outline" onClick={handleReset}><RotateCcw className="mr-2 h-4 w-4" /> Reset my progress</Button>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+      <div className="clay rounded-3xl border-0 p-6">
         <h3 className="mb-4 font-display text-lg font-semibold">Account</h3>
         <Button variant="outline" onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> Sign out</Button>
       </div>
