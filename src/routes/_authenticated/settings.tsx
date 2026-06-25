@@ -188,11 +188,16 @@ function SettingsPage() {
         </ul>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-        <h3 className="mb-1 font-display text-lg font-semibold">Push notifications</h3>
-        <p className="mb-4 text-xs text-muted-foreground">
-          Get notified when your partner finishes a topic, when they poke you, and 5 daily motivational nudges — even when this tab is closed.
-        </p>
+      <div className="clay rounded-3xl border-0 p-6">
+        <div className="mb-4 flex items-start gap-3">
+          <img src={clayBell} alt="" width={56} height={56} className="h-12 w-12 shrink-0 animate-float-slow drop-shadow-md" />
+          <div>
+            <h3 className="font-display text-lg font-semibold">Push notifications</h3>
+            <p className="text-xs text-muted-foreground">
+              Get notified when your partner finishes a topic, when they poke you, and 5 daily motivational nudges — even when this tab is closed.
+            </p>
+          </div>
+        </div>
         <div className="flex flex-wrap items-center gap-3">
           {pushEnabled ? (
             <>
