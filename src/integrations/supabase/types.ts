@@ -280,6 +280,16 @@ export type Database = {
         }[]
       }
       is_partner_of: { Args: { _a: string; _b: string }; Returns: boolean }
+      list_visible_profiles: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+        }[]
+      }
       remove_study_partner: {
         Args: { p_partner_id: string }
         Returns: undefined
