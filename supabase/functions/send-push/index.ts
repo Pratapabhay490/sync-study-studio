@@ -12,8 +12,23 @@ const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT") ?? "mailto:contact@sync-stud
 
 webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
 
+const CRON_SECRET = Deno.env.get("CRON_SECRET");
+
+function authorized(req: Request) {
+  if (!CRON_SECRET) return false;
+  const h = req.headers.get("Authorization") ?? req.headers.get("authorization") ?? "";
+  const token = h.toLowerCase().startsWith("bearer ") ? h.slice(7).trim() : "";
+  return token === CRON_SECRET;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (!authorized(req)) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
