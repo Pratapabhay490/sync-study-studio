@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as supabaseTyped } from "@/integrations/supabase/client";
+const supabase = supabaseTyped as unknown as {
+  from: (t: string) => any;
+  channel: (n: string) => any;
+  removeChannel: (c: any) => any;
+};
 import { useAuth } from "@/lib/auth-context";
 import { useData } from "@/lib/data-context";
 import { Button } from "@/components/ui/button";
