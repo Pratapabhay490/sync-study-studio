@@ -147,7 +147,14 @@ function AnalyticsPage() {
       <section className="clay relative overflow-hidden rounded-3xl border-0 p-6 md:p-8">
         <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-gradient-aurora opacity-25 blur-3xl" />
         <div className="pointer-events-none absolute -left-16 -bottom-16 h-56 w-56 rounded-full bg-gradient-primary opacity-15 blur-3xl" />
-        <div className="relative flex items-start gap-4">
+        <img
+          src={clayBrain}
+          alt=""
+          width={220}
+          height={220}
+          className="pointer-events-none absolute -right-4 -bottom-6 hidden h-44 w-44 animate-float-slow drop-shadow-2xl md:block lg:h-56 lg:w-56"
+        />
+        <div className="relative flex items-start gap-4 md:pr-48 lg:pr-60">
           <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-primary text-white shadow-clay-sm">
             <Sparkles className="h-6 w-6" />
           </div>
