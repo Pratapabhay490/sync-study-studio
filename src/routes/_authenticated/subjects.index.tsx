@@ -25,7 +25,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Plus, Search, BookOpen, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
+import { ClayLoader } from "@/components/clay-visuals";
 
 export const Route = createFileRoute("/_authenticated/subjects/")({
   head: () => ({ meta: [{ title: "Subjects — Let's be in sync" }] }),
