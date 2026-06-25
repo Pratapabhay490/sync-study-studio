@@ -3,7 +3,6 @@ import { useMemo } from "react";
 import { useData } from "@/lib/data-context";
 import { UserAvatar } from "@/components/user-avatar";
 import { formatDistanceToNow, parseISO, format } from "date-fns";
-import { CheckCircle2 } from "lucide-react";
 import { getSubjectClayIcon } from "@/lib/subject-icons";
 import clayCompleted from "@/assets/clay-icon-completed.png";
 
