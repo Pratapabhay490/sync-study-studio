@@ -93,12 +93,25 @@ function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">Settings</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Manage your profile, theme, and data.</p>
+      {/* Hero header with mascot */}
+      <div className="clay relative overflow-hidden rounded-3xl border-0 p-6 md:p-8">
+        <div className="pointer-events-none absolute -right-10 -top-10 h-56 w-56 rounded-full bg-gradient-aurora opacity-30 blur-3xl" />
+        <div className="relative flex items-center gap-5">
+          <img
+            src={claySettings}
+            alt=""
+            width={140}
+            height={140}
+            className="h-24 w-24 shrink-0 animate-float-slow drop-shadow-xl md:h-32 md:w-32"
+          />
+          <div>
+            <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">Settings</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Tune your profile, partners, notifications, and data.</p>
+          </div>
+        </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+      <div className="clay rounded-3xl border-0 p-6">
         <h3 className="mb-4 font-display text-lg font-semibold">Profile</h3>
         <div className="flex flex-col gap-4 md:flex-row md:items-end">
           <UserAvatar profile={{ ...me!, name, avatar_url: avatar || null }} size={64} ring />
