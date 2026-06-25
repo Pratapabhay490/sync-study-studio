@@ -23,6 +23,7 @@ import {
   subDays,
 } from "date-fns";
 import { ClayLoader, ClayVisual, ClayWalkingStrip } from "@/components/clay-visuals";
+import { PokeButton } from "@/components/poke-button";
 
 const NEET_PG_DATE = new Date("2026-08-30T09:00:00+05:30");
 
@@ -238,7 +239,13 @@ function Dashboard() {
       {/* Side-by-side */}
       <section className="grid gap-4 md:grid-cols-2">
         <UserCard profile={me} stats={myStats} accent="abhay" label="You" />
-        <UserCard profile={other} stats={otherStats} accent="aishwarya" label="Study partner" />
+        <UserCard
+          profile={other}
+          stats={otherStats}
+          accent="aishwarya"
+          label="Study partner"
+          poke={other ? <PokeButton toUserId={other.id} toName={other.name} /> : null}
+        />
       </section>
 
       {/* Subjects + activity */}
@@ -361,11 +368,13 @@ function UserCard({
   stats,
   accent,
   label,
+  poke,
 }: {
   profile?: { id: string; name: string; email: string; avatar_url: string | null } | null;
   stats: { total: number; completed: number; pct: number };
   accent: "abhay" | "aishwarya";
   label: string;
+  poke?: React.ReactNode;
 }) {
   const grad = accent === "abhay" ? "bg-gradient-abhay" : "bg-gradient-aishwarya";
   return (
@@ -397,6 +406,7 @@ function UserCard({
         <Tile label="Pending" value={stats.total - stats.completed} />
         <Tile label="Total" value={stats.total} />
       </div>
+      {poke && <div className="relative mt-4 flex justify-end">{poke}</div>}
     </div>
   );
 }

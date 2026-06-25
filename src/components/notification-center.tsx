@@ -6,7 +6,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
 
 export function NotificationCenter() {
-  const { notifications, unread, permission, requestPermission, markAllRead, markRead, clearAll } = useNotifications();
+  const { notifications, unread, pushEnabled, enablePush, disablePush, sendTestPush, markAllRead, markRead, clearAll } = useNotifications();
   const navigate = useNavigate();
 
   return (
@@ -32,9 +32,13 @@ export function NotificationCenter() {
             <div className="text-[11px] text-muted-foreground">{unread} unread</div>
           </div>
           <div className="flex gap-1">
-            {permission !== "granted" && permission !== "unsupported" && (
-              <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={requestPermission}>
+            {!pushEnabled ? (
+              <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={enablePush}>
                 Enable push
+              </Button>
+            ) : (
+              <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={sendTestPush} title="Send yourself a test push">
+                Test
               </Button>
             )}
             <Button size="icon" variant="ghost" className="h-7 w-7" title="Mark all read" onClick={markAllRead}>

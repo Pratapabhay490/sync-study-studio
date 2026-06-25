@@ -1,1 +1,10 @@
 project_id = "ohiudeaxangdgpqpyoqx"
+
+[functions.send-push]
+verify_jwt = false
+
+[functions.schedule-motivation]
+verify_jwt = false
+
+[functions.gemini-analyze]
+verify_jwt = true

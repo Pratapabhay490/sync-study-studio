@@ -10,7 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { UserAvatar } from "@/components/user-avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, LogOut, RotateCcw, UserX, Mail } from "lucide-react";
+import { Download, LogOut, RotateCcw, UserX, Mail, Bell, BellOff, Send } from "lucide-react";
+import { useNotifications } from "@/lib/notifications-context";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
 function SettingsPage() {
   const { user, signOut } = useAuth();
   const { profiles, subjects, topics, progress, resetMyProgress } = useData();
+  const { pushEnabled, enablePush, disablePush, sendTestPush, permission } = useNotifications();
   const { theme, toggle } = useTheme();
   const me = profiles.find((p) => p.id === user?.id);
   const [name, setName] = useState(me?.name ?? "");
@@ -124,6 +126,37 @@ function SettingsPage() {
             </li>
           )}
         </ul>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+        <h3 className="mb-1 font-display text-lg font-semibold">Push notifications</h3>
+        <p className="mb-4 text-xs text-muted-foreground">
+          Get notified when your partner finishes a topic, when they poke you, and 5 daily motivational nudges — even when this tab is closed.
+        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          {pushEnabled ? (
+            <>
+              <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-600">
+                <Bell className="h-3.5 w-3.5" /> Push enabled on this device
+              </span>
+              <Button variant="outline" size="sm" onClick={sendTestPush}>
+                <Send className="mr-2 h-3.5 w-3.5" /> Send me a test
+              </Button>
+              <Button variant="outline" size="sm" onClick={disablePush}>
+                <BellOff className="mr-2 h-3.5 w-3.5" /> Turn off
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button onClick={enablePush} className="bg-gradient-primary text-white">
+                <Bell className="mr-2 h-4 w-4" /> Enable push on this device
+              </Button>
+              {permission === "denied" && (
+                <span className="text-xs text-destructive">Blocked in browser settings — unblock for this site to enable.</span>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
