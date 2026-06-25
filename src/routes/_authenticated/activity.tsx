@@ -3,7 +3,8 @@ import { useMemo } from "react";
 import { useData } from "@/lib/data-context";
 import { UserAvatar } from "@/components/user-avatar";
 import { formatDistanceToNow, parseISO, format } from "date-fns";
-import { CheckCircle2 } from "lucide-react";
+import { getSubjectClayIcon } from "@/lib/subject-icons";
+import clayCompleted from "@/assets/clay-icon-completed.png";
 
 export const Route = createFileRoute("/_authenticated/activity")({
   head: () => ({ meta: [{ title: "Activity — Let's be in sync" }] }),
@@ -51,9 +52,13 @@ function ActivityPage() {
                   const topic = topics.find((t) => t.id === e.topic_id);
                   const subject = subjects.find((s) => s.id === topic?.subject_id);
                   const who = profiles.find((p) => p.id === e.user_id);
+                  const clayIconSrc = getSubjectClayIcon(subject?.icon);
                   return (
-                    <li key={e.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-card">
-                      <UserAvatar profile={who} size={36} />
+                    <li key={e.id} className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-glow">
+                      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 shadow-clay-sm">
+                        <img src={clayIconSrc} alt="" width={40} height={40} loading="lazy" className="h-10 w-10 object-contain drop-shadow-sm transition-transform duration-300 group-hover:-rotate-6" />
+                      </div>
+                      <UserAvatar profile={who} size={32} />
                       <div className="min-w-0 flex-1">
                         <div className="text-sm">
                           <span className="font-semibold">{who?.name?.split(" ")[0] ?? "Someone"}</span>
@@ -64,7 +69,7 @@ function ActivityPage() {
                           {subject?.name} · {formatDistanceToNow(parseISO(e.completed_at!), { addSuffix: true })}
                         </div>
                       </div>
-                      <CheckCircle2 className="h-5 w-5 text-success" />
+                      <img src={clayCompleted} alt="Completed" width={28} height={28} loading="lazy" className="h-7 w-7 shrink-0 object-contain drop-shadow-sm" />
                     </li>
                   );
                 })}
