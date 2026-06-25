@@ -6,11 +6,7 @@ import { ProgressRing } from "@/components/progress-ring";
 import {
   Activity,
   ArrowRight,
-  BookOpen,
   CalendarClock,
-  CheckCircle2,
-  Flame,
-  ListTodo,
   Sparkles,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -24,6 +20,10 @@ import {
 } from "date-fns";
 import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
 import { PokeButton } from "@/components/poke-button";
+import clayTopics from "@/assets/clay-icon-topics.png";
+import clayCompleted from "@/assets/clay-icon-completed.png";
+import clayProgress from "@/assets/clay-icon-progress.png";
+import clayStreak from "@/assets/clay-icon-streak.png";
 
 const NEET_PG_DATE = new Date("2026-08-30T09:00:00+05:30");
 
@@ -243,20 +243,25 @@ function Dashboard() {
       {/* Stat tiles */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile
-          icon={ListTodo}
+          clayIcon={clayTopics}
           label="Total topics"
           value={totalTopics}
           accent="bg-gradient-primary"
         />
         <StatTile
-          icon={CheckCircle2}
+          clayIcon={clayCompleted}
           label="Completed"
           value={totalCompleted}
           accent="bg-gradient-abhay"
         />
-        <StatTile icon={BookOpen} label="Pending" value={pending} accent="bg-gradient-aishwarya" />
         <StatTile
-          icon={Flame}
+          clayIcon={clayProgress}
+          label="Pending"
+          value={pending}
+          accent="bg-gradient-aishwarya"
+        />
+        <StatTile
+          clayIcon={clayStreak}
           label="Your streak"
           value={`${myStreak}d`}
           accent="bg-gradient-aurora"
@@ -362,29 +367,35 @@ function Dashboard() {
 }
 
 function StatTile({
-  icon: Icon,
+  clayIcon,
   label,
   value,
   accent,
 }: {
-  icon: typeof Activity;
+  clayIcon: string;
   label: string;
   value: number | string;
   accent: string;
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card transition hover:shadow-glow">
+    <div className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card transition hover:-translate-y-0.5 hover:shadow-glow">
       <div
-        className={`absolute -right-6 -top-6 h-20 w-20 rounded-full ${accent} opacity-20 blur-2xl transition group-hover:opacity-40`}
+        className={`absolute -right-8 -top-8 h-24 w-24 rounded-full ${accent} opacity-20 blur-2xl transition group-hover:opacity-40`}
       />
-      <div className="relative flex items-start justify-between">
-        <div>
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
           <div className="mt-1 font-display text-3xl font-bold">{value}</div>
         </div>
-        <div className={`grid h-10 w-10 place-items-center rounded-xl ${accent} text-white`}>
-          <Icon className="h-5 w-5" />
-        </div>
+        <img
+          src={clayIcon}
+          alt=""
+          aria-hidden
+          width={512}
+          height={512}
+          loading="lazy"
+          className="h-14 w-14 shrink-0 -translate-y-1 drop-shadow-md transition group-hover:scale-110 group-hover:rotate-[-4deg]"
+        />
       </div>
     </div>
   );

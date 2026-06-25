@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Sparkles, Loader2, Mail, Lock, User } from "lucide-react";
+import clayAuthHero from "@/assets/clay-auth-hero.png";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -78,10 +79,19 @@ function AuthPage() {
           <span className="font-display text-xl font-bold tracking-tight">Let's be in sync</span>
         </Link>
 
-        <div className="clay p-8 animate-scale-in">
+        <div className="clay p-8 pt-0 animate-scale-in">
+          <div className="-mt-20 mb-2 flex justify-center">
+            <img
+              src={clayAuthHero}
+              alt="Two clay-style medical students studying together"
+              width={1024}
+              height={1024}
+              className="h-40 w-40 animate-float-slow drop-shadow-xl"
+            />
+          </div>
           <div className="text-center">
             <h1 className="font-display text-3xl font-bold tracking-tight">Welcome back</h1>
-            <p className="mt-2 text-sm text-muted-foreground">Enter your credentials to access your account</p>
+            <p className="mt-2 text-sm text-muted-foreground">Sign in to sync your study journey</p>
           </div>
 
           <Tabs defaultValue="signin" className="mt-6">
