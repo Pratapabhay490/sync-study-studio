@@ -1,10 +1,9 @@
-// Gemini-powered study analyzer.
-// POST { kind: "insights" | "weekly" | "compare", payload: any } -> { text, bullets }
+// AI study analyzer via Lovable AI Gateway (Gemini under the hood).
+// POST { kind: "insights" | "weekly" | "compare", payload: any } -> { headline, summary, bullets, next_actions }
 import { corsHeaders } from "../_shared/cors.ts";
 
-const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
-const MODEL = "gemini-2.0-flash";
-const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 
 const SYS = `You are an encouraging MBBS study coach for two partners using the "Let's be in sync" app.
 Always respond as STRICT JSON with this shape:
@@ -16,38 +15,93 @@ Always respond as STRICT JSON with this shape:
 }
 No markdown, no code fences. Be specific to the numbers given.`;
 
+async function callLovable(prompt: string) {
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: SYS },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+    }),
+  });
+  if (!res.ok) {
+    const detail = await res.text();
+    throw new Error(`lovable_ai ${res.status}: ${detail}`);
+  }
+  const j = await res.json();
+  return j?.choices?.[0]?.message?.content ?? "{}";
+}
+
+async function callGeminiDirect(prompt: string) {
+  const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"];
+  let lastErr = "";
+  for (const m of MODELS) {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYS }] },
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7, responseMimeType: "application/json" },
+        }),
+      },
+    );
+    if (res.ok) {
+      const j = await res.json();
+      return j?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+    }
+    lastErr = `${m} -> ${res.status} ${await res.text()}`;
+  }
+  throw new Error(`gemini ${lastErr}`);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
     const { kind, payload } = await req.json();
     const prompt = `Kind: ${kind}\nData:\n${JSON.stringify(payload, null, 2)}\n\nReturn the JSON now.`;
-    const res = await fetch(`${ENDPOINT}?key=${GEMINI_API_KEY}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYS }] },
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, responseMimeType: "application/json" },
-      }),
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      return new Response(JSON.stringify({ error: "gemini_failed", detail: text }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+
+    let text = "{}";
+    let usedProvider = "lovable";
+    try {
+      if (!LOVABLE_API_KEY) throw new Error("no_lovable_key");
+      text = await callLovable(prompt);
+    } catch (e) {
+      console.warn("lovable failed, fallback to gemini direct:", String(e));
+      usedProvider = "gemini";
+      if (!GEMINI_API_KEY) throw e;
+      text = await callGeminiDirect(prompt);
     }
-    const j = await res.json();
-    const text = j?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
-    let parsed: unknown = {};
-    try { parsed = JSON.parse(text); } catch { parsed = { headline: "AI insight", summary: text }; }
-    return new Response(JSON.stringify(parsed), {
+
+    let parsed: Record<string, unknown> = {};
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      parsed = { headline: "AI insight", summary: String(text).slice(0, 400), bullets: [], next_actions: [] };
+    }
+    return new Response(JSON.stringify({ ...parsed, _provider: usedProvider }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("gemini-analyze error:", e);
+    return new Response(
+      JSON.stringify({
+        headline: "AI is taking a quick break",
+        summary: "Couldn't reach the AI service right now. Try again in a moment.",
+        bullets: [],
+        next_actions: [],
+        error: String((e as Error)?.message ?? e),
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   }
 });
