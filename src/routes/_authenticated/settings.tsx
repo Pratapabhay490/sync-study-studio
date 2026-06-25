@@ -31,13 +31,36 @@ function SettingsPage() {
   const [name, setName] = useState(me?.name ?? "");
   const [avatar, setAvatar] = useState(me?.avatar_url ?? "");
   const [removePartner, setRemovePartner] = useState<{ id: string; name: string } | null>(null);
+  const [partnerEmail, setPartnerEmail] = useState("");
+  const [addingPartner, setAddingPartner] = useState(false);
 
   async function handleRemovePartner() {
     if (!removePartner) return;
-    const { error } = await supabase.from("profiles").delete().eq("id", removePartner.id);
+    const { error } = await (supabase.rpc as any)("remove_study_partner", {
+      p_partner_id: removePartner.id,
+    });
     if (error) toast.error(error.message);
-    else toast.success(`Removed ${removePartner.name}`);
+    else toast.success(`Removed ${removePartner.name} as a study partner`);
     setRemovePartner(null);
+  }
+
+  async function handleAddPartner() {
+    const email = partnerEmail.trim();
+    if (!email) return;
+    setAddingPartner(true);
+    const { error } = await (supabase.rpc as any)("add_study_partner_by_email", { p_email: email });
+    setAddingPartner(false);
+    if (error) {
+      const msg = error.message?.includes("user_not_found")
+        ? "No account found with that email. Ask them to sign up first."
+        : error.message?.includes("cannot_partner_self")
+        ? "You can't add yourself as a partner."
+        : error.message;
+      toast.error(msg);
+      return;
+    }
+    toast.success(`Added ${email} as a study partner 🎉`);
+    setPartnerEmail("");
   }
 
   async function saveProfile() {
