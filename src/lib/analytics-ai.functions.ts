@@ -94,6 +94,7 @@ function extractJson(text: string) {
 }
 
 export const analyzeStudyProgress = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => AnalyzeInputSchema.parse(input))
   .handler(async ({ data }) => {
     const fallback = fallbackInsight(data.payload);
