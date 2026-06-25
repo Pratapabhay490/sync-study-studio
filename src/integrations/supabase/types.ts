@@ -140,6 +140,27 @@ export type Database = {
         }
         Relationships: []
       }
+      study_partners: {
+        Row: {
+          created_at: string
+          id: string
+          partner_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          partner_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          partner_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subjects: {
         Row: {
           created_at: string
@@ -248,7 +269,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_study_partner_by_email: { Args: { p_email: string }; Returns: string }
+      find_profile_by_email: {
+        Args: { p_email: string }
+        Returns: {
+          avatar_url: string
+          email: string
+          id: string
+          name: string
+        }[]
+      }
+      is_partner_of: { Args: { _a: string; _b: string }; Returns: boolean }
+      remove_study_partner: {
+        Args: { p_partner_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
