@@ -22,7 +22,7 @@ import {
   startOfDay,
   subDays,
 } from "date-fns";
-import { ClayLoader, ClayVisual, ClayWalkingStrip } from "@/components/clay-visuals";
+import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
 import { PokeButton } from "@/components/poke-button";
 
 const NEET_PG_DATE = new Date("2026-08-30T09:00:00+05:30");
@@ -128,10 +128,12 @@ function Dashboard() {
   return (
     <div className="space-y-8">
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card md:p-10">
+      <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 pb-0 shadow-card md:p-10 md:pb-0">
         <div className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-gradient-aurora opacity-25 blur-3xl" />
-        <div className="relative grid gap-6 lg:grid-cols-[1.1fr_280px_190px] lg:items-center">
-          <div>
+        <div className="pointer-events-none absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-gradient-primary opacity-15 blur-3xl" />
+        <div className="relative grid gap-8 lg:grid-cols-[1.15fr_auto_1fr] lg:items-center">
+          {/* Left: copy + CTAs */}
+          <div className="pb-8 md:pb-10">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs text-muted-foreground">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
               {quote}
@@ -161,22 +163,47 @@ function Dashboard() {
             </div>
           </div>
 
-          <ClayVisual
-            variant="boy"
-            priority
-            className="order-last mx-auto w-52 lg:order-none lg:w-64"
-          />
+          {/* Center: progress ring with floating sparkles */}
+          <div className="relative mx-auto pb-8 md:pb-10">
+            <Sparkles
+              className="sparkle-twinkle pointer-events-none absolute -left-6 -top-2 h-5 w-5 text-primary/80"
+              aria-hidden
+            />
+            <Sparkles
+              className="sparkle-twinkle pointer-events-none absolute -right-4 top-6 h-4 w-4 text-primary/60"
+              style={{ animationDelay: "0.8s" }}
+              aria-hidden
+            />
+            <Sparkles
+              className="sparkle-twinkle pointer-events-none absolute -bottom-2 left-4 h-4 w-4 text-primary/70"
+              style={{ animationDelay: "1.6s" }}
+              aria-hidden
+            />
+            <ProgressRing value={overallPct} size={200} stroke={14}>
+              <div className="text-center">
+                <div className="font-display text-4xl font-bold">{overallPct}%</div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Combined
+                </div>
+              </div>
+            </ProgressRing>
+          </div>
 
-          <ProgressRing value={overallPct} size={180} stroke={14} className="mx-auto">
-            <div className="text-center">
-              <div className="font-display text-4xl font-bold">{overallPct}%</div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">Combined</div>
-            </div>
-          </ProgressRing>
+          {/* Right: clay student anchored to the bottom edge, overlapping the card */}
+          <div className="relative hidden h-[280px] lg:block">
+            <ClayVisual
+              variant="boy"
+              priority
+              className="clay-character absolute -bottom-2 right-0 w-64"
+            />
+          </div>
         </div>
-        {/* Boy strolling along the bottom of the hero — contextual, not random */}
-        <ClayWalkingStrip className="mt-6" />
+        {/* Mobile-only character strip at the bottom */}
+        <div className="relative flex justify-center lg:hidden">
+          <ClayVisual variant="boy" priority className="clay-character w-44" />
+        </div>
       </section>
+
 
       {/* NEET PG Countdown */}
       <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card md:p-8">

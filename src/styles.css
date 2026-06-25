@@ -130,28 +130,28 @@
 
 /* Dark mode — Deep Sky Clay */
 .dark {
-  --background: oklch(0.22 0.04 260);
-  --foreground: oklch(0.95 0.02 240);
-  --card: oklch(0.27 0.05 260);
-  --card-foreground: oklch(0.95 0.02 240);
-  --popover: oklch(0.27 0.05 260);
-  --popover-foreground: oklch(0.95 0.02 240);
+  --background: oklch(0.16 0.03 260);
+  --foreground: oklch(0.96 0.015 240);
+  --card: oklch(0.21 0.035 262);
+  --card-foreground: oklch(0.96 0.015 240);
+  --popover: oklch(0.21 0.035 262);
+  --popover-foreground: oklch(0.96 0.015 240);
   --primary: oklch(0.7 0.2 260);
-  --primary-foreground: oklch(0.16 0.04 260);
-  --secondary: oklch(0.3 0.06 260);
+  --primary-foreground: oklch(0.14 0.03 260);
+  --secondary: oklch(0.26 0.045 262);
   --secondary-foreground: oklch(0.95 0.02 240);
-  --muted: oklch(0.28 0.05 260);
-  --muted-foreground: oklch(0.72 0.04 240);
-  --accent: oklch(0.34 0.08 245);
-  --accent-foreground: oklch(0.95 0.02 240);
+  --muted: oklch(0.24 0.04 262);
+  --muted-foreground: oklch(0.7 0.04 240);
+  --accent: oklch(0.3 0.07 248);
+  --accent-foreground: oklch(0.96 0.02 240);
   --destructive: oklch(0.7 0.2 22);
   --destructive-foreground: oklch(0.99 0 0);
   --success: oklch(0.78 0.16 165);
   --success-foreground: oklch(0.14 0.03 165);
   --warning: oklch(0.82 0.16 75);
   --warning-foreground: oklch(0.2 0.04 75);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 10%);
+  --border: oklch(1 0 0 / 7%);
+  --input: oklch(1 0 0 / 8%);
   --ring: oklch(0.7 0.2 260);
 
   --abhay: oklch(0.72 0.16 245);
@@ -163,7 +163,7 @@
   --chart-4: oklch(0.78 0.16 165);
   --chart-5: oklch(0.78 0.14 295);
 
-  --sidebar: oklch(0.24 0.05 260);
+  --sidebar: oklch(0.18 0.035 262);
   --sidebar-foreground: oklch(0.95 0.02 240);
   --sidebar-primary: oklch(0.7 0.2 260);
   --sidebar-primary-foreground: oklch(0.16 0.04 260);
@@ -214,9 +214,9 @@
   html.dark,
   body.dark {
     background-image:
-      radial-gradient(900px 600px at 8% -10%, oklch(0.4 0.14 250 / 0.35), transparent 60%),
-      radial-gradient(700px 500px at 110% 10%, oklch(0.4 0.14 290 / 0.3), transparent 60%),
-      radial-gradient(800px 600px at 50% 120%, oklch(0.4 0.12 220 / 0.3), transparent 60%);
+      radial-gradient(900px 600px at 8% -10%, oklch(0.32 0.14 250 / 0.35), transparent 60%),
+      radial-gradient(700px 500px at 110% 10%, oklch(0.3 0.14 290 / 0.28), transparent 60%),
+      radial-gradient(800px 600px at 50% 120%, oklch(0.3 0.12 220 / 0.25), transparent 60%);
   }
   body {
     font-family: var(--font-sans);
@@ -457,6 +457,14 @@
   animation-delay: 0.32s;
 }
 
+@keyframes sparkle-twinkle {
+  0%, 100% { transform: scale(0.7) rotate(0deg); opacity: 0.35; }
+  50% { transform: scale(1.05) rotate(20deg); opacity: 1; }
+}
+@utility sparkle-twinkle {
+  animation: sparkle-twinkle 3.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .clay-character,
   .clay-walker,
@@ -464,7 +472,8 @@
   .clay-peeker,
   .clay-floater,
   .clay-loader-orb,
-  .clay-dot {
+  .clay-dot,
+  .sparkle-twinkle {
     animation: none !important;
   }
 }
