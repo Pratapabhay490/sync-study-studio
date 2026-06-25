@@ -11,6 +11,7 @@ import {
 import { parseISO, startOfDay, subDays, format, isToday, isThisWeek } from "date-fns";
 import { Sparkles, RefreshCcw, Flame, Trophy, Target, Brain, TrendingUp, AlertTriangle, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import clayBrain from "@/assets/clay-analytics-mascot.png";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
   head: () => ({ meta: [{ title: "Analytics — Let's be in sync" }] }),
