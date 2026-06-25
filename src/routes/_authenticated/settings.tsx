@@ -114,8 +114,22 @@ function SettingsPage() {
 
       <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
         <h3 className="mb-1 font-display text-lg font-semibold">Study partners</h3>
-        <p className="mb-4 text-xs text-muted-foreground">Everyone currently in this shared study space. Remove duplicates if needed.</p>
-        <ul className="space-y-3">
+        <p className="mb-4 text-xs text-muted-foreground">Add a partner by their account email to share progress and analytics with them.</p>
+
+        <div className="mb-5 flex flex-col gap-2 sm:flex-row">
+          <Input
+            type="email"
+            value={partnerEmail}
+            onChange={(e) => setPartnerEmail(e.target.value)}
+            placeholder="partner@example.com"
+            onKeyDown={(e) => e.key === "Enter" && handleAddPartner()}
+          />
+          <Button onClick={handleAddPartner} disabled={addingPartner || !partnerEmail.trim()} className="bg-gradient-primary text-white">
+            {addingPartner ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
+            Add partner
+          </Button>
+        </div>
+
           {profiles.map((p) => (
             <li key={p.id} className="flex items-center gap-3 rounded-xl border border-border bg-background/50 p-3">
               <UserAvatar profile={p} size={44} />
