@@ -6,7 +6,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
 
 export function NotificationCenter() {
-  const { notifications, unread, permission, requestPermission, markAllRead, markRead, clearAll } = useNotifications();
+  const { notifications, unread, pushEnabled, enablePush, disablePush, sendTestPush, markAllRead, markRead, clearAll } = useNotifications();
   const navigate = useNavigate();
 
   return (
