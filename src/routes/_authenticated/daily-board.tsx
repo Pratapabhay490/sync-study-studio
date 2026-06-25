@@ -182,7 +182,7 @@ function TaskColumn({ ownerId, profile, isMe, date, tasks, loading }: ColumnProp
     <section className="clay flex flex-col gap-4 p-5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <UserAvatar profile={profile} size={44} />
+          <UserAvatar profile={profile as never} size={44} />
           <div>
             <div className="font-display text-base font-bold leading-tight">
               {isMe ? "Your Board" : `${profile?.name ?? "Partner"}'s Board`}
