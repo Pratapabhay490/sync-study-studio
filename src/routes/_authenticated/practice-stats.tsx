@@ -1,12 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   BarChart3, Trophy, Target, Clock, Flame, BookOpen, RefreshCw,
-  TrendingUp, Brain, ChevronRight, Loader2, CheckCircle2, XCircle,
+  TrendingUp, Brain, ChevronRight, Loader2, CheckCircle2, XCircle, Play,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
-  LineChart, Line, RadialBarChart, RadialBar, PolarAngleAxis,
+  RadialBarChart, RadialBar, PolarAngleAxis,
 } from "recharts";
 import { useAuth } from "@/lib/auth-context";
 import { useData } from "@/lib/data-context";
@@ -15,6 +15,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { sb } from "@/lib/practice";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/practice-stats")({
   component: PracticeStatsPage,
@@ -47,11 +48,30 @@ type ReviewRow = {
 function PracticeStatsPage() {
   const { user } = useAuth();
   const { profiles } = useData();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [starting, setStarting] = useState(false);
   const [answers, setAnswers] = useState<AnswerRow[]>([]);
   const [players, setPlayers] = useState<PlayerRow[]>([]);
   const [sessions, setSessions] = useState<Record<string, SessionRow>>({});
   const [reviewDue, setReviewDue] = useState<ReviewRow[]>([]);
+
+  const startReview = async () => {
+    setStarting(true);
+    try {
+      const { data, error } = await (sb as any).rpc("start_review_session", { p_limit: 10 });
+      if (error) throw error;
+      if (!data) throw new Error("No session id returned");
+      toast.success("Review session ready");
+      navigate({ to: "/practice" });
+    } catch (e: any) {
+      const msg = String(e?.message ?? e);
+      toast.error(msg.includes("no_review_questions") ? "Nothing to review yet — answer some MCQs first!" : "Couldn't start review");
+    } finally {
+      setStarting(false);
+    }
+  };
+
   const partner = useMemo(() => profiles.find((p) => p.id !== user?.id), [profiles, user]);
 
   const load = async () => {
@@ -315,9 +335,15 @@ function PracticeStatsPage() {
             </h2>
             <p className="text-xs text-muted-foreground">Questions you got wrong, scheduled for spaced repetition.</p>
           </div>
-          <Badge variant={dueNow.length ? "default" : "secondary"}>
-            {dueNow.length} due now · {reviewDue.length} total
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={dueNow.length ? "default" : "secondary"}>
+              {dueNow.length} due now · {reviewDue.length} total
+            </Badge>
+            <Button onClick={startReview} disabled={starting || reviewDue.length === 0} size="sm">
+              {starting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
+              Start review
+            </Button>
+          </div>
         </div>
         {reviewDue.length === 0 ? (
           <Empty label="No mistakes to review — nice work!" />
