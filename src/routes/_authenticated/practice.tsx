@@ -504,7 +504,7 @@ function UploadDialog({
         <Tabs defaultValue="paste" className="w-full">
           <TabsList>
             <TabsTrigger value="paste">Paste text</TabsTrigger>
-            <TabsTrigger value="file">From file (.txt/.md)</TabsTrigger>
+            <TabsTrigger value="file">From file (PDF/DOCX/TXT/MD)</TabsTrigger>
           </TabsList>
           <TabsContent value="paste" className="space-y-3 pt-3">
             <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -519,16 +519,25 @@ function UploadDialog({
             />
           </TabsContent>
           <TabsContent value="file" className="space-y-3 pt-3">
+            <label
+              htmlFor="quiz-file-input"
+              className="flex flex-col items-center justify-center gap-2 cursor-pointer rounded-2xl border-2 border-dashed border-border bg-muted/40 hover:bg-muted/70 transition-colors px-6 py-10 text-center"
+            >
+              <Upload className="h-8 w-8 text-muted-foreground" />
+              <div className="text-sm font-semibold">Click to choose a file from your device</div>
+              <div className="text-xs text-muted-foreground">Supported: .pdf, .docx, .txt, .md (parsed in your browser)</div>
+            </label>
             <input
+              id="quiz-file-input"
               type="file"
               accept=".txt,.md,.markdown,.pdf,.docx,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
-              className="block w-full text-sm"
+              className="sr-only"
             />
-            <p className="text-xs text-muted-foreground">Supported: .pdf, .docx, .txt, .md. Parsing runs in your browser — large PDFs may take a few seconds.</p>
             <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
-            <div className="text-xs text-muted-foreground">{text.length.toLocaleString()} chars loaded</div>
+            <div className="text-xs text-muted-foreground">{text.length.toLocaleString()} chars loaded {text.length > 0 ? "✓" : ""}</div>
           </TabsContent>
+
 
         </Tabs>
         <DialogFooter>
