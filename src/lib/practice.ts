@@ -69,6 +69,10 @@ export interface QuizDocument {
   created_at: string;
 }
 
+// In-flight dedupe: if the same request fires twice (Strict Mode double effect,
+// rapid double click before React state flushes, etc.) reuse the pending promise.
+const inflightGenerate = new Map<string, Promise<{ questions: QuizQuestion[]; error?: string }>>();
+
 export async function generateQuestions(opts: {
   subject?: string;
   topic?: string;
@@ -78,10 +82,51 @@ export async function generateQuestions(opts: {
   document_ids?: string[];
   focus_text?: string;
 }): Promise<{ questions: QuizQuestion[]; error?: string }> {
-  const { data, error } = await sb.functions.invoke("mcq-generate", { body: opts });
-  if (error) return { questions: [], error: String(error.message ?? error) };
-  if (data?.error) return { questions: [], error: data.message ?? data.error };
-  return { questions: (data?.questions ?? []) as QuizQuestion[] };
+  const key = JSON.stringify(opts);
+  const existing = inflightGenerate.get(key);
+  if (existing) {
+    console.warn("[mcq-generate] duplicate call suppressed (in-flight dedupe)", { key });
+    return existing;
+  }
+
+  const reqId = (globalThis.crypto?.randomUUID?.() ?? `req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
+  const startedAt = new Date().toISOString();
+  console.info("[mcq-generate] →", {
+    request_id: reqId,
+    timestamp: startedAt,
+    endpoint: "edge:mcq-generate",
+    opts: { ...opts, document_ids: opts.document_ids?.length ?? 0 },
+  });
+
+  const promise = (async () => {
+    const t0 = performance.now();
+    const { data, error } = await sb.functions.invoke("mcq-generate", {
+      body: { ...opts, _client_request_id: reqId },
+      headers: { "x-client-request-id": reqId },
+    } as any);
+    const ms = Math.round(performance.now() - t0);
+    if (error) {
+      console.error("[mcq-generate] ← transport error", { request_id: reqId, ms, error });
+      return { questions: [], error: String(error.message ?? error) };
+    }
+    if (data?.error) {
+      console.warn("[mcq-generate] ← handled error", { request_id: reqId, ms, server: data });
+      return { questions: [], error: data.message ?? data.error };
+    }
+    console.info("[mcq-generate] ←", {
+      request_id: reqId,
+      server_request_id: data?._request_id,
+      ms,
+      questions: data?.questions?.length ?? 0,
+      gemini_status: data?._gemini_status,
+      prompt_chars: data?._prompt_chars,
+      est_input_tokens: data?._est_input_tokens,
+    });
+    return { questions: (data?.questions ?? []) as QuizQuestion[] };
+  })().finally(() => { inflightGenerate.delete(key); });
+
+  inflightGenerate.set(key, promise);
+  return promise;
 }
 
 export async function embedDocument(documentId: string, text: string) {

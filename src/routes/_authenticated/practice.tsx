@@ -111,6 +111,7 @@ function Lobby({
   const [source, setSource] = useState<"ai" | "rag">("ai");
   const [pickedDocIds, setPickedDocIds] = useState<string[]>([]);
   const [starting, setStarting] = useState(false);
+  const startingRef = useRef(false);
 
   // documents
   const [docs, setDocs] = useState<QuizDocument[]>([]);
@@ -149,8 +150,17 @@ function Lobby({
   }, [user]);
 
   async function startSession() {
-    if (!user || starting) return;
+    if (!user) return;
+    // Synchronous ref guard: blocks a second click that lands before React
+    // flushes the `starting` state update from the first click.
+    if (startingRef.current) {
+      console.warn("[startSession] duplicate click ignored");
+      return;
+    }
+    startingRef.current = true;
     setStarting(true);
+    const clickId = (globalThis.crypto?.randomUUID?.() ?? `click_${Date.now()}`);
+    console.info("[startSession] begin", { click_id: clickId, mode, subject, topic, difficulty, count, source });
     try {
       // 1) Create session row
       const { data: newSess, error: sErr } = await sb
@@ -172,14 +182,13 @@ function Lobby({
         .single();
       if (sErr || !newSess) throw new Error(sErr?.message ?? "session_failed");
 
-      // 2) Generate questions via edge fn
+      // 2) Generate questions via edge fn (single backend call; no client→Gemini)
       toast.info("Generating questions with AI…");
       const { questions, error: gErr } = await generateQuestions({
         subject, topic, difficulty, count, source,
         document_ids: pickedDocIds,
       });
       if (gErr || !questions.length) {
-        // cleanup
         await sb.from("quiz_sessions").delete().eq("id", newSess.id);
         throw new Error(gErr || "no_questions");
       }
@@ -196,6 +205,7 @@ function Lobby({
     } catch (e: any) {
       toast.error("Couldn't start quiz: " + (e?.message ?? String(e)));
     } finally {
+      startingRef.current = false;
       setStarting(false);
     }
   }
