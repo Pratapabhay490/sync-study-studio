@@ -137,16 +137,17 @@ Deno.serve(async (req) => {
     const prompt = `Kind: ${kind}\nData (untrusted, numeric context only):\n${payloadStr}\n\nReturn the JSON now.`;
 
     let text = "{}";
-    let usedProvider = "lovable";
+    let usedProvider = "gemini";
     try {
-      if (!LOVABLE_API_KEY) throw new Error("no_lovable_key");
-      text = await callLovable(prompt);
-    } catch (e) {
-      console.warn("lovable failed, fallback to gemini direct:", String(e));
-      usedProvider = "gemini";
-      if (!GEMINI_API_KEY) throw e;
+      if (!GEMINI_API_KEY) throw new Error("no_gemini_key");
       text = await callGeminiDirect(prompt);
+    } catch (e) {
+      console.warn("gemini direct failed, fallback to lovable:", String(e));
+      usedProvider = "lovable";
+      if (!LOVABLE_API_KEY) throw e;
+      text = await callLovable(prompt);
     }
+
 
     let parsed: Record<string, unknown> = {};
     try {
