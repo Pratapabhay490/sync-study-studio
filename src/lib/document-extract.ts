@@ -53,12 +53,13 @@ function readAsText(file: File): Promise<string> {
 async function extractPdf(file: File): Promise<string> {
   ensurePromiseWithResolvers();
 
-  // pdfjs ships an ESM build that works in the browser.
-  // @ts-expect-error - pdfjs-dist ESM build has no types for /build/pdf.mjs
-  const pdfjs: any = await import("pdfjs-dist/build/pdf.mjs");
+  // Use the legacy ESM build: modern pdf.js workers call Promise.withResolvers,
+  // which is missing in iPad/Safari versions still common in embedded previews.
+  const pdfjs: any = await import("pdfjs-dist/legacy/build/pdf.mjs");
 
-  // Use the bundled worker via Vite ?url.
-  const workerUrl = (await import("pdfjs-dist/build/pdf.worker.mjs?url")).default;
+  // Keep the worker on the legacy build too; the modern worker can still crash
+  // even when the main-thread module has been polyfilled.
+  const workerUrl = (await import("pdfjs-dist/legacy/build/pdf.worker.mjs?url")).default;
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
   const buf = await readAsArrayBuffer(file);
