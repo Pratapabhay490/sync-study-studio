@@ -171,15 +171,26 @@ async function embedQuery(text: string): Promise<number[] | null> {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  const reqId = req.headers.get("x-client-request-id")
+    ?? (crypto.randomUUID?.() ?? `srv_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
+  const tStart = Date.now();
+  console.log(JSON.stringify({
+    evt: "mcq_generate_invoke",
+    request_id: reqId,
+    timestamp: new Date().toISOString(),
+    method: req.method,
+  }));
+
   if (!GEMINI_API_KEY) {
-    return new Response(JSON.stringify({ error: "GEMINI_API_KEY not configured" }), {
+    return new Response(JSON.stringify({ error: "GEMINI_API_KEY not configured", _request_id: reqId }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
   const auth = req.headers.get("Authorization") ?? "";
   const token = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7).trim() : "";
   if (!token) {
-    return new Response(JSON.stringify({ error: "unauthorized" }), {
+    return new Response(JSON.stringify({ error: "unauthorized", _request_id: reqId }), {
       status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
@@ -189,7 +200,7 @@ Deno.serve(async (req) => {
   });
   const { data: userData, error: userErr } = await sb.auth.getUser(token);
   if (userErr || !userData?.user) {
-    return new Response(JSON.stringify({ error: "unauthorized" }), {
+    return new Response(JSON.stringify({ error: "unauthorized", _request_id: reqId }), {
       status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
@@ -224,7 +235,9 @@ Deno.serve(async (req) => {
       }
       if (!contextBlock) {
         return new Response(JSON.stringify({
-          error: "no_context", message: "No matching content found in your uploaded notes. Upload notes or switch to AI source.",
+          error: "no_context",
+          message: "No matching content found in your uploaded notes. Upload notes or switch to AI source.",
+          _request_id: reqId,
         }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
     }
@@ -238,14 +251,23 @@ Deno.serve(async (req) => {
       `\nReturn JSON now.`,
     ].filter(Boolean).join("\n");
 
-    const text = await callGemini(userPrompt);
+    const promptChars = userPrompt.length + SYS.length;
+    const promptTokens = estTokens(userPrompt) + estTokens(SYS);
+
+    const { text, status: geminiStatus, ms: geminiMs } = await callGemini(userPrompt, reqId);
     let parsed: any = {};
     try { parsed = JSON.parse(text); } catch { parsed = {}; }
     const questions = Array.isArray(parsed?.questions) ? parsed.questions : [];
     if (!questions.length) {
-      return new Response(JSON.stringify({ error: "no_questions", raw: String(text).slice(0, 400) }), {
-        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({
+        error: "no_questions",
+        raw: String(text).slice(0, 400),
+        _request_id: reqId,
+        _gemini_status: geminiStatus,
+        _gemini_ms: geminiMs,
+        _prompt_chars: promptChars,
+        _est_input_tokens: promptTokens,
+      }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const rows = questions
@@ -267,7 +289,7 @@ Deno.serve(async (req) => {
       .filter((r: any) => r.stem && r.options);
 
     if (!rows.length) {
-      return new Response(JSON.stringify({ error: "invalid_questions" }), {
+      return new Response(JSON.stringify({ error: "invalid_questions", _request_id: reqId }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -278,13 +300,41 @@ Deno.serve(async (req) => {
       .select("id, stem, options, correct_index, explanation, pearls, difficulty, subject, topic, source");
     if (insErr) throw insErr;
 
-    return new Response(JSON.stringify({ questions: inserted }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (e) {
-    console.error("mcq-generate error:", e);
-    return new Response(JSON.stringify({ error: String((e as Error)?.message ?? e) }), {
-      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.log(JSON.stringify({
+      evt: "mcq_generate_ok",
+      request_id: reqId,
+      total_ms: Date.now() - tStart,
+      gemini_ms: geminiMs,
+      questions: inserted?.length ?? 0,
+      prompt_chars: promptChars,
+      est_input_tokens: promptTokens,
+    }));
+
+    return new Response(JSON.stringify({
+      questions: inserted,
+      _request_id: reqId,
+      _gemini_status: geminiStatus,
+      _gemini_ms: geminiMs,
+      _prompt_chars: promptChars,
+      _est_input_tokens: promptTokens,
+    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  } catch (e: any) {
+    const category = e?.category ?? "other";
+    const status = e?.status ?? 500;
+    console.error(JSON.stringify({
+      evt: "mcq_generate_error",
+      request_id: reqId,
+      total_ms: Date.now() - tStart,
+      status,
+      category,
+      message: String(e?.message ?? e).slice(0, 500),
+      quota_metrics: e?.quota_metrics ?? [],
+    }));
+    return new Response(JSON.stringify({
+      error: category === "other" ? "gemini_error" : category,
+      message: String(e?.message ?? e),
+      _request_id: reqId,
+      _gemini_status: status,
+    }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
