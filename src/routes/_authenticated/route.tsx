@@ -28,6 +28,7 @@ const nav = [
   { to: "/subjects", label: "Subjects", icon: BookOpen },
   { to: "/daily-board", label: "Daily Board", icon: ListChecks },
   { to: "/practice", label: "AI Practice", icon: Brain },
+  { to: "/practice-stats", label: "Quiz Stats", icon: Trophy },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/activity", label: "Activity", icon: Activity },
   { to: "/settings", label: "Settings", icon: Settings },
