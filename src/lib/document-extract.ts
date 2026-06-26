@@ -77,7 +77,7 @@ async function extractPdf(file: File): Promise<string> {
 }
 
 async function extractDocx(file: File): Promise<string> {
-  const mammothModule = await import("mammoth/mammoth.browser");
+  const mammothModule = await import("mammoth");
   const mammoth = (mammothModule as any).default ?? mammothModule;
   const buf = await readAsArrayBuffer(file);
   const res = await mammoth.extractRawText({ arrayBuffer: buf });
