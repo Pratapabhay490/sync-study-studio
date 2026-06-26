@@ -335,9 +335,15 @@ function PracticeStatsPage() {
             </h2>
             <p className="text-xs text-muted-foreground">Questions you got wrong, scheduled for spaced repetition.</p>
           </div>
-          <Badge variant={dueNow.length ? "default" : "secondary"}>
-            {dueNow.length} due now · {reviewDue.length} total
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={dueNow.length ? "default" : "secondary"}>
+              {dueNow.length} due now · {reviewDue.length} total
+            </Badge>
+            <Button onClick={startReview} disabled={starting || reviewDue.length === 0} size="sm">
+              {starting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
+              Start review
+            </Button>
+          </div>
         </div>
         {reviewDue.length === 0 ? (
           <Empty label="No mistakes to review — nice work!" />
