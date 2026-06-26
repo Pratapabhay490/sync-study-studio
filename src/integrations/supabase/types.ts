@@ -738,6 +738,7 @@ export type Database = {
         Args: { p_question_ids: string[]; p_session_id: string }
         Returns: undefined
       }
+      start_review_session: { Args: { p_limit?: number }; Returns: string }
       submit_quiz_answer: {
         Args: {
           p_ms_taken: number
