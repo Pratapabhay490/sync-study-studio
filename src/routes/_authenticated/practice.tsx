@@ -111,6 +111,7 @@ function Lobby({
   const [source, setSource] = useState<"ai" | "rag">("ai");
   const [pickedDocIds, setPickedDocIds] = useState<string[]>([]);
   const [starting, setStarting] = useState(false);
+  const startingRef = useRef(false);
 
   // documents
   const [docs, setDocs] = useState<QuizDocument[]>([]);
