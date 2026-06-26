@@ -374,7 +374,7 @@ function Empty({ label }: { label: string }) {
     <div className="grid place-items-center py-10 text-center">
       <div className="text-sm text-muted-foreground">{label}</div>
       <Link to="/practice" className="mt-2">
-        <Button variant="outline" size={28}>Start a quiz <ChevronRight className="ml-1 h-3 w-3" /></Button>
+        <Button variant="outline" size="sm">Start a quiz <ChevronRight className="ml-1 h-3 w-3" /></Button>
       </Link>
     </div>
   );
