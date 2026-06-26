@@ -730,19 +730,6 @@ export type Database = {
           name: string
         }[]
       }
-      match_quiz_chunks: {
-        Args: {
-          match_count?: number
-          p_document_ids?: string[]
-          query_embedding: string
-        }
-        Returns: {
-          content: string
-          document_id: string
-          id: string
-          similarity: number
-        }[]
-      }
       remove_study_partner: {
         Args: { p_partner_id: string }
         Returns: undefined

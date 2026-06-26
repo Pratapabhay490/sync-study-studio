@@ -446,14 +446,22 @@ function UploadDialog({
   const [busy, setBusy] = useState(false);
 
   async function onFile(f: File) {
-    if (!/\.(txt|md|markdown)$/i.test(f.name)) {
-      toast.error("Only .txt and .md files are supported in v1.");
+    if (!/\.(txt|md|markdown|pdf|docx)$/i.test(f.name)) {
+      toast.error("Supported: .pdf, .docx, .txt, .md");
       return;
     }
-    const t = await f.text();
-    setText(t);
-    if (!title) setTitle(f.name.replace(/\.[^.]+$/, ""));
+    try {
+      toast.info(`Reading ${f.name}…`);
+      const { extractTextFromFile } = await import("@/lib/document-extract");
+      const t = await extractTextFromFile(f);
+      setText(t);
+      if (!title) setTitle(f.name.replace(/\.[^.]+$/, ""));
+      toast.success(`Loaded ${t.length.toLocaleString()} characters`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not read file");
+    }
   }
+
 
   async function submit() {
     if (!user) return;
@@ -513,14 +521,15 @@ function UploadDialog({
           <TabsContent value="file" className="space-y-3 pt-3">
             <input
               type="file"
-              accept=".txt,.md,.markdown,text/plain,text/markdown"
+              accept=".txt,.md,.markdown,.pdf,.docx,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
               className="block w-full text-sm"
             />
-            <p className="text-xs text-muted-foreground">PDF and DOCX support is coming. For now use .txt or .md (paste content from a PDF works too).</p>
+            <p className="text-xs text-muted-foreground">Supported: .pdf, .docx, .txt, .md. Parsing runs in your browser — large PDFs may take a few seconds.</p>
             <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
             <div className="text-xs text-muted-foreground">{text.length.toLocaleString()} chars loaded</div>
           </TabsContent>
+
         </Tabs>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>Cancel</Button>
