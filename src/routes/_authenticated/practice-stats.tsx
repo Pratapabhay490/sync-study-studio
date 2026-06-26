@@ -242,7 +242,7 @@ function PracticeStatsPage() {
           </div>
           {partner && (
             <div className="mt-24 flex items-center gap-2 rounded-2xl bg-muted/40 px-3 py-2 text-xs">
-              <UserAvatar profile={partner} size="sm" />
+              <UserAvatar profile={partner} size={28} />
               <span className="text-muted-foreground">{partner.name?.split(" ")[0] ?? "Partner"} at</span>
               <span className="font-semibold">{pa.accuracy}%</span>
             </div>
@@ -293,7 +293,7 @@ function PracticeStatsPage() {
                     i === 0 ? "bg-amber-500 text-white" : "bg-card text-muted-foreground")}>
                     {i + 1}
                   </div>
-                  <UserAvatar profile={{ id: row.id, name: row.name, avatar_url: row.avatar ?? null } as any} size="sm" />
+                  <UserAvatar profile={{ id: row.id, name: row.name, avatar_url: row.avatar ?? null } as any} size={28} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{row.name}</div>
                     <div className="text-xs text-muted-foreground">{row.sessions} sessions · {row.accuracy}% accuracy</div>
@@ -374,7 +374,7 @@ function Empty({ label }: { label: string }) {
     <div className="grid place-items-center py-10 text-center">
       <div className="text-sm text-muted-foreground">{label}</div>
       <Link to="/practice" className="mt-2">
-        <Button variant="outline" size="sm">Start a quiz <ChevronRight className="ml-1 h-3 w-3" /></Button>
+        <Button variant="outline" size={28}>Start a quiz <ChevronRight className="ml-1 h-3 w-3" /></Button>
       </Link>
     </div>
   );
