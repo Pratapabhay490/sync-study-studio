@@ -12,7 +12,9 @@ function clip(text: string): string {
 
 async function extractPdf(file: File): Promise<string> {
   // pdfjs ships an ESM build that works in the browser.
+  // @ts-expect-error - pdfjs-dist ESM build has no types for /build/pdf.mjs
   const pdfjs: any = await import("pdfjs-dist/build/pdf.mjs");
+
   // Use the bundled worker via Vite ?url.
   const workerUrl = (await import("pdfjs-dist/build/pdf.worker.mjs?url")).default;
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
