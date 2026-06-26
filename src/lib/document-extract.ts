@@ -55,7 +55,6 @@ async function extractPdf(file: File): Promise<string> {
 
   // Use the legacy ESM build: modern pdf.js workers call Promise.withResolvers,
   // which is missing in iPad/Safari versions still common in embedded previews.
-  // @ts-expect-error - pdfjs-dist ESM build has no types for /legacy/build/pdf.mjs
   const pdfjs: any = await import("pdfjs-dist/legacy/build/pdf.mjs");
 
   // Keep the worker on the legacy build too; the modern worker can still crash
