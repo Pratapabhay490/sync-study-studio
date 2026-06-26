@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDailyBoardRouteImport } from './routes/_authenticated/daily-board'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
@@ -37,6 +38,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPracticeRoute = AuthenticatedPracticeRouteImport.update({
+  id: '/practice',
+  path: '/practice',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/daily-board': typeof AuthenticatedDailyBoardRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/practice': typeof AuthenticatedPracticeRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/subjects/$id': typeof AuthenticatedSubjectsIdRoute
   '/subjects/': typeof AuthenticatedSubjectsIndexRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/daily-board': typeof AuthenticatedDailyBoardRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/practice': typeof AuthenticatedPracticeRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/subjects/$id': typeof AuthenticatedSubjectsIdRoute
   '/subjects': typeof AuthenticatedSubjectsIndexRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/daily-board': typeof AuthenticatedDailyBoardRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/subjects/$id': typeof AuthenticatedSubjectsIdRoute
   '/_authenticated/subjects/': typeof AuthenticatedSubjectsIndexRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/daily-board'
     | '/dashboard'
+    | '/practice'
     | '/settings'
     | '/subjects/$id'
     | '/subjects/'
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/daily-board'
     | '/dashboard'
+    | '/practice'
     | '/settings'
     | '/subjects/$id'
     | '/subjects'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/_authenticated/analytics'
     | '/_authenticated/daily-board'
     | '/_authenticated/dashboard'
+    | '/_authenticated/practice'
     | '/_authenticated/settings'
     | '/_authenticated/subjects/$id'
     | '/_authenticated/subjects/'
@@ -177,6 +189,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/practice': {
+      id: '/_authenticated/practice'
+      path: '/practice'
+      fullPath: '/practice'
+      preLoaderRoute: typeof AuthenticatedPracticeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -229,6 +248,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedDailyBoardRoute: typeof AuthenticatedDailyBoardRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSubjectsIdRoute: typeof AuthenticatedSubjectsIdRoute
   AuthenticatedSubjectsIndexRoute: typeof AuthenticatedSubjectsIndexRoute
@@ -239,6 +259,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedDailyBoardRoute: AuthenticatedDailyBoardRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSubjectsIdRoute: AuthenticatedSubjectsIdRoute,
   AuthenticatedSubjectsIndexRoute: AuthenticatedSubjectsIndexRoute,

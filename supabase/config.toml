@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.gemini-analyze]
 verify_jwt = true
+
+[functions.mcq-generate]
+verify_jwt = true
+
+[functions.mcq-embed]
+verify_jwt = true
