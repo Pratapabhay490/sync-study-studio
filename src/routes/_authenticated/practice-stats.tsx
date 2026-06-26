@@ -48,11 +48,30 @@ type ReviewRow = {
 function PracticeStatsPage() {
   const { user } = useAuth();
   const { profiles } = useData();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [starting, setStarting] = useState(false);
   const [answers, setAnswers] = useState<AnswerRow[]>([]);
   const [players, setPlayers] = useState<PlayerRow[]>([]);
   const [sessions, setSessions] = useState<Record<string, SessionRow>>({});
   const [reviewDue, setReviewDue] = useState<ReviewRow[]>([]);
+
+  const startReview = async () => {
+    setStarting(true);
+    try {
+      const { data, error } = await (sb as any).rpc("start_review_session", { p_limit: 10 });
+      if (error) throw error;
+      if (!data) throw new Error("No session id returned");
+      toast.success("Review session ready");
+      navigate({ to: "/practice" });
+    } catch (e: any) {
+      const msg = String(e?.message ?? e);
+      toast.error(msg.includes("no_review_questions") ? "Nothing to review yet — answer some MCQs first!" : "Couldn't start review");
+    } finally {
+      setStarting(false);
+    }
+  };
+
   const partner = useMemo(() => profiles.find((p) => p.id !== user?.id), [profiles, user]);
 
   const load = async () => {
