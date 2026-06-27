@@ -673,13 +673,15 @@ function ActiveSession({
   }, [sessionId]);
 
   useEffect(() => {
-    if (!session || submitted) return;
+    if (!session) return;
+    // Always reset the per-question timer when the position or session changes,
+    // regardless of whether the previous question was already submitted.
     setTimeLeft(session.seconds_per_question);
     startedAtRef.current = Date.now();
     pauseStartRef.current = null;
     setPaused(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [position, session?.id]);
+  }, [position, session?.id, session?.seconds_per_question]);
 
   useEffect(() => {
     if (!session || submitted || paused) return;
