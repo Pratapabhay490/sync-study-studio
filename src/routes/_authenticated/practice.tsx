@@ -762,9 +762,22 @@ function ActiveSession({
           {q.subject && <Badge variant="outline">{q.subject}</Badge>}
           {q.source === "rag" && <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">From notes</Badge>}
           <div className="ml-auto flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-sm font-semibold">
-              <Clock className="h-4 w-4" /> {timeLeft}s
+            <div className={cn("flex items-center gap-1.5 text-sm font-semibold", paused && "text-amber-600 dark:text-amber-400")}>
+              <Clock className="h-4 w-4" /> {timeLeft}s{paused && " · Paused"}
             </div>
+            {!submitted && (
+              <button
+                onClick={togglePause}
+                aria-label={paused ? "Resume" : "Pause"}
+                title={paused ? "Resume quiz" : "Pause quiz"}
+                className={cn(
+                  "grid h-9 w-9 place-items-center rounded-xl shadow-clay-sm transition-all",
+                  paused ? "bg-gradient-primary text-white" : "bg-card",
+                )}
+              >
+                {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+              </button>
+            )}
             <button onClick={toggleBookmark} aria-label="Bookmark" className="grid h-9 w-9 place-items-center rounded-xl bg-card shadow-clay-sm">
               {bookmarks.has(q.id) ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4" />}
             </button>
