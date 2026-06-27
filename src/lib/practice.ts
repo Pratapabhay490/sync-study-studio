@@ -102,8 +102,7 @@ export async function generateQuestions(opts: {
     const t0 = performance.now();
     const { data, error } = await sb.functions.invoke("mcq-generate", {
       body: { ...opts, _client_request_id: reqId },
-      headers: { "x-client-request-id": reqId },
-    } as any);
+    });
     const ms = Math.round(performance.now() - t0);
     if (error) {
       console.error("[mcq-generate] ← transport error", { request_id: reqId, ms, error });

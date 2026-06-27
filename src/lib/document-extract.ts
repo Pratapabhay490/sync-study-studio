@@ -4,8 +4,11 @@
 const MAX_CHARS = 380_000;
 
 function ensureLegacyBrowserPolyfills() {
+  const trunc = Math.trunc ?? ((n: number) => (n < 0 ? Math.ceil(n) : Math.floor(n)));
   const ArrayProto = Array.prototype as Array<unknown> & {
     at?: (index: number) => unknown;
+    flat?: (depth?: number) => unknown[];
+    flatMap?: (callback: (value: unknown, index: number, array: unknown[]) => unknown) => unknown[];
   };
   if (typeof ArrayProto.at !== "function") {
     Object.defineProperty(Array.prototype, "at", {
@@ -13,9 +16,47 @@ function ensureLegacyBrowserPolyfills() {
       writable: true,
       value(index: number) {
         const length = this.length >>> 0;
-        const relative = Math.trunc(index) || 0;
+        const relative = trunc(Number(index)) || 0;
         const k = relative >= 0 ? relative : length + relative;
         return k < 0 || k >= length ? undefined : this[k];
+      },
+    });
+  }
+
+  if (typeof ArrayProto.flat !== "function") {
+    Object.defineProperty(Array.prototype, "flat", {
+      configurable: true,
+      writable: true,
+      value(depth = 1) {
+        const d = trunc(Number(depth)) || 0;
+        const flatten = (arr: unknown[], level: number): unknown[] => arr.reduce<unknown[]>((acc, value) => {
+          if (Array.isArray(value) && level > 0) acc.push(...flatten(value, level - 1));
+          else acc.push(value);
+          return acc;
+        }, []);
+        return flatten(Array.prototype.slice.call(this), d);
+      },
+    });
+  }
+
+  if (typeof ArrayProto.flatMap !== "function") {
+    Object.defineProperty(Array.prototype, "flatMap", {
+      configurable: true,
+      writable: true,
+      value(callback: (value: unknown, index: number, array: unknown[]) => unknown, thisArg?: unknown) {
+        return Array.prototype.map.call(this, callback, thisArg).flat();
+      },
+    });
+  }
+
+  if (typeof Object.fromEntries !== "function") {
+    Object.defineProperty(Object, "fromEntries", {
+      configurable: true,
+      writable: true,
+      value(entries: Iterable<[PropertyKey, unknown]>) {
+        const obj: Record<PropertyKey, unknown> = {};
+        for (const [key, value] of entries) obj[key] = value;
+        return obj;
       },
     });
   }
@@ -45,31 +86,6 @@ function ensureLegacyBrowserPolyfills() {
     PromiseCtor.try = <T,>(fn: () => T | PromiseLike<T>) => new Promise<T>((resolve) => resolve(fn()));
   }
 }
-
-const PDF_WORKER_BOOTSTRAP = `
-if (!Array.prototype.at) {
-  Object.defineProperty(Array.prototype, 'at', {
-    configurable: true,
-    writable: true,
-    value: function(index) {
-      var length = this.length >>> 0;
-      var relative = Math.trunc(index) || 0;
-      var k = relative >= 0 ? relative : length + relative;
-      return k < 0 || k >= length ? undefined : this[k];
-    }
-  });
-}
-if (!Promise.withResolvers) {
-  Promise.withResolvers = function() {
-    var resolve, reject;
-    var promise = new Promise(function(res, rej) { resolve = res; reject = rej; });
-    return { promise: promise, resolve: resolve, reject: reject };
-  };
-}
-if (!Promise.try) {
-  Promise.try = function(fn) { return new Promise(function(resolve) { resolve(fn()); }); };
-}
-`;
 
 function clip(text: string): string {
   const clean = text.replace(/\u0000/g, "").replace(/[ \t]+\n/g, "\n").trim();
@@ -103,22 +119,16 @@ async function extractPdf(file: File): Promise<string> {
   // than the current ESM build, which relies on newer browser APIs.
   const pdfModule: any = await import("pdfjs-dist/legacy/build/pdf.js");
   const pdfjs: any = pdfModule.getDocument ? pdfModule : (pdfModule.default ?? pdfModule);
-
-  // The worker runs in a separate JavaScript context, so main-window polyfills
-  // do not reach it. Wrap the worker with the same polyfills before pdf.js
-  // starts parsing, fixing the Safari "undefined is not a function" crash.
-  const workerUrl = (await import("pdfjs-dist/legacy/build/pdf.worker.js?url")).default;
-  const absoluteWorkerUrl = new URL(workerUrl, window.location.href).href;
-  const workerBlob = new Blob([
-    PDF_WORKER_BOOTSTRAP,
-    `\nimportScripts(${JSON.stringify(absoluteWorkerUrl)});`,
-  ], { type: "text/javascript" });
-  const workerSrc = URL.createObjectURL(workerBlob);
-  pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+  pdfjs.GlobalWorkerOptions.workerSrc = (await import("pdfjs-dist/legacy/build/pdf.worker.js?url")).default;
 
   try {
     const buf = await readAsArrayBuffer(file);
-    const doc = await pdfjs.getDocument({ data: new Uint8Array(buf), useWorkerFetch: false }).promise;
+    const doc = await pdfjs.getDocument({
+      data: new Uint8Array(buf),
+      disableWorker: true,
+      useWorkerFetch: false,
+      isEvalSupported: false,
+    }).promise;
     const out: string[] = [];
     let chars = 0;
     for (let p = 1; p <= doc.numPages; p++) {
@@ -133,8 +143,11 @@ async function extractPdf(file: File): Promise<string> {
       if (chars > MAX_CHARS) break;
     }
     return out.join("\n\n");
-  } finally {
-    URL.revokeObjectURL(workerSrc);
+  } catch (error) {
+    const message = String((error as Error)?.message ?? error);
+    throw new Error(message.includes("Invalid PDF")
+      ? "This PDF could not be read. Please try another PDF or paste the text manually."
+      : `Could not read this PDF: ${message}`);
   }
 }
 
