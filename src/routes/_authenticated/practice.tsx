@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Brain, Sparkles, Play, Upload, FileText, Trash2, Check, X as XIcon,
   Bookmark, BookmarkCheck, Clock, Trophy, Zap, ChevronRight, Loader2, Users,
-  AlertCircle, RefreshCw, BookOpen, BarChart3,
+  AlertCircle, RefreshCw, BookOpen, BarChart3, Pause,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useData } from "@/lib/data-context";
