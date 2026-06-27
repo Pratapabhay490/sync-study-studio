@@ -119,6 +119,7 @@ async function extractPdf(file: File): Promise<string> {
   // than the current ESM build, which relies on newer browser APIs.
   const pdfModule: any = await import("pdfjs-dist/legacy/build/pdf.js");
   const pdfjs: any = pdfModule.getDocument ? pdfModule : (pdfModule.default ?? pdfModule);
+  pdfjs.GlobalWorkerOptions.workerSrc = (await import("pdfjs-dist/legacy/build/pdf.worker.js?url")).default;
 
   try {
     const buf = await readAsArrayBuffer(file);
