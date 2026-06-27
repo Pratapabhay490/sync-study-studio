@@ -2,8 +2,8 @@
 // Change the Gemini model in ONE place. Override per-deployment with the
 // GEMINI_MODEL env var if you ever need to A/B another supported Gemini model.
 //
-// All app AI calls should go through Lovable AI Gateway, not Google's native
-// generativelanguage endpoint. The gateway uses OpenAI-compatible chat bodies.
+// All app AI calls should go through Lovable AI Gateway using OpenAI-compatible
+// chat bodies.
 
 export const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash";
 export const LOVABLE_AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
