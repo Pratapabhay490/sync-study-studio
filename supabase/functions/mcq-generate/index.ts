@@ -54,7 +54,7 @@ interface GeminiCallResult {
 }
 
 async function callGemini(prompt: string, reqId: string, count: number): Promise<GeminiCallResult> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEN_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+  const url = geminiGenerateContentUrl(GEMINI_API_KEY!, GEN_MODEL);
   const sysChars = SYS.length;
   const userChars = prompt.length;
   const totalChars = sysChars + userChars;
