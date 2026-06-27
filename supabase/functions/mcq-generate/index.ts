@@ -15,13 +15,15 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders } from "../_shared/cors.ts";
+import { GEMINI_MODEL, geminiGenerateContentUrl, logGeminiStartup } from "../_shared/gemini.ts";
 
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY =
   Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
 
-const GEN_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-1.5-flash-8b";
+const GEN_MODEL = GEMINI_MODEL;
+logGeminiStartup("mcq-generate");
 
 const SYS = `You are an expert NEET PG / INICET MCQ author for Indian MBBS students.
 Generate high-quality single-best-answer multiple choice questions.
@@ -52,7 +54,7 @@ interface GeminiCallResult {
 }
 
 async function callGemini(prompt: string, reqId: string, count: number): Promise<GeminiCallResult> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEN_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+  const url = geminiGenerateContentUrl(GEMINI_API_KEY!, GEN_MODEL);
   const sysChars = SYS.length;
   const userChars = prompt.length;
   const totalChars = sysChars + userChars;

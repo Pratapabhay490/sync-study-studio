@@ -3,6 +3,9 @@
 // Requires a valid Supabase user JWT (Authorization: Bearer <token>).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders } from "../_shared/cors.ts";
+import { GEMINI_MODEL, LOVABLE_GATEWAY_MODEL, geminiGenerateContentUrl, logGeminiStartup } from "../_shared/gemini.ts";
+
+logGeminiStartup("gemini-analyze");
 
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
@@ -53,7 +56,7 @@ async function callLovable(prompt: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
+      model: LOVABLE_GATEWAY_MODEL,
       messages: [
         { role: "system", content: SYS },
         { role: "user", content: prompt },
@@ -69,28 +72,20 @@ async function callLovable(prompt: string) {
 }
 
 async function callGeminiDirect(prompt: string) {
-  const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"];
-  let lastErr = "";
-  for (const m of MODELS) {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYS }] },
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, responseMimeType: "application/json" },
-        }),
-      },
-    );
-    if (res.ok) {
-      const j = await res.json();
-      return j?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
-    }
-    lastErr = `${m} -> ${res.status} ${await res.text()}`;
+  const res = await fetch(geminiGenerateContentUrl(GEMINI_API_KEY!, GEMINI_MODEL), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: SYS }] },
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.7, responseMimeType: "application/json" },
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`gemini ${GEMINI_MODEL} -> ${res.status} ${await res.text()}`);
   }
-  throw new Error(`gemini ${lastErr}`);
+  const j = await res.json();
+  return j?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
 }
 
 Deno.serve(async (req) => {

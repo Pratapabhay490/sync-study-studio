@@ -1,6 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { LOVABLE_GATEWAY_MODEL, logGeminiStartup } from "@/lib/gemini-config";
+
+logGeminiStartup("analytics-ai.functions");
 
 const StudyStatsSchema = z.object({
   name: z.string().optional(),
@@ -112,7 +115,7 @@ export const analyzeStudyProgress = createServerFn({ method: "POST" })
           "X-Lovable-AIG-SDK": "tanstack-server-fn",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
+          model: LOVABLE_GATEWAY_MODEL,
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
             { role: "user", content: prompt },
