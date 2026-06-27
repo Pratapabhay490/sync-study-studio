@@ -3,18 +3,30 @@
 
 const MAX_CHARS = 380_000;
 
-function clip(text: string): string {
-  const clean = text.replace(/\u0000/g, "").replace(/[ \t]+\n/g, "\n").trim();
-  return clean.length > MAX_CHARS ? clean.slice(0, MAX_CHARS) : clean;
-}
+function ensureLegacyBrowserPolyfills() {
+  const ArrayProto = Array.prototype as Array<unknown> & {
+    at?: (index: number) => unknown;
+  };
+  if (typeof ArrayProto.at !== "function") {
+    Object.defineProperty(Array.prototype, "at", {
+      configurable: true,
+      writable: true,
+      value(index: number) {
+        const length = this.length >>> 0;
+        const relative = Math.trunc(index) || 0;
+        const k = relative >= 0 ? relative : length + relative;
+        return k < 0 || k >= length ? undefined : this[k];
+      },
+    });
+  }
 
-function ensurePromiseWithResolvers() {
   const PromiseCtor = Promise as PromiseConstructor & {
     withResolvers?: <T>() => {
       promise: Promise<T>;
       resolve: (value: T | PromiseLike<T>) => void;
       reject: (reason?: unknown) => void;
     };
+    try?: <T>(fn: () => T | PromiseLike<T>) => Promise<T>;
   };
 
   if (!PromiseCtor.withResolvers) {
@@ -28,6 +40,40 @@ function ensurePromiseWithResolvers() {
       return { promise, resolve, reject };
     };
   }
+
+  if (!PromiseCtor.try) {
+    PromiseCtor.try = <T,>(fn: () => T | PromiseLike<T>) => new Promise<T>((resolve) => resolve(fn()));
+  }
+}
+
+const PDF_WORKER_BOOTSTRAP = `
+if (!Array.prototype.at) {
+  Object.defineProperty(Array.prototype, 'at', {
+    configurable: true,
+    writable: true,
+    value: function(index) {
+      var length = this.length >>> 0;
+      var relative = Math.trunc(index) || 0;
+      var k = relative >= 0 ? relative : length + relative;
+      return k < 0 || k >= length ? undefined : this[k];
+    }
+  });
+}
+if (!Promise.withResolvers) {
+  Promise.withResolvers = function() {
+    var resolve, reject;
+    var promise = new Promise(function(res, rej) { resolve = res; reject = rej; });
+    return { promise: promise, resolve: resolve, reject: reject };
+  };
+}
+if (!Promise.try) {
+  Promise.try = function(fn) { return new Promise(function(resolve) { resolve(fn()); }); };
+}
+`;
+
+function clip(text: string): string {
+  const clean = text.replace(/\u0000/g, "").replace(/[ \t]+\n/g, "\n").trim();
+  return clean.length > MAX_CHARS ? clean.slice(0, MAX_CHARS) : clean;
 }
 
 function readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
@@ -51,30 +97,45 @@ function readAsText(file: File): Promise<string> {
 }
 
 async function extractPdf(file: File): Promise<string> {
-  ensurePromiseWithResolvers();
+  ensureLegacyBrowserPolyfills();
 
-  // Use the legacy ESM build: modern pdf.js workers call Promise.withResolvers,
-  // which is missing in iPad/Safari versions still common in embedded previews.
-  const pdfjs: any = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  // Use the older legacy pdf.js UMD build. It is much safer on iPad/Safari
+  // than the current ESM build, which relies on newer browser APIs.
+  const pdfModule: any = await import("pdfjs-dist/legacy/build/pdf.js");
+  const pdfjs: any = pdfModule.getDocument ? pdfModule : (pdfModule.default ?? pdfModule);
 
-  // Keep the worker on the legacy build too; the modern worker can still crash
-  // even when the main-thread module has been polyfilled.
-  const workerUrl = (await import("pdfjs-dist/legacy/build/pdf.worker.mjs?url")).default;
-  pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+  // The worker runs in a separate JavaScript context, so main-window polyfills
+  // do not reach it. Wrap the worker with the same polyfills before pdf.js
+  // starts parsing, fixing the Safari "undefined is not a function" crash.
+  const workerUrl = (await import("pdfjs-dist/legacy/build/pdf.worker.js?url")).default;
+  const absoluteWorkerUrl = new URL(workerUrl, window.location.href).href;
+  const workerBlob = new Blob([
+    PDF_WORKER_BOOTSTRAP,
+    `\nimportScripts(${JSON.stringify(absoluteWorkerUrl)});`,
+  ], { type: "text/javascript" });
+  const workerSrc = URL.createObjectURL(workerBlob);
+  pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
-  const buf = await readAsArrayBuffer(file);
-  const doc = await pdfjs.getDocument({ data: new Uint8Array(buf) }).promise;
-  const out: string[] = [];
-  for (let p = 1; p <= doc.numPages; p++) {
-    const page = await doc.getPage(p);
-    const content = await page.getTextContent();
-    const items = content.items
-      .map((it: any) => ("str" in it ? it.str : ""))
-      .filter(Boolean);
-    out.push(items.join(" "));
-    if (out.join(" ").length > MAX_CHARS) break;
+  try {
+    const buf = await readAsArrayBuffer(file);
+    const doc = await pdfjs.getDocument({ data: new Uint8Array(buf), useWorkerFetch: false }).promise;
+    const out: string[] = [];
+    let chars = 0;
+    for (let p = 1; p <= doc.numPages; p++) {
+      const page = await doc.getPage(p);
+      const content = await page.getTextContent();
+      const items = content.items
+        .map((it: any) => (it && "str" in it ? it.str : ""))
+        .filter(Boolean);
+      const pageText = items.join(" ");
+      out.push(pageText);
+      chars += pageText.length;
+      if (chars > MAX_CHARS) break;
+    }
+    return out.join("\n\n");
+  } finally {
+    URL.revokeObjectURL(workerSrc);
   }
-  return out.join("\n\n");
 }
 
 async function extractDocx(file: File): Promise<string> {
