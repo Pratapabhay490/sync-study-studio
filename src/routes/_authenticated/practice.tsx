@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Brain, Sparkles, Play, Upload, FileText, Trash2, Check, X as XIcon,
   Bookmark, BookmarkCheck, Clock, Trophy, Zap, ChevronRight, Loader2, Users,
-  AlertCircle, RefreshCw, BookOpen, BarChart3,
+  AlertCircle, RefreshCw, BookOpen, BarChart3, Pause,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useData } from "@/lib/data-context";
@@ -579,7 +579,9 @@ function ActiveSession({
   const [selected, setSelected] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
+  const [paused, setPaused] = useState(false);
   const startedAtRef = useRef<number>(Date.now());
+  const pauseStartRef = useRef<number | null>(null);
 
   // Initial load
   useEffect(() => {
@@ -639,16 +641,21 @@ function ActiveSession({
     return () => { sb.removeChannel(ch); };
   }, [sessionId]);
 
-  // Per-question timer
   useEffect(() => {
     if (!session || submitted) return;
     setTimeLeft(session.seconds_per_question);
     startedAtRef.current = Date.now();
+    pauseStartRef.current = null;
+    setPaused(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [position, session?.id]);
+
+  useEffect(() => {
+    if (!session || submitted || paused) return;
     const t = setInterval(() => {
       setTimeLeft((s) => {
         if (s <= 1) {
           clearInterval(t);
-          // auto-submit on timeout
           submitAnswer(null);
           return 0;
         }
@@ -657,7 +664,22 @@ function ActiveSession({
     }, 1000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [position, session, submitted]);
+  }, [session, submitted, paused]);
+
+  function togglePause() {
+    if (submitted) return;
+    setPaused((p) => {
+      const next = !p;
+      if (next) {
+        pauseStartRef.current = Date.now();
+      } else if (pauseStartRef.current) {
+        // shift startedAt forward by paused duration so ms_taken is accurate
+        startedAtRef.current += Date.now() - pauseStartRef.current;
+        pauseStartRef.current = null;
+      }
+      return next;
+    });
+  }
 
   // Reset per-question state when position changes
   useEffect(() => {
@@ -740,9 +762,22 @@ function ActiveSession({
           {q.subject && <Badge variant="outline">{q.subject}</Badge>}
           {q.source === "rag" && <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">From notes</Badge>}
           <div className="ml-auto flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-sm font-semibold">
-              <Clock className="h-4 w-4" /> {timeLeft}s
+            <div className={cn("flex items-center gap-1.5 text-sm font-semibold", paused && "text-amber-600 dark:text-amber-400")}>
+              <Clock className="h-4 w-4" /> {timeLeft}s{paused && " · Paused"}
             </div>
+            {!submitted && (
+              <button
+                onClick={togglePause}
+                aria-label={paused ? "Resume" : "Pause"}
+                title={paused ? "Resume quiz" : "Pause quiz"}
+                className={cn(
+                  "grid h-9 w-9 place-items-center rounded-xl shadow-clay-sm transition-all",
+                  paused ? "bg-gradient-primary text-white" : "bg-card",
+                )}
+              >
+                {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+              </button>
+            )}
             <button onClick={toggleBookmark} aria-label="Bookmark" className="grid h-9 w-9 place-items-center rounded-xl bg-card shadow-clay-sm">
               {bookmarks.has(q.id) ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4" />}
             </button>
@@ -759,7 +794,7 @@ function ActiveSession({
         <div className="text-xs text-muted-foreground">Question {position + 1} of {total}</div>
 
         {/* question card */}
-        <div className="clay space-y-4 p-6">
+        <div className="clay relative space-y-4 p-6">
           <h2 className="text-lg font-semibold leading-relaxed">{q.stem}</h2>
           <div className="grid gap-2">
             {q.options.map((opt, i) => {
@@ -821,6 +856,21 @@ function ActiveSession({
               </Button>
             )}
           </div>
+
+          {paused && !submitted && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 rounded-[inherit] bg-background/85 p-6 text-center backdrop-blur-md">
+              <div className="grid h-16 w-16 place-items-center rounded-2xl bg-gradient-primary text-white shadow-clay-sm">
+                <Pause className="h-7 w-7" />
+              </div>
+              <div>
+                <div className="font-display text-xl font-bold">Quiz paused</div>
+                <p className="mt-1 text-sm text-muted-foreground">Timer is frozen at {timeLeft}s. Take a breath.</p>
+              </div>
+              <Button onClick={togglePause} className="gap-2">
+                <Play className="h-4 w-4" /> Resume
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
