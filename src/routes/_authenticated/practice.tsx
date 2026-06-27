@@ -794,7 +794,7 @@ function ActiveSession({
         <div className="text-xs text-muted-foreground">Question {position + 1} of {total}</div>
 
         {/* question card */}
-        <div className="clay space-y-4 p-6">
+        <div className="clay relative space-y-4 p-6">
           <h2 className="text-lg font-semibold leading-relaxed">{q.stem}</h2>
           <div className="grid gap-2">
             {q.options.map((opt, i) => {
