@@ -641,16 +641,21 @@ function ActiveSession({
     return () => { sb.removeChannel(ch); };
   }, [sessionId]);
 
-  // Per-question timer
   useEffect(() => {
     if (!session || submitted) return;
     setTimeLeft(session.seconds_per_question);
     startedAtRef.current = Date.now();
+    pauseStartRef.current = null;
+    setPaused(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [position, session?.id]);
+
+  useEffect(() => {
+    if (!session || submitted || paused) return;
     const t = setInterval(() => {
       setTimeLeft((s) => {
         if (s <= 1) {
           clearInterval(t);
-          // auto-submit on timeout
           submitAnswer(null);
           return 0;
         }
@@ -659,7 +664,22 @@ function ActiveSession({
     }, 1000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [position, session, submitted]);
+  }, [session, submitted, paused]);
+
+  function togglePause() {
+    if (submitted) return;
+    setPaused((p) => {
+      const next = !p;
+      if (next) {
+        pauseStartRef.current = Date.now();
+      } else if (pauseStartRef.current) {
+        // shift startedAt forward by paused duration so ms_taken is accurate
+        startedAtRef.current += Date.now() - pauseStartRef.current;
+        pauseStartRef.current = null;
+      }
+      return next;
+    });
+  }
 
   // Reset per-question state when position changes
   useEffect(() => {
