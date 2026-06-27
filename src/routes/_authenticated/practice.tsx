@@ -579,7 +579,9 @@ function ActiveSession({
   const [selected, setSelected] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
+  const [paused, setPaused] = useState(false);
   const startedAtRef = useRef<number>(Date.now());
+  const pauseStartRef = useRef<number | null>(null);
 
   // Initial load
   useEffect(() => {
