@@ -1,7 +1,6 @@
-// Generates MCQs via Google Gemini API directly (uses GEMINI_API_KEY,
-// not Lovable AI credits). Optionally grounded in already-indexed
+// Generates MCQs via Lovable AI Gateway using a Gemini model. Optionally grounded in already-indexed
 // user-uploaded document chunks. Start Quiz performs exactly one
-// outgoing Gemini request: generateContent.
+// outgoing Lovable AI request: /v1/chat/completions.
 //
 // POST body:
 // {
@@ -15,14 +14,14 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders } from "../_shared/cors.ts";
-import { GEMINI_MODEL, geminiGenerateContentUrl, logGeminiStartup } from "../_shared/gemini.ts";
+import { LOVABLE_AI_GATEWAY_URL, LOVABLE_GATEWAY_MODEL, logGeminiStartup } from "../_shared/gemini.ts";
 
-const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY =
   Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
 
-const GEN_MODEL = GEMINI_MODEL;
+const GEN_MODEL = LOVABLE_GATEWAY_MODEL;
 logGeminiStartup("mcq-generate");
 
 const SYS = `You are an expert NEET PG / INICET MCQ author for Indian MBBS students.
@@ -53,17 +52,30 @@ interface GeminiCallResult {
   ms: number;
 }
 
+function extractJsonObject(text: string): Record<string, unknown> {
+  try {
+    return JSON.parse(text);
+  } catch {
+    const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1];
+    if (fenced) return JSON.parse(fenced);
+    const first = text.indexOf("{");
+    const last = text.lastIndexOf("}");
+    if (first >= 0 && last > first) return JSON.parse(text.slice(first, last + 1));
+    throw new Error("AI response did not contain JSON");
+  }
+}
+
 async function callGemini(prompt: string, reqId: string, count: number): Promise<GeminiCallResult> {
-  const url = geminiGenerateContentUrl(GEMINI_API_KEY!, GEN_MODEL);
   const sysChars = SYS.length;
   const userChars = prompt.length;
   const totalChars = sysChars + userChars;
   const totalTokens = estTokens(SYS) + estTokens(prompt);
 
   console.log(JSON.stringify({
-    evt: "gemini_request",
+    evt: "lovable_ai_request",
     request_id: reqId,
     timestamp: new Date().toISOString(),
+    provider: "lovable_ai_gateway",
     model: GEN_MODEL,
     prompt_chars: totalChars,
     user_prompt_chars: userChars,
@@ -83,17 +95,21 @@ async function callGemini(prompt: string, reqId: string, count: number): Promise
   }
 
   const t0 = Date.now();
-  const res = await fetch(url, {
+  const res = await fetch(LOVABLE_AI_GATEWAY_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Lovable-API-Key": LOVABLE_API_KEY!,
+      "X-Lovable-AIG-SDK": "supabase-edge-function",
+    },
     body: JSON.stringify({
-      systemInstruction: { parts: [{ text: SYS }] },
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
-        responseMimeType: "application/json",
-        temperature: 0.45,
-        maxOutputTokens: Math.min(6144, Math.max(2048, count * 650)),
-      },
+      model: GEN_MODEL,
+      messages: [
+        { role: "system", content: SYS },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.45,
+      max_tokens: Math.min(6144, Math.max(2048, count * 650)),
     }),
   });
   const ms = Date.now() - t0;
@@ -117,9 +133,10 @@ async function callGemini(prompt: string, reqId: string, count: number): Promise
     }
 
     console.error(JSON.stringify({
-      evt: "gemini_response_error",
+      evt: "lovable_ai_response_error",
       request_id: reqId,
       timestamp: new Date().toISOString(),
+      provider: "lovable_ai_gateway",
       model: GEN_MODEL,
       status: res.status,
       ms,
@@ -129,7 +146,7 @@ async function callGemini(prompt: string, reqId: string, count: number): Promise
       quota_metrics: metrics,
     }));
 
-    const err: any = new Error(`gemini ${res.status} [${category}]: ${apiMsg.slice(0, 300) || detail.slice(0, 300)}`);
+    const err: any = new Error(`lovable_ai ${res.status} [${category}]: ${apiMsg.slice(0, 300) || detail.slice(0, 300)}`);
     err.status = res.status;
     err.category = category;
     err.quota_metrics = metrics;
@@ -137,16 +154,17 @@ async function callGemini(prompt: string, reqId: string, count: number): Promise
   }
 
   const j = await res.json();
-  const text = j?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text).filter(Boolean).join("") ?? "{}";
+  const text = j?.choices?.[0]?.message?.content ?? "{}";
   console.log(JSON.stringify({
-    evt: "gemini_response_ok",
+    evt: "lovable_ai_response_ok",
     request_id: reqId,
     timestamp: new Date().toISOString(),
+    provider: "lovable_ai_gateway",
     model: GEN_MODEL,
     status: res.status,
     ms,
     response_chars: text.length,
-    usage: j?.usageMetadata ?? null,
+    usage: j?.usage ?? null,
   }));
   return { text, status: res.status, ms };
 }
@@ -164,8 +182,8 @@ Deno.serve(async (req) => {
     method: req.method,
   }));
 
-  if (!GEMINI_API_KEY) {
-    return new Response(JSON.stringify({ error: "GEMINI_API_KEY not configured", _request_id: reqId }), {
+  if (!LOVABLE_API_KEY) {
+    return new Response(JSON.stringify({ error: "LOVABLE_API_KEY not configured", _request_id: reqId }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
@@ -268,7 +286,7 @@ Deno.serve(async (req) => {
     }));
     const { text, status: geminiStatus, ms: geminiMs } = await callGemini(userPrompt, reqId, count);
     let parsed: any = {};
-    try { parsed = JSON.parse(text); } catch { parsed = {}; }
+    try { parsed = extractJsonObject(text); } catch { parsed = {}; }
     const questions = Array.isArray(parsed?.questions) ? parsed.questions : [];
     if (!questions.length) {
       return new Response(JSON.stringify({

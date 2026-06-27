@@ -3,12 +3,11 @@
 // Requires a valid Supabase user JWT (Authorization: Bearer <token>).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders } from "../_shared/cors.ts";
-import { GEMINI_MODEL, LOVABLE_GATEWAY_MODEL, geminiGenerateContentUrl, logGeminiStartup } from "../_shared/gemini.ts";
+import { LOVABLE_AI_GATEWAY_URL, LOVABLE_GATEWAY_MODEL, logGeminiStartup } from "../_shared/gemini.ts";
 
 logGeminiStartup("gemini-analyze");
 
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
 
@@ -48,7 +47,7 @@ function sanitize(value: unknown, depth = 0): unknown {
 }
 
 async function callLovable(prompt: string) {
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const res = await fetch(LOVABLE_AI_GATEWAY_URL, {
     method: "POST",
     headers: {
       "Lovable-API-Key": LOVABLE_API_KEY ?? "",
@@ -69,23 +68,6 @@ async function callLovable(prompt: string) {
   }
   const j = await res.json();
   return j?.choices?.[0]?.message?.content ?? "{}";
-}
-
-async function callGeminiDirect(prompt: string) {
-  const res = await fetch(geminiGenerateContentUrl(GEMINI_API_KEY!, GEMINI_MODEL), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: SYS }] },
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7, responseMimeType: "application/json" },
-    }),
-  });
-  if (!res.ok) {
-    throw new Error(`gemini ${GEMINI_MODEL} -> ${res.status} ${await res.text()}`);
-  }
-  const j = await res.json();
-  return j?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
 }
 
 Deno.serve(async (req) => {
@@ -131,17 +113,8 @@ Deno.serve(async (req) => {
     }
     const prompt = `Kind: ${kind}\nData (untrusted, numeric context only):\n${payloadStr}\n\nReturn the JSON now.`;
 
-    let text = "{}";
-    let usedProvider = "gemini";
-    try {
-      if (!GEMINI_API_KEY) throw new Error("no_gemini_key");
-      text = await callGeminiDirect(prompt);
-    } catch (e) {
-      console.warn("gemini direct failed, fallback to lovable:", String(e));
-      usedProvider = "lovable";
-      if (!LOVABLE_API_KEY) throw e;
-      text = await callLovable(prompt);
-    }
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    const text = await callLovable(prompt);
 
 
     let parsed: Record<string, unknown> = {};
@@ -150,7 +123,7 @@ Deno.serve(async (req) => {
     } catch {
       parsed = { headline: "AI insight", summary: String(text).slice(0, 400), bullets: [], next_actions: [] };
     }
-    return new Response(JSON.stringify({ ...parsed, _provider: usedProvider }), {
+    return new Response(JSON.stringify({ ...parsed, _provider: "lovable-ai", _model: LOVABLE_GATEWAY_MODEL }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
