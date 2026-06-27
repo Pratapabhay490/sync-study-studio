@@ -201,6 +201,36 @@ function Lobby({
       if (rpcErr) throw new Error(rpcErr.message);
 
       toast.success("Quiz ready!");
+
+      // Notify study partners that a new quiz is available to take
+      try {
+        const [{ data: meProf }, { data: rows1 }, { data: rows2 }] = await Promise.all([
+          sb.from("profiles").select("name,email").eq("id", user.id).maybeSingle(),
+          sb.from("study_partners").select("partner_id").eq("user_id", user.id),
+          sb.from("study_partners").select("user_id").eq("partner_id", user.id),
+        ]);
+        const partnerIds = new Set<string>();
+        (rows1 ?? []).forEach((r: any) => r?.partner_id && partnerIds.add(r.partner_id));
+        (rows2 ?? []).forEach((r: any) => r?.user_id && partnerIds.add(r.user_id));
+        partnerIds.delete(user.id);
+        const senderName = (meProf as any)?.name?.split(" ")[0] ?? (meProf as any)?.email ?? "Your partner";
+        const label = [subject, topic].filter(Boolean).join(" • ") || `${count} ${difficulty} questions`;
+        if (partnerIds.size > 0) {
+          await sb.from("notification_queue").insert(
+            Array.from(partnerIds).map((pid) => ({
+              user_id: pid,
+              kind: "quiz_invite",
+              title: `${senderName} just made a new quiz 🧠`,
+              body: `Take the same quiz: ${label}`,
+              url: `/practice?session=${newSess.id}`,
+              data: { session_id: newSess.id, from: user.id },
+            })),
+          );
+        }
+      } catch (notifyErr) {
+        console.warn("[startSession] partner notify failed", notifyErr);
+      }
+
       onSessionStarted(newSess.id);
     } catch (e: any) {
       toast.error("Couldn't start quiz: " + (e?.message ?? String(e)));
