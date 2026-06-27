@@ -1,6 +1,7 @@
 // Generates MCQs via Google Gemini API directly (uses GEMINI_API_KEY,
-// not Lovable AI credits). Optionally grounded in user-uploaded
-// document chunks (RAG via Gemini text-embedding-004).
+// not Lovable AI credits). Optionally grounded in already-indexed
+// user-uploaded document chunks. Start Quiz performs exactly one
+// outgoing Gemini request: generateContent.
 //
 // POST body:
 // {
@@ -20,8 +21,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY =
   Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
 
-const GEN_MODEL = "gemini-2.0-flash";
-const EMB_MODEL = "text-embedding-004";
+const GEN_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-1.5-flash-8b";
 
 const SYS = `You are an expert NEET PG / INICET MCQ author for Indian MBBS students.
 Generate high-quality single-best-answer multiple choice questions.
@@ -51,7 +51,7 @@ interface GeminiCallResult {
   ms: number;
 }
 
-async function callGemini(prompt: string, reqId: string): Promise<GeminiCallResult> {
+async function callGemini(prompt: string, reqId: string, count: number): Promise<GeminiCallResult> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEN_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
   const sysChars = SYS.length;
   const userChars = prompt.length;
@@ -89,8 +89,8 @@ async function callGemini(prompt: string, reqId: string): Promise<GeminiCallResu
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       generationConfig: {
         responseMimeType: "application/json",
-        temperature: 0.7,
-        maxOutputTokens: 8192,
+        temperature: 0.45,
+        maxOutputTokens: Math.min(6144, Math.max(2048, count * 650)),
       },
     }),
   });
@@ -149,26 +149,6 @@ async function callGemini(prompt: string, reqId: string): Promise<GeminiCallResu
   return { text, status: res.status, ms };
 }
 
-async function embedQuery(text: string): Promise<number[] | null> {
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${EMB_MODEL}:embedContent?key=${GEMINI_API_KEY}`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: `models/${EMB_MODEL}`,
-        content: { parts: [{ text: text.slice(0, 8000) }] },
-        taskType: "RETRIEVAL_QUERY",
-      }),
-    });
-    if (!res.ok) return null;
-    const j = await res.json();
-    return j?.embedding?.values ?? null;
-  } catch {
-    return null;
-  }
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -184,6 +164,16 @@ Deno.serve(async (req) => {
 
   if (!GEMINI_API_KEY) {
     return new Response(JSON.stringify({ error: "GEMINI_API_KEY not configured", _request_id: reqId }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  const missingEnv = [
+    !SUPABASE_URL ? "SUPABASE_URL" : null,
+    !SUPABASE_ANON_KEY ? "SUPABASE_ANON_KEY_OR_PUBLISHABLE_KEY" : null,
+  ].filter(Boolean);
+  if (missingEnv.length) {
+    console.error(JSON.stringify({ evt: "mcq_generate_missing_env", request_id: reqId, missing: missingEnv }));
+    return new Response(JSON.stringify({ error: "missing_backend_env", missing: missingEnv, _request_id: reqId }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
@@ -220,18 +210,28 @@ Deno.serve(async (req) => {
     let contextBlock = "";
     let sourceDocId: string | null = null;
     if (source === "rag") {
-      const queryStr = `${subject} ${topic} ${focusText}`.trim() || "high-yield concepts";
-      const qEmb = await embedQuery(queryStr);
-      if (qEmb) {
-        const { data: matches } = await sb.rpc("match_quiz_chunks", {
-          query_embedding: qEmb,
-          match_count: 8,
-          p_document_ids: documentIds.length ? documentIds : null,
-        });
-        if (Array.isArray(matches) && matches.length) {
-          contextBlock = matches.map((m: any, i: number) => `[#${i + 1}] ${m.content}`).join("\n\n").slice(0, 6000);
-          sourceDocId = matches[0]?.document_id ?? null;
-        }
+      console.log(JSON.stringify({
+        evt: "rag_context_lookup_start",
+        request_id: reqId,
+        timestamp: new Date().toISOString(),
+        selected_documents: documentIds.length,
+        note: "database_only_no_gemini_embedding_request",
+      }));
+
+      let chunksQuery = sb
+        .from("quiz_chunks")
+        .select("document_id, content, chunk_index, created_at")
+        .order("created_at", { ascending: false })
+        .order("chunk_index", { ascending: true })
+        .limit(10);
+
+      if (documentIds.length) chunksQuery = chunksQuery.in("document_id", documentIds);
+
+      const { data: matches, error: chunkErr } = await chunksQuery;
+      if (chunkErr) throw chunkErr;
+      if (Array.isArray(matches) && matches.length) {
+        contextBlock = matches.map((m: any, i: number) => `[#${i + 1}] ${m.content}`).join("\n\n").slice(0, 6000);
+        sourceDocId = matches[0]?.document_id ?? null;
       }
       if (!contextBlock) {
         return new Response(JSON.stringify({
@@ -254,7 +254,17 @@ Deno.serve(async (req) => {
     const promptChars = userPrompt.length + SYS.length;
     const promptTokens = estTokens(userPrompt) + estTokens(SYS);
 
-    const { text, status: geminiStatus, ms: geminiMs } = await callGemini(userPrompt, reqId);
+    console.log(JSON.stringify({
+      evt: "mcq_generate_before_single_gemini_call",
+      request_id: reqId,
+      timestamp: new Date().toISOString(),
+      model: GEN_MODEL,
+      prompt_chars: promptChars,
+      est_input_tokens: promptTokens,
+      source,
+      count,
+    }));
+    const { text, status: geminiStatus, ms: geminiMs } = await callGemini(userPrompt, reqId, count);
     let parsed: any = {};
     try { parsed = JSON.parse(text); } catch { parsed = {}; }
     const questions = Array.isArray(parsed?.questions) ? parsed.questions : [];
@@ -328,6 +338,7 @@ Deno.serve(async (req) => {
       status,
       category,
       message: String(e?.message ?? e).slice(0, 500),
+      stack: String(e?.stack ?? "").slice(0, 2000),
       quota_metrics: e?.quota_metrics ?? [],
     }));
     return new Response(JSON.stringify({
