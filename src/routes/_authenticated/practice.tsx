@@ -107,7 +107,7 @@ function Lobby({
   const [topic, setTopic] = useState<string>("");
   const [difficulty, setDifficulty] = useState<string>("medium");
   const [count, setCount] = useState<number>(10);
-  const [seconds, setSeconds] = useState<number>(60);
+  const [seconds, setSeconds] = useState<number>(45);
   const [source, setSource] = useState<"ai" | "rag">("ai");
   const [pickedDocIds, setPickedDocIds] = useState<string[]>([]);
   const [starting, setStarting] = useState(false);
