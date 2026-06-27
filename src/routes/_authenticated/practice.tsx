@@ -856,6 +856,21 @@ function ActiveSession({
               </Button>
             )}
           </div>
+
+          {paused && !submitted && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 rounded-[inherit] bg-background/85 p-6 text-center backdrop-blur-md">
+              <div className="grid h-16 w-16 place-items-center rounded-2xl bg-gradient-primary text-white shadow-clay-sm">
+                <Pause className="h-7 w-7" />
+              </div>
+              <div>
+                <div className="font-display text-xl font-bold">Quiz paused</div>
+                <p className="mt-1 text-sm text-muted-foreground">Timer is frozen at {timeLeft}s. Take a breath.</p>
+              </div>
+              <Button onClick={togglePause} className="gap-2">
+                <Play className="h-4 w-4" /> Resume
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
