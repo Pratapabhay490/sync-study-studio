@@ -1,17 +1,12 @@
-// Centralized Gemini model configuration for all Edge Functions.
-// Change the model in ONE place. Override per-deployment with the
-// GEMINI_MODEL env var if you ever need to A/B another model.
+// Centralized Gemini-on-Lovable-AI configuration for all Edge Functions.
+// Change the Gemini model in ONE place. Override per-deployment with the
+// GEMINI_MODEL env var if you ever need to A/B another supported Gemini model.
 //
-// Currently using gemini-2.5-flash (stable, supports v1beta generateContent
-// with systemInstruction + JSON response mime type).
+// All app AI calls should go through Lovable AI Gateway, not Google's native
+// generativelanguage endpoint. The gateway uses OpenAI-compatible chat bodies.
 
 export const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash";
-export const GEMINI_API_VERSION = "v1beta";
-export const GEMINI_BASE_URL = `https://generativelanguage.googleapis.com/${GEMINI_API_VERSION}`;
-
-export function geminiGenerateContentUrl(apiKey: string, model: string = GEMINI_MODEL) {
-  return `${GEMINI_BASE_URL}/models/${model}:generateContent?key=${apiKey}`;
-}
+export const LOVABLE_AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
 // Lovable AI Gateway equivalent (OpenAI-compatible). Prefix with `google/`.
 export const LOVABLE_GATEWAY_MODEL = `google/${GEMINI_MODEL.startsWith("gemini-") ? GEMINI_MODEL : "gemini-2.5-flash"}`;
@@ -25,7 +20,8 @@ export function logGeminiStartup(fnName: string) {
     evt: "gemini_config",
     function: fnName,
     model: GEMINI_MODEL,
-    api_version: GEMINI_API_VERSION,
+    provider: "lovable_ai_gateway",
+    endpoint: "/v1/chat/completions",
     lovable_gateway_model: LOVABLE_GATEWAY_MODEL,
     timestamp: new Date().toISOString(),
   }));
