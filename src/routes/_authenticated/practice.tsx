@@ -322,9 +322,10 @@ function Lobby({
                 onChange={(e) => setCount(parseInt(e.target.value))} className="w-full accent-primary" />
             </Field>
 
-            <Field label={`Seconds / question: ${seconds}`}>
-              <input type="range" min={20} max={120} step={5} value={seconds}
+            <Field label={`Seconds / question: ${seconds}s`}>
+              <input type="range" min={15} max={120} step={5} value={seconds}
                 onChange={(e) => setSeconds(parseInt(e.target.value))} className="w-full accent-primary" />
+              <div className="mt-1 text-[11px] text-muted-foreground">Default 45s per question.</div>
             </Field>
           </div>
 
