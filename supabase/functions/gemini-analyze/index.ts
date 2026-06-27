@@ -3,6 +3,9 @@
 // Requires a valid Supabase user JWT (Authorization: Bearer <token>).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders } from "../_shared/cors.ts";
+import { GEMINI_MODEL, LOVABLE_GATEWAY_MODEL, geminiGenerateContentUrl, logGeminiStartup } from "../_shared/gemini.ts";
+
+logGeminiStartup("gemini-analyze");
 
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
