@@ -1089,7 +1089,7 @@ function ReviewAnswers({ sessionId, onBack }: { sessionId: string; onBack: () =>
           correct: !!a?.is_correct,
           ms: a?.ms_taken ?? null,
         };
-      }).filter((x) => x.q);
+      }).filter((x: { q: QuizQuestion | null }) => x.q);
       setItems(list);
       setLoading(false);
     })();
