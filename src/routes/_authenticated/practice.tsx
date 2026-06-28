@@ -968,6 +968,7 @@ function SessionResults({
   const { profiles } = useData();
   const [players, setPlayers] = useState<QuizPlayer[]>([]);
   const [total, setTotal] = useState(0);
+  const [showReview, setShowReview] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -983,6 +984,10 @@ function SessionResults({
 
   const sorted = [...players].sort((a, b) => b.score - a.score);
 
+  if (showReview) {
+    return <ReviewAnswers sessionId={sessionId} onBack={() => setShowReview(false)} />;
+  }
+
   return (
     <div className="space-y-6">
       <header className="clay flex items-center gap-4 p-6">
@@ -993,6 +998,9 @@ function SessionResults({
           <h1 className="font-display text-2xl font-bold">Quiz complete</h1>
           <p className="text-sm text-muted-foreground">{total} questions · {players.length} player(s)</p>
         </div>
+        <Button variant="outline" onClick={() => setShowReview(true)} className="gap-2">
+          <BookOpen className="h-4 w-4" /> Review answers
+        </Button>
         <Button onClick={onAgain} className="gap-2"><RefreshCw className="h-4 w-4" /> New session</Button>
       </header>
 
@@ -1023,6 +1031,20 @@ function SessionResults({
         })}
       </div>
 
+      <button
+        onClick={() => setShowReview(true)}
+        className="clay flex w-full items-center gap-3 p-5 text-left transition hover:-translate-y-0.5"
+      >
+        <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-primary text-white shadow-clay-sm">
+          <BookOpen className="h-5 w-5" />
+        </div>
+        <div className="flex-1">
+          <div className="font-display font-bold">Review your answers</div>
+          <div className="text-xs text-muted-foreground">See every question with your pick, the correct answer, and the AI explanation.</div>
+        </div>
+        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+      </button>
+
       <div className="clay flex items-center gap-3 p-5">
         <BarChart3 className="h-5 w-5 text-primary" />
         <p className="flex-1 text-sm text-muted-foreground">
@@ -1033,3 +1055,148 @@ function SessionResults({
     </div>
   );
 }
+
+/* ============================= REVIEW ============================= */
+
+function ReviewAnswers({ sessionId, onBack }: { sessionId: string; onBack: () => void }) {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<Array<{
+    position: number;
+    q: QuizQuestion;
+    selected: number | null;
+    correct: boolean;
+    ms: number | null;
+  }>>([]);
+
+  useEffect(() => {
+    (async () => {
+      const [{ data: sq }, { data: ans }] = await Promise.all([
+        sb.from("quiz_session_questions")
+          .select("position, question_id, quiz_questions:question_id(*)")
+          .eq("session_id", sessionId).order("position"),
+        sb.from("quiz_answers").select("position, selected_index, is_correct, ms_taken")
+          .eq("session_id", sessionId).eq("user_id", user?.id),
+      ]);
+      const ansMap = new Map<number, any>();
+      (ans ?? []).forEach((a: any) => ansMap.set(a.position, a));
+      const list = (sq ?? []).map((r: any) => {
+        const a = ansMap.get(r.position);
+        return {
+          position: r.position,
+          q: r.quiz_questions as QuizQuestion,
+          selected: a?.selected_index ?? null,
+          correct: !!a?.is_correct,
+          ms: a?.ms_taken ?? null,
+        };
+      }).filter((x) => x.q);
+      setItems(list);
+      setLoading(false);
+    })();
+  }, [sessionId, user]);
+
+  const correctCount = items.filter((i) => i.correct).length;
+  const attempted = items.filter((i) => i.selected !== null).length;
+
+  return (
+    <div className="space-y-6">
+      <header className="clay flex flex-wrap items-center gap-4 p-6">
+        <button onClick={onBack} className="grid h-10 w-10 place-items-center rounded-2xl bg-card shadow-clay-sm" aria-label="Back">
+          <XIcon className="h-4 w-4" />
+        </button>
+        <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-primary text-white shadow-clay-sm">
+          <BookOpen className="h-5 w-5" />
+        </div>
+        <div className="flex-1">
+          <h1 className="font-display text-xl font-bold md:text-2xl">Quiz review</h1>
+          <p className="text-xs text-muted-foreground">
+            {correctCount}/{items.length} correct · {attempted} attempted
+          </p>
+        </div>
+      </header>
+
+      {loading ? (
+        <div className="clay grid place-items-center p-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+      ) : items.length === 0 ? (
+        <div className="clay p-8 text-center text-sm text-muted-foreground">No questions to review.</div>
+      ) : (
+        <div className="space-y-4">
+          {items.map((it) => {
+            const skipped = it.selected === null;
+            return (
+              <div key={it.position} className="clay space-y-3 p-5">
+                <div className="flex items-center gap-2">
+                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-foreground/10 text-xs font-bold">
+                    {it.position + 1}
+                  </span>
+                  {it.correct ? (
+                    <Badge className="gap-1 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+                      <Check className="h-3 w-3" /> Correct
+                    </Badge>
+                  ) : skipped ? (
+                    <Badge variant="outline" className="gap-1"><AlertCircle className="h-3 w-3" /> Skipped</Badge>
+                  ) : (
+                    <Badge className="gap-1 bg-rose-500/15 text-rose-700 dark:text-rose-400">
+                      <XIcon className="h-3 w-3" /> Wrong
+                    </Badge>
+                  )}
+                  {it.q.subject && <Badge variant="outline">{it.q.subject}</Badge>}
+                  <Badge variant="secondary" className="gap-1"><Zap className="h-3 w-3" /> {it.q.difficulty}</Badge>
+                  {typeof it.ms === "number" && (
+                    <span className="ml-auto text-[11px] text-muted-foreground">{Math.round(it.ms / 100) / 10}s</span>
+                  )}
+                </div>
+
+                <h3 className="text-sm font-semibold leading-relaxed md:text-base">{it.q.stem}</h3>
+
+                <div className="grid gap-2">
+                  {it.q.options.map((opt, i) => {
+                    const chosen = it.selected === i;
+                    const isCorrect = it.q.correct_index === i;
+                    return (
+                      <div
+                        key={i}
+                        className={cn(
+                          "flex items-start gap-3 rounded-2xl p-3 text-sm shadow-clay-sm",
+                          isCorrect && "bg-emerald-500/15 ring-2 ring-emerald-500",
+                          chosen && !isCorrect && "bg-rose-500/15 ring-2 ring-rose-500",
+                          !chosen && !isCorrect && "bg-card opacity-80",
+                        )}
+                      >
+                        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-foreground/10 text-[11px] font-bold">
+                          {String.fromCharCode(65 + i)}
+                        </span>
+                        <span className="flex-1">{opt}</span>
+                        {isCorrect && <Check className="h-4 w-4 text-emerald-600" />}
+                        {chosen && !isCorrect && <XIcon className="h-4 w-4 text-rose-600" />}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {(it.q.explanation || it.q.pearls) && (
+                  <div className="space-y-2 rounded-2xl bg-foreground/[0.03] p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold">
+                      <Sparkles className="h-4 w-4 text-primary" /> Explanation
+                    </div>
+                    {it.q.explanation && <p className="text-sm leading-relaxed">{it.q.explanation}</p>}
+                    {it.q.pearls && (
+                      <div className="rounded-xl bg-amber-500/10 p-3 text-xs">
+                        <span className="font-bold">High-yield: </span>{it.q.pearls}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <Button onClick={onBack} variant="outline" className="w-full gap-2">
+        <ChevronRight className="h-4 w-4 rotate-180" /> Back to results
+      </Button>
+    </div>
+  );
+}
+
