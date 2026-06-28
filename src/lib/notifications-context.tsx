@@ -223,6 +223,33 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     return () => { supabase.removeChannel(channel); };
   }, [user, push]);
 
+  // Realtime: queued notifications targeted at me (quiz invites, partner completes, etc.)
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("notify-queue-v2")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notification_queue", filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const row = payload.new as { id: string; kind: string; title: string; body: string; url?: string | null; data?: any };
+          const key = `queue:${row.id}`;
+          if (seen.current.has(key)) return;
+          seen.current.add(key);
+          push({
+            id: key,
+            title: row.title,
+            body: row.body,
+            createdAt: Date.now(),
+            read: false,
+            kind: row.kind,
+            subjectId: row.data?.subject_id ?? null,
+            topicId: row.data?.topic_id ?? null,
+          });
+        })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, push]);
+
+
   const markAllRead = useCallback(() => setNotifications((prev) => prev.map((n) => ({ ...n, read: true }))), []);
   const markRead = useCallback((id: string) => setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n))), []);
   const clearAll = useCallback(() => setNotifications([]), []);

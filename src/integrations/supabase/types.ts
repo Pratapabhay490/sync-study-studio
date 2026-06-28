@@ -709,6 +709,15 @@ export type Database = {
     }
     Functions: {
       add_study_partner_by_email: { Args: { p_email: string }; Returns: string }
+      enqueue_quiz_invite: {
+        Args: {
+          p_body: string
+          p_session_id: string
+          p_title: string
+          p_url: string
+        }
+        Returns: number
+      }
       find_profile_by_email: {
         Args: { p_email: string }
         Returns: {
