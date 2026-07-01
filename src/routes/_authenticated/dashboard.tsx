@@ -9,6 +9,7 @@ import {
   CalendarClock,
   Sparkles,
 } from "lucide-react";
+import { ScrollReveal } from "@/components/scroll-reveal";
 import { useEffect, useMemo, useState } from "react";
 import {
   differenceInSeconds,
