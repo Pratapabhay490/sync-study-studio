@@ -282,7 +282,7 @@ function Dashboard() {
       </ScrollReveal>
 
       {/* Subjects + activity */}
-      <section className="grid gap-4 lg:grid-cols-3">
+      <ScrollReveal as="section" className="grid gap-4 lg:grid-cols-3" direction="up" delay={100}>
         <div className="rounded-2xl border border-border bg-card p-6 shadow-card lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-display text-lg font-semibold">Subjects at a glance</h3>
