@@ -267,7 +267,7 @@ function Dashboard() {
           value={`${myStreak}d`}
           accent="bg-gradient-aurora"
         />
-      </section>
+      </ScrollReveal>
 
       {/* Side-by-side */}
       <section className="grid gap-4 md:grid-cols-2">
