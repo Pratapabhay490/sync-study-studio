@@ -63,7 +63,8 @@ Deno.serve(async (req) => {
       .eq("completed", true)
       .gte("completed_at", start.toISOString());
     const done = count ?? 0;
-    const pool = done === 0 ? LOW : done < 4 ? MID : HIGH;
+    const d = daysToExam();
+    const pool = done === 0 ? LOW(d) : done < 4 ? MID(d) : HIGH(d);
     const m = pick(pool);
     const { error } = await supabase.from("notification_queue").insert({
       user_id: u.id,
