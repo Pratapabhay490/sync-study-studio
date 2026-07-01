@@ -279,7 +279,7 @@ function Dashboard() {
           label="Study partner"
           poke={other ? <PokeButton toUserId={other.id} toName={other.name} /> : null}
         />
-      </section>
+      </ScrollReveal>
 
       {/* Subjects + activity */}
       <section className="grid gap-4 lg:grid-cols-3">
