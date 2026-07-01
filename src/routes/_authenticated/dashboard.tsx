@@ -242,7 +242,7 @@ function Dashboard() {
       </ScrollReveal>
 
       {/* Stat tiles */}
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <ScrollReveal as="section" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" direction="up" delay={60}>
         <StatTile
           clayIcon={clayTopics}
           label="Total topics"
