@@ -207,7 +207,7 @@ function Dashboard() {
 
 
       {/* NEET PG Countdown */}
-      <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card md:p-8">
+      <ScrollReveal as="section" className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card md:p-8" direction="up">
         <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-gradient-primary opacity-15 blur-3xl" />
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-gradient-aurora opacity-20 blur-3xl" />
         <div className="relative grid gap-6 lg:grid-cols-[1fr_240px_auto] lg:items-center">
