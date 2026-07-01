@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { NotificationCenter } from "@/components/notification-center";
 import { AnimatePresence, motion } from "framer-motion";
+import { useAutoReveal } from "@/lib/use-auto-reveal";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
