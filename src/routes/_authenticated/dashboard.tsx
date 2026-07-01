@@ -9,6 +9,7 @@ import {
   CalendarClock,
   Sparkles,
 } from "lucide-react";
+import { ScrollReveal } from "@/components/scroll-reveal";
 import { useEffect, useMemo, useState } from "react";
 import {
   differenceInSeconds,
@@ -206,7 +207,7 @@ function Dashboard() {
 
 
       {/* NEET PG Countdown */}
-      <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card md:p-8">
+      <ScrollReveal as="section" className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card md:p-8" direction="up">
         <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-gradient-primary opacity-15 blur-3xl" />
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-gradient-aurora opacity-20 blur-3xl" />
         <div className="relative grid gap-6 lg:grid-cols-[1fr_240px_auto] lg:items-center">
@@ -238,10 +239,10 @@ function Dashboard() {
             <CountdownCell label="Secs" value={countdown.seconds} />
           </div>
         </div>
-      </section>
+      </ScrollReveal>
 
       {/* Stat tiles */}
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <ScrollReveal as="section" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" direction="up" delay={60}>
         <StatTile
           clayIcon={clayTopics}
           label="Total topics"
@@ -266,10 +267,10 @@ function Dashboard() {
           value={`${myStreak}d`}
           accent="bg-gradient-aurora"
         />
-      </section>
+      </ScrollReveal>
 
       {/* Side-by-side */}
-      <section className="grid gap-4 md:grid-cols-2">
+      <ScrollReveal as="section" className="grid gap-4 md:grid-cols-2" direction="up" delay={80}>
         <UserCard profile={me} stats={myStats} accent="abhay" label="You" />
         <UserCard
           profile={other}
@@ -278,10 +279,10 @@ function Dashboard() {
           label="Study partner"
           poke={other ? <PokeButton toUserId={other.id} toName={other.name} /> : null}
         />
-      </section>
+      </ScrollReveal>
 
       {/* Subjects + activity */}
-      <section className="grid gap-4 lg:grid-cols-3">
+      <ScrollReveal as="section" className="grid gap-4 lg:grid-cols-3" direction="up" delay={100}>
         <div className="rounded-2xl border border-border bg-card p-6 shadow-card lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-display text-lg font-semibold">Subjects at a glance</h3>
@@ -361,7 +362,7 @@ function Dashboard() {
             </ul>
           )}
         </div>
-      </section>
+      </ScrollReveal>
     </div>
   );
 }
