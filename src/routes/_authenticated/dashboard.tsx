@@ -362,7 +362,7 @@ function Dashboard() {
             </ul>
           )}
         </div>
-      </section>
+      </ScrollReveal>
     </div>
   );
 }
