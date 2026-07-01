@@ -270,7 +270,7 @@ function Dashboard() {
       </ScrollReveal>
 
       {/* Side-by-side */}
-      <section className="grid gap-4 md:grid-cols-2">
+      <ScrollReveal as="section" className="grid gap-4 md:grid-cols-2" direction="up" delay={80}>
         <UserCard profile={me} stats={myStats} accent="abhay" label="You" />
         <UserCard
           profile={other}
