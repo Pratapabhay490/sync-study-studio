@@ -42,6 +42,7 @@ function AuthenticatedLayout() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
+  useAutoReveal(pathname);
 
   const me = profiles.find((p) => p.id === user?.id);
 
