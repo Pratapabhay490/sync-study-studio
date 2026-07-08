@@ -95,9 +95,11 @@ function PracticePage() {
 function Lobby({
   subjects,
   onSessionStarted,
+  onOpenResults,
 }: {
   subjects: { id: string; name: string }[];
   onSessionStarted: (id: string) => void;
+  onOpenResults: (id: string) => void;
 }) {
   const { user } = useAuth();
   const { profiles } = useData();
