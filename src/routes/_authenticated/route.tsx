@@ -4,7 +4,7 @@ import { useData } from "@/lib/data-context";
 import { UserAvatar } from "@/components/user-avatar";
 import { Button } from "@/components/ui/button";
 import {
-  Activity, BarChart3, BookOpen, Brain, LayoutDashboard, ListChecks, LogOut, Menu, Moon, Settings, Sparkles, Sun, Trophy, X,
+  Activity, BarChart3, BookOpen, Brain, LayoutDashboard, ListChecks, LogOut, Menu, Moon, Settings, Sun, Trophy, X,
 } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "@/lib/theme-provider";
@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 import { NotificationCenter } from "@/components/notification-center";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAutoReveal } from "@/lib/use-auto-reveal";
+import syncLogo from "@/assets/sync-logo.jpeg";
+
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
