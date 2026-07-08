@@ -59,7 +59,7 @@ function AuthenticatedLayout() {
       <div className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 md:hidden">
         <div className="clay flex w-full items-center justify-between px-4 py-2">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-primary text-white shadow-clay-sm"><Sparkles className="h-4 w-4" /></div>
+            <img src={syncLogo} alt="in sync" className="logo-breathe h-9 w-9 rounded-xl object-cover shadow-clay-sm" />
             <span className="font-display font-bold">in sync</span>
           </Link>
           <div className="flex items-center gap-2">
