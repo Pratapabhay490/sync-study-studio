@@ -85,6 +85,7 @@ function PracticePage() {
     <Lobby
       subjects={subjects}
       onSessionStarted={(id) => { setSessionId(id); setView("active"); }}
+      onOpenResults={(id) => { setSessionId(id); setView("results"); }}
     />
   );
 }
