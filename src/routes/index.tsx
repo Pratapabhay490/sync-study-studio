@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { ArrowRight, CheckCircle2, Zap, LineChart, Bell, Brain, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Zap, LineChart, Bell, Brain } from "lucide-react";
+import syncLogo from "@/assets/sync-logo.jpeg";
 import clayHero from "@/assets/clay-landing-hero.png";
 import clayStreak from "@/assets/clay-icon-streak.png";
 import clayProgress from "@/assets/clay-icon-progress.png";
