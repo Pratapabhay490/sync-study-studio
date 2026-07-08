@@ -465,6 +465,16 @@
   animation: sparkle-twinkle 3.4s ease-in-out infinite;
 }
 
+@keyframes logo-breathe {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 4px 10px color-mix(in oklab, var(--primary) 30%, transparent)); }
+  50% { transform: scale(1.06) rotate(6deg); filter: drop-shadow(0 6px 16px color-mix(in oklab, var(--primary) 45%, transparent)); }
+}
+@utility logo-breathe {
+  animation: logo-breathe 4.5s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+
+
 @media (prefers-reduced-motion: reduce) {
   .clay-character,
   .clay-walker,
