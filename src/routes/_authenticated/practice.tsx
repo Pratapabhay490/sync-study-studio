@@ -457,18 +457,28 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
   const partner = players.find((p) => p.user_id !== user?.id);
   const partnerProfile = partner ? profiles.find((x) => x.id === partner.user_id) : null;
 
-  const finishedAt = session.finished_at ? new Date(session.finished_at) : null;
   const startedAt = session.started_at ? new Date(session.started_at) : null;
-  const takenSec =
-    finishedAt && startedAt ? Math.max(0, Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000)) : null;
+  const sessionFinishedAt = session.finished_at ? new Date(session.finished_at) : null;
+  const myFinishedAt = me?.finished_at ? new Date(me.finished_at) : null;
+  // Prefer the current user's own finish time; fall back to the session's finish time.
+  const endedAt = myFinishedAt ?? sessionFinishedAt;
+  // Cap by the theoretical max (question_count * seconds_per_question) to avoid inflated
+  // durations when a session was left open in a tab before finishing.
+  const maxSec = (session.question_count ?? 0) * (session.seconds_per_question ?? 0) || null;
+  const rawSec =
+    endedAt && startedAt ? Math.max(0, Math.round((endedAt.getTime() - startedAt.getTime()) / 1000)) : null;
+  const takenSec = rawSec != null && maxSec ? Math.min(rawSec, maxSec) : rawSec;
   const takenLabel = takenSec != null
     ? takenSec >= 60
       ? `${Math.floor(takenSec / 60)}m ${takenSec % 60}s`
       : `${takenSec}s`
     : "—";
-  const dateLabel = finishedAt
-    ? finishedAt.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
+  // "Time of attempt" = when the user actually started the quiz.
+  const attemptDate = startedAt ?? endedAt;
+  const dateLabel = attemptDate
+    ? attemptDate.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
     : "—";
+
 
   return (
     <section className="clay space-y-5 p-6">
