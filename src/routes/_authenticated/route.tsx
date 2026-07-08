@@ -84,7 +84,7 @@ function AuthenticatedLayout() {
         >
           <div className="clay flex h-full flex-col p-4">
             <Link to="/dashboard" className="mb-6 hidden items-center gap-2.5 px-2 md:flex">
-              <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-primary text-white shadow-clay-sm"><Sparkles className="h-5 w-5" /></div>
+              <img src={syncLogo} alt="in sync" className="logo-breathe h-11 w-11 rounded-2xl object-cover shadow-clay-sm" />
               <div>
                 <div className="font-display text-base font-bold leading-tight">Let's be</div>
                 <div className="font-display text-base font-bold leading-tight text-gradient">in sync</div>
