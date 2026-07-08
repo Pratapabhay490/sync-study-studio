@@ -4,7 +4,7 @@ import { useData } from "@/lib/data-context";
 import { UserAvatar } from "@/components/user-avatar";
 import { Button } from "@/components/ui/button";
 import {
-  Activity, BarChart3, BookOpen, Brain, LayoutDashboard, ListChecks, LogOut, Menu, Moon, Settings, Sparkles, Sun, Trophy, X,
+  Activity, BarChart3, BookOpen, Brain, LayoutDashboard, ListChecks, LogOut, Menu, Moon, Settings, Sun, Trophy, X,
 } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "@/lib/theme-provider";
@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 import { NotificationCenter } from "@/components/notification-center";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAutoReveal } from "@/lib/use-auto-reveal";
+import syncLogo from "@/assets/sync-logo.jpeg";
+
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -57,7 +59,7 @@ function AuthenticatedLayout() {
       <div className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 md:hidden">
         <div className="clay flex w-full items-center justify-between px-4 py-2">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-primary text-white shadow-clay-sm"><Sparkles className="h-4 w-4" /></div>
+            <img src={syncLogo} alt="in sync" className="logo-breathe h-9 w-9 rounded-xl object-cover shadow-clay-sm" />
             <span className="font-display font-bold">in sync</span>
           </Link>
           <div className="flex items-center gap-2">
@@ -82,7 +84,7 @@ function AuthenticatedLayout() {
         >
           <div className="clay flex h-full flex-col p-4">
             <Link to="/dashboard" className="mb-6 hidden items-center gap-2.5 px-2 md:flex">
-              <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-primary text-white shadow-clay-sm"><Sparkles className="h-5 w-5" /></div>
+              <img src={syncLogo} alt="in sync" className="logo-breathe h-11 w-11 rounded-2xl object-cover shadow-clay-sm" />
               <div>
                 <div className="font-display text-base font-bold leading-tight">Let's be</div>
                 <div className="font-display text-base font-bold leading-tight text-gradient">in sync</div>

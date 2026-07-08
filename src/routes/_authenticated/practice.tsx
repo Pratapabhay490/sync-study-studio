@@ -85,6 +85,7 @@ function PracticePage() {
     <Lobby
       subjects={subjects}
       onSessionStarted={(id) => { setSessionId(id); setView("active"); }}
+      onOpenResults={(id) => { setSessionId(id); setView("results"); }}
     />
   );
 }
@@ -94,9 +95,11 @@ function PracticePage() {
 function Lobby({
   subjects,
   onSessionStarted,
+  onOpenResults,
 }: {
   subjects: { id: string; name: string }[];
   onSessionStarted: (id: string) => void;
+  onOpenResults: (id: string) => void;
 }) {
   const { user } = useAuth();
   const { profiles } = useData();
@@ -390,10 +393,185 @@ function Lobby({
         </section>
       </div>
 
+      <LastQuizCard onReview={onOpenResults} />
+
       <UploadDialog open={uploadOpen} onOpenChange={setUploadOpen} onCreated={loadDocs} />
     </div>
   );
 }
+
+/* ============================= LAST QUIZ CARD ============================= */
+
+function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
+  const { user } = useAuth();
+  const { profiles } = useData();
+  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<QuizSession | null>(null);
+  const [players, setPlayers] = useState<QuizPlayer[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      setLoading(true);
+      const { data: sessions } = await sb
+        .from("quiz_sessions")
+        .select("*")
+        .or(`host_id.eq.${user.id},partner_id.eq.${user.id}`)
+        .eq("status", "finished")
+        .order("finished_at", { ascending: false, nullsFirst: false })
+        .limit(1);
+      const s = (sessions as QuizSession[] | null)?.[0] ?? null;
+      setSession(s);
+      if (s) {
+        const { data: pp } = await sb
+          .from("quiz_session_players")
+          .select("*")
+          .eq("session_id", s.id);
+        setPlayers((pp as QuizPlayer[] | null) ?? []);
+      }
+      setLoading(false);
+    })();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <section className="clay p-6">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading last quiz…
+        </div>
+      </section>
+    );
+  }
+  if (!session) {
+    return (
+      <section className="clay p-6">
+        <h2 className="font-display text-lg font-bold">Last Quiz</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          No completed quizzes yet. Start a session above and it'll show up here.
+        </p>
+      </section>
+    );
+  }
+
+  const me = players.find((p) => p.user_id === user?.id);
+  const partner = players.find((p) => p.user_id !== user?.id);
+  const partnerProfile = partner ? profiles.find((x) => x.id === partner.user_id) : null;
+
+  const finishedAt = session.finished_at ? new Date(session.finished_at) : null;
+  const startedAt = session.started_at ? new Date(session.started_at) : null;
+  const takenSec =
+    finishedAt && startedAt ? Math.max(0, Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000)) : null;
+  const takenLabel = takenSec != null
+    ? takenSec >= 60
+      ? `${Math.floor(takenSec / 60)}m ${takenSec % 60}s`
+      : `${takenSec}s`
+    : "—";
+  const dateLabel = finishedAt
+    ? finishedAt.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
+    : "—";
+
+  return (
+    <section className="clay space-y-5 p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-primary text-white shadow-clay-sm">
+            <Trophy className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="font-display text-lg font-bold">Last Quiz</h2>
+            <p className="text-xs text-muted-foreground">Your most recent completed session</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="secondary" className="gap-1"><Zap className="h-3 w-3" /> {session.difficulty}</Badge>
+          {session.subject && <Badge variant="outline">{session.subject}</Badge>}
+          <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" /> {takenLabel}</Badge>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <ScoreTile
+          label="Your score"
+          score={me?.score ?? 0}
+          correct={me?.correct_count ?? 0}
+          attempted={me?.attempted_count ?? 0}
+          name="You"
+          highlight
+        />
+        <ScoreTile
+          label="Partner score"
+          score={partner?.score ?? 0}
+          correct={partner?.correct_count ?? 0}
+          attempted={partner?.attempted_count ?? 0}
+          name={partnerProfile?.name ?? (session.mode === "duo" ? "Partner" : "— (solo)")}
+        />
+      </div>
+
+      <div className="grid gap-2 rounded-2xl bg-foreground/[0.03] p-4 text-sm sm:grid-cols-2 md:grid-cols-3">
+        <MetaRow label="Date & time" value={dateLabel} />
+        <MetaRow label="Subject" value={session.subject || "Mixed"} />
+        <MetaRow label="Difficulty" value={session.difficulty} />
+        <MetaRow label="Questions" value={String(session.question_count)} />
+        <MetaRow
+          label="Attempted"
+          value={`${me?.attempted_count ?? 0}/${session.question_count}`}
+        />
+        <MetaRow label="Time taken" value={takenLabel} />
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={() => onReview(session.id)} className="gap-2">
+          <BookOpen className="h-4 w-4" /> Review Last Test
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => onReview(session.id)}
+          className="gap-2"
+        >
+          <BarChart3 className="h-4 w-4" /> Compare Performance
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+function ScoreTile({
+  label, score, correct, attempted, name, highlight,
+}: {
+  label: string;
+  score: number;
+  correct: number;
+  attempted: number;
+  name: string;
+  highlight?: boolean;
+}) {
+  const acc = attempted ? Math.round((correct / attempted) * 100) : 0;
+  return (
+    <div className={cn("clay-pressed p-4", highlight && "ring-2 ring-primary/40")}>
+      <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+        <span>{label}</span>
+        <span className="truncate max-w-[50%] text-right">{name}</span>
+      </div>
+      <div className="mt-2 flex items-end gap-3">
+        <div className="font-display text-3xl font-bold">{score}</div>
+        <div className="pb-1 text-xs text-muted-foreground">
+          {correct}/{attempted} correct · {acc}%
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MetaRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-xs uppercase tracking-wider text-muted-foreground">{label}</span>
+      <span className="text-sm font-semibold">{value}</span>
+    </div>
+  );
+}
+
+
 
 function ModeChip({
   active, children, onClick, disabled,
