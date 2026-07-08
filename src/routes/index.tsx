@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { ArrowRight, CheckCircle2, Zap, LineChart, Bell, Brain, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Zap, LineChart, Bell, Brain } from "lucide-react";
+import syncLogo from "@/assets/sync-logo.jpeg";
 import clayHero from "@/assets/clay-landing-hero.png";
 import clayStreak from "@/assets/clay-icon-streak.png";
 import clayProgress from "@/assets/clay-icon-progress.png";
@@ -37,9 +38,7 @@ function Landing() {
 
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2">
-          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-primary text-white shadow-clay-sm">
-            <Sparkles className="h-5 w-5" />
-          </div>
+          <img src={syncLogo} alt="in sync" className="logo-breathe h-10 w-10 rounded-2xl object-cover shadow-clay-sm" />
           <span className="font-display text-lg font-semibold tracking-tight">Let's be in sync</span>
         </div>
         <Link
