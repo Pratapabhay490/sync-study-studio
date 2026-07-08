@@ -393,6 +393,8 @@ function Lobby({
         </section>
       </div>
 
+      <LastQuizCard onReview={onOpenResults} />
+
       <UploadDialog open={uploadOpen} onOpenChange={setUploadOpen} onCreated={loadDocs} />
     </div>
   );
