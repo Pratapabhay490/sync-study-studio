@@ -483,7 +483,8 @@
   .clay-floater,
   .clay-loader-orb,
   .clay-dot,
-  .sparkle-twinkle {
+  .sparkle-twinkle,
+  .logo-breathe {
     animation: none !important;
   }
 }
