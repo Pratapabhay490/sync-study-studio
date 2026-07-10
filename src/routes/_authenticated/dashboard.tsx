@@ -510,6 +510,74 @@ function UserCard({
   );
 }
 
+function CountdownEditor({
+  initial,
+  onSave,
+  onReset,
+}: {
+  initial: { label: string; date: string };
+  onSave: (next: { label: string; date: string }) => void;
+  onReset: () => void;
+}) {
+  const initialLocal = useMemo(() => {
+    const d = new Date(initial.date);
+    if (isNaN(d.getTime())) return "";
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }, [initial.date]);
+  const [label, setLabel] = useState(initial.label);
+  const [dateLocal, setDateLocal] = useState(initialLocal);
+
+  const handleSave = () => {
+    if (!label.trim() || !dateLocal) return;
+    const iso = new Date(dateLocal).toISOString();
+    onSave({ label: label.trim(), date: iso });
+  };
+
+  return (
+    <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-border bg-background/60 p-4 sm:flex-row sm:items-end">
+      <div className="flex-1">
+        <label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          Event name
+        </label>
+        <input
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          placeholder="e.g. NEET PG 2026"
+          className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+        />
+      </div>
+      <div className="flex-1">
+        <label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          Date & time
+        </label>
+        <input
+          type="datetime-local"
+          value={dateLocal}
+          onChange={(e) => setDateLocal(e.target.value)}
+          className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+        />
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={handleSave}
+          className="rounded-xl bg-gradient-primary px-4 py-2 text-sm font-semibold text-white shadow-glow"
+        >
+          Save
+        </button>
+        <button
+          type="button"
+          onClick={onReset}
+          className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold"
+        >
+          Reset
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function CountdownCell({ label, value }: { label: string; value: number }) {
   return (
     <div className="min-w-[64px] rounded-2xl border border-border bg-background/70 px-3 py-3 text-center shadow-card backdrop-blur sm:min-w-[80px] sm:px-4 sm:py-4">
