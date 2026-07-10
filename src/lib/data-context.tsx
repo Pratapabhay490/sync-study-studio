@@ -219,7 +219,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (!user) return { error: "Not signed in" };
       const { data, error } = await supabase
         .from("subjects")
-        .insert({ name, icon: icon ?? "BookOpen", created_by: user.id })
+        .insert({ name, icon: icon ?? "BookOpen", created_by: user.id, owner_id: user.id })
         .select("*")
         .single();
       if (error) return { error: error.message };
