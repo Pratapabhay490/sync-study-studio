@@ -158,6 +158,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           topic_name: topicName,
           description: description ?? null,
           added_by: user.id,
+          owner_id: user.id,
         })
         .select("*")
         .single();
@@ -173,7 +174,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const rows = topicNames
         .map((n) => n.trim())
         .filter(Boolean)
-        .map((topic_name) => ({ subject_id: subjectId, topic_name, added_by: user.id }));
+        .map((topic_name) => ({ subject_id: subjectId, topic_name, added_by: user.id, owner_id: user.id }));
       if (rows.length === 0) return;
       const { data, error } = await supabase.from("topics").insert(rows).select("*");
       if (error) throw error;
@@ -218,7 +219,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (!user) return { error: "Not signed in" };
       const { data, error } = await supabase
         .from("subjects")
-        .insert({ name, icon: icon ?? "BookOpen", created_by: user.id })
+        .insert({ name, icon: icon ?? "BookOpen", created_by: user.id, owner_id: user.id })
         .select("*")
         .single();
       if (error) return { error: error.message };

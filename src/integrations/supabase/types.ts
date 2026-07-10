@@ -600,6 +600,33 @@ export type Database = {
         }
         Relationships: []
       }
+      subject_templates: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          order_index: number
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          order_index?: number
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          order_index?: number
+          slug?: string
+        }
+        Relationships: []
+      }
       subjects: {
         Row: {
           created_at: string
@@ -607,6 +634,7 @@ export type Database = {
           icon: string | null
           id: string
           name: string
+          owner_id: string
           updated_at: string
         }
         Insert: {
@@ -615,6 +643,7 @@ export type Database = {
           icon?: string | null
           id?: string
           name: string
+          owner_id: string
           updated_at?: string
         }
         Update: {
@@ -623,6 +652,7 @@ export type Database = {
           icon?: string | null
           id?: string
           name?: string
+          owner_id?: string
           updated_at?: string
         }
         Relationships: []
@@ -665,12 +695,48 @@ export type Database = {
           },
         ]
       }
+      topic_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          order_index: number
+          subject_template_id: string
+          topic_name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_index?: number
+          subject_template_id: string
+          topic_name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_index?: number
+          subject_template_id?: string
+          topic_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topic_templates_subject_template_id_fkey"
+            columns: ["subject_template_id"]
+            isOneToOne: false
+            referencedRelation: "subject_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       topics: {
         Row: {
           added_by: string | null
           created_at: string
           description: string | null
           id: string
+          owner_id: string
           subject_id: string
           topic_name: string
           updated_at: string
@@ -680,6 +746,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          owner_id: string
           subject_id: string
           topic_name: string
           updated_at?: string
@@ -689,6 +756,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          owner_id?: string
           subject_id?: string
           topic_name?: string
           updated_at?: string
