@@ -7,6 +7,7 @@ import {
   Activity,
   ArrowRight,
   CalendarClock,
+  Pencil,
   Sparkles,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/scroll-reveal";
@@ -26,7 +27,34 @@ import clayCompleted from "@/assets/clay-icon-completed.png";
 import clayProgress from "@/assets/clay-icon-progress.png";
 import clayStreak from "@/assets/clay-icon-streak.png";
 
-const NEET_PG_DATE = new Date("2026-08-30T09:00:00+05:30");
+const DEFAULT_TARGET = {
+  label: "NEET PG 2026",
+  date: "2026-08-30T09:00:00+05:30",
+};
+
+function useCustomTarget(userId?: string) {
+  const storageKey = userId ? `sync:countdown:${userId}` : null;
+  const [target, setTarget] = useState(DEFAULT_TARGET);
+  useEffect(() => {
+    if (!storageKey) return;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.label && parsed?.date) setTarget(parsed);
+      }
+    } catch {}
+  }, [storageKey]);
+  const save = (next: { label: string; date: string }) => {
+    setTarget(next);
+    if (storageKey) {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(next));
+      } catch {}
+    }
+  };
+  return { target, save };
+}
 
 function useCountdown(target: Date) {
   const [now, setNow] = useState(() => new Date());
@@ -57,7 +85,10 @@ const QUOTES = [
 function Dashboard() {
   const { user } = useAuth();
   const { profiles, subjects, topics, progress, loading } = useData();
-  const countdown = useCountdown(NEET_PG_DATE);
+  const { target, save: saveTarget } = useCustomTarget(user?.id);
+  const targetDate = useMemo(() => new Date(target.date), [target.date]);
+  const countdown = useCountdown(targetDate);
+  const [editingCountdown, setEditingCountdown] = useState(false);
 
   const me = profiles.find((p) => p.id === user?.id);
   const other = profiles.find((p) => p.id !== user?.id);
@@ -206,15 +237,30 @@ function Dashboard() {
       </section>
 
 
-      {/* NEET PG Countdown */}
+      {/* Countdown */}
       <ScrollReveal as="section" className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card md:p-8" direction="up">
         <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-gradient-primary opacity-15 blur-3xl" />
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-gradient-aurora opacity-20 blur-3xl" />
         <div className="relative grid gap-6 lg:grid-cols-[1fr_240px_auto] lg:items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground">
-              <CalendarClock className="h-3.5 w-3.5 text-primary" />
-              NEET PG 2026 · 30 August 2026
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground">
+                <CalendarClock className="h-3.5 w-3.5 text-primary" />
+                {target.label} ·{" "}
+                {targetDate.toLocaleDateString(undefined, {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingCountdown((v) => !v)}
+                className="inline-flex items-center gap-1 rounded-full border border-border bg-background/60 px-2.5 py-1 text-xs font-medium text-muted-foreground transition hover:text-foreground"
+              >
+                <Pencil className="h-3 w-3" />
+                {editingCountdown ? "Close" : "Edit"}
+              </button>
             </div>
             <h2 className="mt-3 font-display text-2xl font-bold tracking-tight md:text-3xl">
               {countdown.total > 0 ? (
@@ -223,13 +269,26 @@ function Dashboard() {
                 </>
               ) : (
                 <>
-                  It's exam day. <span className="text-gradient">All the best!</span>
+                  It's the day. <span className="text-gradient">All the best!</span>
                 </>
               )}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Every topic you tick today is one step closer.
             </p>
+            {editingCountdown && (
+              <CountdownEditor
+                initial={target}
+                onSave={(next) => {
+                  saveTarget(next);
+                  setEditingCountdown(false);
+                }}
+                onReset={() => {
+                  saveTarget(DEFAULT_TARGET);
+                  setEditingCountdown(false);
+                }}
+              />
+            )}
           </div>
           <div aria-hidden className="hidden" />
           <div className="grid grid-cols-4 gap-2 sm:gap-3">
@@ -240,6 +299,7 @@ function Dashboard() {
           </div>
         </div>
       </ScrollReveal>
+
 
       {/* Stat tiles */}
       <ScrollReveal as="section" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" direction="up" delay={60}>
@@ -446,6 +506,74 @@ function UserCard({
         <Tile label="Total" value={stats.total} />
       </div>
       {poke && <div className="relative mt-4 flex justify-end">{poke}</div>}
+    </div>
+  );
+}
+
+function CountdownEditor({
+  initial,
+  onSave,
+  onReset,
+}: {
+  initial: { label: string; date: string };
+  onSave: (next: { label: string; date: string }) => void;
+  onReset: () => void;
+}) {
+  const initialLocal = useMemo(() => {
+    const d = new Date(initial.date);
+    if (isNaN(d.getTime())) return "";
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }, [initial.date]);
+  const [label, setLabel] = useState(initial.label);
+  const [dateLocal, setDateLocal] = useState(initialLocal);
+
+  const handleSave = () => {
+    if (!label.trim() || !dateLocal) return;
+    const iso = new Date(dateLocal).toISOString();
+    onSave({ label: label.trim(), date: iso });
+  };
+
+  return (
+    <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-border bg-background/60 p-4 sm:flex-row sm:items-end">
+      <div className="flex-1">
+        <label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          Event name
+        </label>
+        <input
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          placeholder="e.g. NEET PG 2026"
+          className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+        />
+      </div>
+      <div className="flex-1">
+        <label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          Date & time
+        </label>
+        <input
+          type="datetime-local"
+          value={dateLocal}
+          onChange={(e) => setDateLocal(e.target.value)}
+          className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+        />
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={handleSave}
+          className="rounded-xl bg-gradient-primary px-4 py-2 text-sm font-semibold text-white shadow-glow"
+        >
+          Save
+        </button>
+        <button
+          type="button"
+          onClick={onReset}
+          className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold"
+        >
+          Reset
+        </button>
+      </div>
     </div>
   );
 }
