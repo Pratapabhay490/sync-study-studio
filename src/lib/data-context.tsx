@@ -158,6 +158,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           topic_name: topicName,
           description: description ?? null,
           added_by: user.id,
+          owner_id: user.id,
         })
         .select("*")
         .single();
