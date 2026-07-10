@@ -117,7 +117,7 @@ function AuthPage() {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="mt-6 space-y-4">
                 <FieldWithIcon icon={User}>
-                  <Input id="su-name" placeholder="Abhay or Aishwarya" className="pl-12" value={signupName} onChange={(e) => setSignupName(e.target.value)} required />
+                  <Input id="su-name" placeholder="Your name" className="pl-12" value={signupName} onChange={(e) => setSignupName(e.target.value)} required />
                 </FieldWithIcon>
                 <FieldWithIcon icon={Mail}>
                   <Input id="su-email" type="email" placeholder="Enter your email" className="pl-12" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required />
