@@ -134,7 +134,7 @@ function AuthPage() {
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          Two minds. One rhythm. Built for Abhay & Aishwarya.
+          Two minds. One rhythm. Built for study duos who thrive together.
         </p>
       </div>
     </div>
