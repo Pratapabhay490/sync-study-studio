@@ -237,15 +237,30 @@ function Dashboard() {
       </section>
 
 
-      {/* NEET PG Countdown */}
+      {/* Countdown */}
       <ScrollReveal as="section" className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card md:p-8" direction="up">
         <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-gradient-primary opacity-15 blur-3xl" />
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-gradient-aurora opacity-20 blur-3xl" />
         <div className="relative grid gap-6 lg:grid-cols-[1fr_240px_auto] lg:items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground">
-              <CalendarClock className="h-3.5 w-3.5 text-primary" />
-              NEET PG 2026 · 30 August 2026
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground">
+                <CalendarClock className="h-3.5 w-3.5 text-primary" />
+                {target.label} ·{" "}
+                {targetDate.toLocaleDateString(undefined, {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingCountdown((v) => !v)}
+                className="inline-flex items-center gap-1 rounded-full border border-border bg-background/60 px-2.5 py-1 text-xs font-medium text-muted-foreground transition hover:text-foreground"
+              >
+                <Pencil className="h-3 w-3" />
+                {editingCountdown ? "Close" : "Edit"}
+              </button>
             </div>
             <h2 className="mt-3 font-display text-2xl font-bold tracking-tight md:text-3xl">
               {countdown.total > 0 ? (
@@ -254,13 +269,26 @@ function Dashboard() {
                 </>
               ) : (
                 <>
-                  It's exam day. <span className="text-gradient">All the best!</span>
+                  It's the day. <span className="text-gradient">All the best!</span>
                 </>
               )}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Every topic you tick today is one step closer.
             </p>
+            {editingCountdown && (
+              <CountdownEditor
+                initial={target}
+                onSave={(next) => {
+                  saveTarget(next);
+                  setEditingCountdown(false);
+                }}
+                onReset={() => {
+                  saveTarget(DEFAULT_TARGET);
+                  setEditingCountdown(false);
+                }}
+              />
+            )}
           </div>
           <div aria-hidden className="hidden" />
           <div className="grid grid-cols-4 gap-2 sm:gap-3">
@@ -271,6 +299,7 @@ function Dashboard() {
           </div>
         </div>
       </ScrollReveal>
+
 
       {/* Stat tiles */}
       <ScrollReveal as="section" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" direction="up" delay={60}>
