@@ -27,7 +27,34 @@ import clayCompleted from "@/assets/clay-icon-completed.png";
 import clayProgress from "@/assets/clay-icon-progress.png";
 import clayStreak from "@/assets/clay-icon-streak.png";
 
-const NEET_PG_DATE = new Date("2026-08-30T09:00:00+05:30");
+const DEFAULT_TARGET = {
+  label: "NEET PG 2026",
+  date: "2026-08-30T09:00:00+05:30",
+};
+
+function useCustomTarget(userId?: string) {
+  const storageKey = userId ? `sync:countdown:${userId}` : null;
+  const [target, setTarget] = useState(DEFAULT_TARGET);
+  useEffect(() => {
+    if (!storageKey) return;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.label && parsed?.date) setTarget(parsed);
+      }
+    } catch {}
+  }, [storageKey]);
+  const save = (next: { label: string; date: string }) => {
+    setTarget(next);
+    if (storageKey) {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(next));
+      } catch {}
+    }
+  };
+  return { target, save };
+}
 
 function useCountdown(target: Date) {
   const [now, setNow] = useState(() => new Date());
