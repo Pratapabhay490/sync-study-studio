@@ -7,6 +7,7 @@ import {
   Activity,
   ArrowRight,
   CalendarClock,
+  Pencil,
   Sparkles,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/scroll-reveal";
