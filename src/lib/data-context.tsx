@@ -174,7 +174,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const rows = topicNames
         .map((n) => n.trim())
         .filter(Boolean)
-        .map((topic_name) => ({ subject_id: subjectId, topic_name, added_by: user.id }));
+        .map((topic_name) => ({ subject_id: subjectId, topic_name, added_by: user.id, owner_id: user.id }));
       if (rows.length === 0) return;
       const { data, error } = await supabase.from("topics").insert(rows).select("*");
       if (error) throw error;
