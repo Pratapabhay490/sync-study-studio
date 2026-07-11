@@ -5,9 +5,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Sparkles, Loader2, Mail, Lock, User } from "lucide-react";
+import { Sparkles, Loader2, Mail, Lock, User, UserPlus, BellRing, Users } from "lucide-react";
 import clayAuthHero from "@/assets/clay-auth-hero.png";
 import { toast } from "sonner";
+import Carousel, { type CarouselItem } from "@/components/Carousel";
+
+const ONBOARDING_ITEMS: CarouselItem[] = [
+  {
+    id: 1,
+    title: "1. Create your account",
+    description: "Sign up in seconds with your email to unlock your personal SyncStudy workspace.",
+    icon: <UserPlus className="carousel-icon" />,
+  },
+  {
+    id: 2,
+    title: "2. Enable push & Lock In",
+    description: "Head to Settings, turn on push notifications, and hit Lock In to start focused study sessions.",
+    icon: <BellRing className="carousel-icon" />,
+  },
+  {
+    id: 3,
+    title: "3. Add your study partner",
+    description: "Add your partner using their SyncStudy ID — subjects, progress and pokes sync live. Keep syncing, keep studying!",
+    icon: <Users className="carousel-icon" />,
+  },
+];
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
