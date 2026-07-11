@@ -1,9 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
-  Outlet, Link, createRootRouteWithContext, useRouter, HeadContent, Scripts, useRouterState,
+  Outlet, Link, createRootRouteWithContext, useRouter, HeadContent, Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import GradualBlur from "@/components/GradualBlur";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -111,8 +110,6 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const showBlur = !pathname.startsWith("/dashboard");
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -120,19 +117,6 @@ function RootComponent() {
           <DataProvider>
             <NotificationsProvider>
               <Outlet />
-              {showBlur && (
-                <GradualBlur
-                  target="page"
-                  position="bottom"
-                  height="6rem"
-                  strength={2}
-                  divCount={5}
-                  curve="bezier"
-                  exponential
-                  opacity={1}
-                  animated="scroll"
-                />
-              )}
               <Toaster richColors position="top-right" />
             </NotificationsProvider>
           </DataProvider>
