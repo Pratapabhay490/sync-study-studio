@@ -155,6 +155,20 @@ function AuthPage() {
           </Tabs>
         </div>
 
+        <div className="mt-8 flex flex-col items-center">
+          <h2 className="mb-3 text-center font-display text-sm font-bold uppercase tracking-widest text-muted-foreground">
+            How SyncStudy works
+          </h2>
+          <Carousel
+            items={ONBOARDING_ITEMS}
+            baseWidth={320}
+            autoplay
+            autoplayDelay={4000}
+            pauseOnHover
+            loop
+          />
+        </div>
+
         <p className="mt-6 text-center text-xs text-muted-foreground">
           Two minds. One rhythm. Built for study duos who thrive together.
         </p>
