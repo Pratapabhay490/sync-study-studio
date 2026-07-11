@@ -111,6 +111,8 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const showBlur = !pathname.startsWith("/dashboard");
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -118,6 +120,19 @@ function RootComponent() {
           <DataProvider>
             <NotificationsProvider>
               <Outlet />
+              {showBlur && (
+                <GradualBlur
+                  target="page"
+                  position="bottom"
+                  height="6rem"
+                  strength={2}
+                  divCount={5}
+                  curve="bezier"
+                  exponential
+                  opacity={1}
+                  animated="scroll"
+                />
+              )}
               <Toaster richColors position="top-right" />
             </NotificationsProvider>
           </DataProvider>
@@ -126,3 +141,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
