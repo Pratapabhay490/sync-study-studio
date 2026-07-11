@@ -115,11 +115,11 @@ function readAsText(file: File): Promise<string> {
 async function extractPdf(file: File): Promise<string> {
   ensureLegacyBrowserPolyfills();
 
-  // Use the older legacy pdf.js UMD build. It is much safer on iPad/Safari
+  // Use the older legacy pdf.js build. It is much safer on iPad/Safari
   // than the current ESM build, which relies on newer browser APIs.
-  const pdfModule: any = await import("pdfjs-dist/legacy/build/pdf.js");
+  const pdfModule: any = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const pdfjs: any = pdfModule.getDocument ? pdfModule : (pdfModule.default ?? pdfModule);
-  pdfjs.GlobalWorkerOptions.workerSrc = (await import("pdfjs-dist/legacy/build/pdf.worker.js?url")).default;
+  pdfjs.GlobalWorkerOptions.workerSrc = (await import("pdfjs-dist/legacy/build/pdf.worker.mjs?url")).default;
 
   try {
     const buf = await readAsArrayBuffer(file);
