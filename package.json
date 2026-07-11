@@ -58,7 +58,7 @@
     "mammoth": "^1.12.0",
     "motion": "^12.42.2",
     "ogl": "^1.0.11",
-    "pdfjs-dist": "2.16.105",
+    "pdfjs-dist": "4.10.38",
     "react": "^19.2.0",
     "react-day-picker": "^9.14.0",
     "react-dom": "^19.2.0",
