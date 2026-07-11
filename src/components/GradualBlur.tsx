@@ -80,7 +80,7 @@ const useResponsiveDimension = (responsive: boolean, config: any, key: string) =
   return responsive ? value : config[key];
 };
 
-const useIntersectionObserver = (ref: React.RefObject<HTMLElement>, shouldObserve = false) => {
+const useIntersectionObserver = (ref: React.RefObject<HTMLElement | null>, shouldObserve = false) => {
   const [isVisible, setIsVisible] = useState(!shouldObserve);
   useEffect(() => {
     if (!shouldObserve || !ref.current) return;
