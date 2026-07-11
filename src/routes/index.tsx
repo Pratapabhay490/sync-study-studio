@@ -10,6 +10,7 @@ import clayPartners from "@/assets/clay-icon-partners.png";
 import clayBrain from "@/assets/clay-analytics-mascot.png";
 import clayBell from "@/assets/clay-bell.png";
 import Carousel, { type CarouselItem } from "@/components/Carousel";
+import Aurora from "@/components/Aurora";
 
 const ONBOARDING_ITEMS: CarouselItem[] = [
   {
@@ -51,6 +52,10 @@ function Landing() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
+      {/* aurora background */}
+      <div className="pointer-events-none fixed inset-0 -z-20">
+        <Aurora colorStops={["#7cff67", "#B497CF", "#5227FF"]} blend={0.5} amplitude={1.0} speed={0.5} />
+      </div>
       {/* soft clay blobs */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-32 -left-20 h-[420px] w-[420px] rounded-full bg-[oklch(0.85_0.08_240)] opacity-40 blur-3xl" />
