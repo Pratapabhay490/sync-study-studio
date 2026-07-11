@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Sparkles, Loader2, Mail, Lock, User } from "lucide-react";
 import clayAuthHero from "@/assets/clay-auth-hero.png";
-import Aurora from "@/components/Aurora";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -65,10 +64,6 @@ function AuthPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Aurora background */}
-      <div className="pointer-events-none fixed inset-0 -z-20">
-        <Aurora colorStops={["#7cff67", "#B497CF", "#5227FF"]} blend={0.5} amplitude={1.0} speed={0.5} />
-      </div>
       {/* Soft floating blobs */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-gradient-aurora opacity-40 blur-3xl animate-float-slow" />
