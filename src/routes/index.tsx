@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { ArrowRight, CheckCircle2, Zap, LineChart, Bell, Brain } from "lucide-react";
+import { ArrowRight, CheckCircle2, Zap, LineChart, Bell, Brain, UserPlus, BellRing, Users } from "lucide-react";
 import syncLogo from "@/assets/sync-logo.jpeg";
 import clayHero from "@/assets/clay-landing-hero.png";
 import clayStreak from "@/assets/clay-icon-streak.png";
@@ -9,6 +9,28 @@ import clayProgress from "@/assets/clay-icon-progress.png";
 import clayPartners from "@/assets/clay-icon-partners.png";
 import clayBrain from "@/assets/clay-analytics-mascot.png";
 import clayBell from "@/assets/clay-bell.png";
+import Carousel, { type CarouselItem } from "@/components/Carousel";
+
+const ONBOARDING_ITEMS: CarouselItem[] = [
+  {
+    id: 1,
+    title: "1. Create your account",
+    description: "Sign up in seconds with your email to unlock your personal SyncStudy workspace.",
+    icon: <UserPlus className="carousel-icon" />,
+  },
+  {
+    id: 2,
+    title: "2. Enable push & Lock In",
+    description: "Head to Settings, turn on push notifications, and hit Lock In to start focused study sessions.",
+    icon: <BellRing className="carousel-icon" />,
+  },
+  {
+    id: 3,
+    title: "3. Add your study partner",
+    description: "Add your partner using their SyncStudy ID — subjects, progress and pokes sync live. Keep syncing, keep studying!",
+    icon: <Users className="carousel-icon" />,
+  },
+];
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -144,6 +166,28 @@ function Landing() {
                 <p className="mt-1.5 text-sm text-muted-foreground">{f.body}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* HOW IT WORKS */}
+        <section className="mt-28">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
+              How it <span className="text-gradient">works</span>
+            </h2>
+            <p className="mt-3 text-sm text-muted-foreground md:text-base">
+              Three simple steps to study in sync with your partner.
+            </p>
+          </div>
+          <div className="mt-10 flex justify-center">
+            <Carousel
+              items={ONBOARDING_ITEMS}
+              baseWidth={320}
+              autoplay
+              autoplayDelay={4000}
+              pauseOnHover
+              loop
+            />
           </div>
         </section>
 
