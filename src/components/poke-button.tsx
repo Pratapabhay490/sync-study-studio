@@ -31,13 +31,19 @@ export function PokeButton({ toUserId, toName, compact = false }: { toUserId?: s
       to_user: toUserId,
       message,
     });
-    setBusy(false);
-    if (error) toast.error(error.message);
-    else {
-      toast.success(`Poked ${toName?.split(" ")[0] ?? "your partner"}! 👋`);
-      setMsg("");
-      setOpen(false);
+    if (error) {
+      setBusy(false);
+      toast.error(error.message);
+      return;
     }
+    // Flush the notification queue immediately so the recipient gets the push
+    // now instead of waiting up to 60s for the cron drain.
+    supabase.functions.invoke("send-push", { body: {} }).catch(() => {});
+    setBusy(false);
+    toast.success(`Poked ${toName?.split(" ")[0] ?? "your partner"}! 👋`);
+    setMsg("");
+    setOpen(false);
+
   };
 
   return (
