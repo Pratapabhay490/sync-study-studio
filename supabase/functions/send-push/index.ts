@@ -13,13 +13,20 @@ const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT") ?? "mailto:contact@sync-stud
 webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
 
 const CRON_SECRET = Deno.env.get("CRON_SECRET");
+const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 
 function authorized(req: Request) {
-  if (!CRON_SECRET) return false;
   const h = req.headers.get("Authorization") ?? req.headers.get("authorization") ?? "";
   const token = h.toLowerCase().startsWith("bearer ") ? h.slice(7).trim() : "";
-  return token === CRON_SECRET;
+  const apikey = req.headers.get("apikey") ?? "";
+  if (CRON_SECRET && token === CRON_SECRET) return true;
+  // Allow any authenticated app caller (signed-in user JWT or anon key) to trigger an on-demand drain.
+  // Draining is idempotent and only sends notifications that were already queued by DB triggers.
+  if (ANON_KEY && (token === ANON_KEY || apikey === ANON_KEY)) return true;
+  if (token && token.split(".").length === 3) return true; // supabase user JWT
+  return false;
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
