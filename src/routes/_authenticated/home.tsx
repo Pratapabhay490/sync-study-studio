@@ -42,6 +42,16 @@ function PartnerHome() {
   const presence = usePresence(userIds);
   const checkins = useTodayCheckins(userIds);
   const focusSession = useActiveFocusSession(userIds);
+  const xp = useXpFor(userIds);
+  const myXp = user ? xp[user.id] : undefined;
+  const otherXp = other ? xp[other.id] : undefined;
+  const combinedWeeklyXp = (myXp?.total_xp ?? 0) + (otherXp?.total_xp ?? 0);
+
+  // Trigger streak refresh on mount (server updates together_streaks table)
+  useEffect(() => {
+    if (!other) return;
+    supabase.rpc("refresh_together_streak").then(() => {});
+  }, [other?.id]);
 
   const myStats = user ? computeUserStats(user.id, topics, progress) : { pct: 0, completed: 0, total: 0 };
   const otherStats = other ? computeUserStats(other.id, topics, progress) : { pct: 0, completed: 0, total: 0 };
