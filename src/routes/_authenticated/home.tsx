@@ -21,6 +21,7 @@ import { StreakFlame } from "@/components/streak-flame";
 import { WeeklyChallengeCard } from "@/components/weekly-challenge-card";
 import { StudyTree } from "@/components/study-tree";
 import { BadgeShelf } from "@/components/badge-shelf";
+import { PartnerMascot } from "@/components/partner-mascot";
 import { differenceInCalendarDays, formatDistanceToNow, isToday, parseISO, startOfDay, subDays } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Sparkles, Flame, Users, Heart, BookOpen, Trophy } from "lucide-react";
@@ -206,6 +207,7 @@ function PartnerHome() {
   return (
     <div className="space-y-6 md:space-y-8">
       <CheckinModal />
+      <PartnerMascot sharedStreak={sharedStreak} combinedXp={combinedWeeklyXp} />
 
       {/* Partner header */}
       <ScrollReveal as="section" className="clay relative overflow-hidden p-6 md:p-8" direction="up">
