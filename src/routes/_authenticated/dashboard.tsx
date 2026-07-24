@@ -71,7 +71,7 @@ function useCountdown(target: Date) {
 }
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Let's be in sync" }] }),
+  head: () => ({ meta: [{ title: "Home — Let's be in sync" }] }),
   component: Dashboard,
 });
 
