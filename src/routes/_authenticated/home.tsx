@@ -28,7 +28,7 @@ import { ArrowRight, Sparkles, Flame, Users, Heart, BookOpen, Trophy } from "luc
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/home")({
-  head: () => ({ meta: [{ title: "Home — Let's be in sync" }] }),
+  head: () => ({ meta: [{ title: "Overview — Let's be in sync" }] }),
   component: PartnerHome,
 });
 
