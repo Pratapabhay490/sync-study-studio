@@ -27,9 +27,9 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 const nav = [
-  { to: "/home", label: "Home", icon: Home },
+  { to: "/dashboard", label: "Home", icon: Home },
+  { to: "/home", label: "Overview", icon: LayoutDashboard },
   { to: "/journey", label: "Journey", icon: Map },
-  { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { to: "/subjects", label: "Subjects", icon: BookOpen },
   { to: "/daily-board", label: "Daily Board", icon: ListChecks },
   { to: "/practice", label: "AI Practice", icon: Brain },
