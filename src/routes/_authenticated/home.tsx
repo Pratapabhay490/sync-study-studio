@@ -360,6 +360,17 @@ function PartnerHome() {
         </div>
       </ScrollReveal>
 
+      {/* Weekly challenge + tree */}
+      <div className="grid gap-6 md:grid-cols-[1fr_1fr]">
+        <ScrollReveal direction="up"><WeeklyChallengeCard partnerId={other?.id ?? null} /></ScrollReveal>
+        <ScrollReveal direction="up" delay={80}><StudyTree xp={combinedWeeklyXp} together={sharedStreak} /></ScrollReveal>
+      </div>
+
+      {/* Badge shelf */}
+      <ScrollReveal direction="up">
+        <BadgeShelf userIds={userIds} />
+      </ScrollReveal>
+
       {/* Activity feed */}
       <ScrollReveal className="clay p-6" direction="up">
         <h2 className="mb-4 font-display text-lg font-bold">Recent activity</h2>
