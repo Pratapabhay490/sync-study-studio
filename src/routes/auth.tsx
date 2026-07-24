@@ -25,7 +25,7 @@ function AuthPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/home" });
+    if (!loading && user) navigate({ to: "/dashboard" });
   }, [user, loading, navigate]);
 
   const [signinEmail, setSigninEmail] = useState("");
@@ -42,7 +42,7 @@ function AuthPage() {
     if (error) toast.error(error);
     else {
       toast.success("Welcome back!");
-      navigate({ to: "/home" });
+      navigate({ to: "/dashboard" });
     }
   }
 
@@ -58,7 +58,7 @@ function AuthPage() {
     if (error) toast.error(error);
     else {
       toast.success("Account created. You're in!");
-      navigate({ to: "/home" });
+      navigate({ to: "/dashboard" });
     }
   }
 
