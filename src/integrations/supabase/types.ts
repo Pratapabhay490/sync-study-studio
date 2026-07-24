@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      badges: {
+        Row: {
+          description: string
+          emoji: string
+          key: string
+          sort_order: number
+          tier: string
+          title: string
+          xp_reward: number
+        }
+        Insert: {
+          description: string
+          emoji: string
+          key: string
+          sort_order?: number
+          tier?: string
+          title: string
+          xp_reward?: number
+        }
+        Update: {
+          description?: string
+          emoji?: string
+          key?: string
+          sort_order?: number
+          tier?: string
+          title?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
       daily_checkins: {
         Row: {
           created_at: string
@@ -789,6 +819,36 @@ export type Database = {
         }
         Relationships: []
       }
+      together_streaks: {
+        Row: {
+          current_streak: number
+          last_shared_day: string | null
+          longest_streak: number
+          pair_key: string
+          updated_at: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          current_streak?: number
+          last_shared_day?: string | null
+          longest_streak?: number
+          pair_key: string
+          updated_at?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          current_streak?: number
+          last_shared_day?: string | null
+          longest_streak?: number
+          pair_key?: string
+          updated_at?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: []
+      }
       topic_progress: {
         Row: {
           completed: boolean
@@ -903,12 +963,144 @@ export type Database = {
           },
         ]
       }
+      user_badges: {
+        Row: {
+          badge_key: string
+          context: Json
+          id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          badge_key: string
+          context?: Json
+          id?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          context?: Json
+          id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_key_fkey"
+            columns: ["badge_key"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
+      user_xp_events: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          kind: string
+          meta: Json
+          ref_id: string | null
+          ref_type: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          kind: string
+          meta?: Json
+          ref_id?: string | null
+          ref_type?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          meta?: Json
+          ref_id?: string | null
+          ref_type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_challenges: {
+        Row: {
+          challenge_kind: string
+          claimed: boolean
+          created_at: string
+          description: string
+          goal: number
+          id: string
+          pair_key: string
+          progress: number
+          reward_xp: number
+          title: string
+          user_a: string
+          user_b: string
+          week_start: string
+        }
+        Insert: {
+          challenge_kind: string
+          claimed?: boolean
+          created_at?: string
+          description: string
+          goal: number
+          id?: string
+          pair_key: string
+          progress?: number
+          reward_xp?: number
+          title: string
+          user_a: string
+          user_b: string
+          week_start: string
+        }
+        Update: {
+          challenge_kind?: string
+          claimed?: boolean
+          created_at?: string
+          description?: string
+          goal?: number
+          id?: string
+          pair_key?: string
+          progress?: number
+          reward_xp?: number
+          title?: string
+          user_a?: string
+          user_b?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      user_xp_totals: {
+        Row: {
+          level: number | null
+          total_xp: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_study_partner_by_email: { Args: { p_email: string }; Returns: string }
+      award_xp: {
+        Args: {
+          p_amount: number
+          p_kind: string
+          p_meta?: Json
+          p_ref_id?: string
+          p_ref_type?: string
+          p_user: string
+        }
+        Returns: boolean
+      }
+      claim_weekly_challenge: { Args: { p_id: string }; Returns: boolean }
       end_focus_session: { Args: { p_session_id: string }; Returns: undefined }
       enqueue_quiz_invite: {
         Args: {
@@ -919,6 +1111,7 @@ export type Database = {
         }
         Returns: number
       }
+      ensure_weekly_challenge: { Args: never; Returns: string }
       find_profile_by_email: {
         Args: { p_email: string }
         Returns: {
@@ -946,6 +1139,8 @@ export type Database = {
         }[]
       }
       my_partner_id: { Args: never; Returns: string }
+      pair_key_for: { Args: { a: string; b: string }; Returns: string }
+      refresh_together_streak: { Args: never; Returns: undefined }
       remove_study_partner: {
         Args: { p_partner_id: string }
         Returns: undefined
@@ -966,6 +1161,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      unlock_badge: {
+        Args: { p_badge_key: string; p_context?: Json; p_user: string }
+        Returns: boolean
+      }
+      xp_to_level: { Args: { xp: number }; Returns: number }
     }
     Enums: {
       [_ in never]: never
