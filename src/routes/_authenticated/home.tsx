@@ -221,6 +221,25 @@ function PartnerHome() {
             <PartnerBadge profile={other} status={presence[other?.id ?? ""]} label="Your partner" fallback="Add a study partner in Settings" />
           </div>
 
+          {/* XP + streak strip */}
+          <div className="grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-center">
+            <div className="clay-pressed p-4">
+              <div className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                Your progress
+              </div>
+              <XpBar xp={myXp?.total_xp ?? 0} />
+            </div>
+            <div className="flex justify-center">
+              <StreakFlame days={sharedStreak} />
+            </div>
+            <div className="clay-pressed p-4">
+              <div className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                {other?.name?.split(" ")[0] ?? "Partner"}'s progress
+              </div>
+              <XpBar xp={otherXp?.total_xp ?? 0} />
+            </div>
+          </div>
+
           <div className="mx-auto max-w-2xl text-center">
             <h1 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
               {completedToday > 0 ? (
@@ -230,6 +249,7 @@ function PartnerHome() {
               )}
             </h1>
           </div>
+
 
           {/* Quick actions */}
           <div className="flex flex-wrap items-center justify-center gap-2">
