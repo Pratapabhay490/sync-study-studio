@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_checkins: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          morning_at: string | null
+          morning_goal: string | null
+          night_at: string | null
+          night_note: string | null
+          night_status: string | null
+          planned_minutes: number | null
+          planned_topics: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          morning_at?: string | null
+          morning_goal?: string | null
+          night_at?: string | null
+          night_note?: string | null
+          night_status?: string | null
+          planned_minutes?: number | null
+          planned_topics?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          morning_at?: string | null
+          morning_goal?: string | null
+          night_at?: string | null
+          night_note?: string | null
+          night_status?: string | null
+          planned_minutes?: number | null
+          planned_topics?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_tasks: {
         Row: {
           completed_at: string | null
@@ -47,6 +92,45 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      focus_sessions: {
+        Row: {
+          created_at: string
+          duration_min: number
+          ends_at: string
+          host_id: string
+          id: string
+          joined_by_partner: boolean
+          partner_id: string | null
+          started_at: string
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_min: number
+          ends_at: string
+          host_id: string
+          id?: string
+          joined_by_partner?: boolean
+          partner_id?: string | null
+          started_at?: string
+          state?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_min?: number
+          ends_at?: string
+          host_id?: string
+          id?: string
+          joined_by_partner?: boolean
+          partner_id?: string | null
+          started_at?: string
+          state?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -113,6 +197,27 @@ export type Database = {
           message?: string
           read?: boolean
           to_user?: string
+        }
+        Relationships: []
+      }
+      presence: {
+        Row: {
+          current_activity: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_activity?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_activity?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -579,6 +684,33 @@ export type Database = {
           },
         ]
       }
+      reactions: {
+        Row: {
+          context: Json
+          created_at: string
+          from_user: string
+          id: string
+          kind: string
+          to_user: string
+        }
+        Insert: {
+          context?: Json
+          created_at?: string
+          from_user: string
+          id?: string
+          kind: string
+          to_user: string
+        }
+        Update: {
+          context?: Json
+          created_at?: string
+          from_user?: string
+          id?: string
+          kind?: string
+          to_user?: string
+        }
+        Relationships: []
+      }
       study_partners: {
         Row: {
           created_at: string
@@ -777,6 +909,7 @@ export type Database = {
     }
     Functions: {
       add_study_partner_by_email: { Args: { p_email: string }; Returns: string }
+      end_focus_session: { Args: { p_session_id: string }; Returns: undefined }
       enqueue_quiz_invite: {
         Args: {
           p_body: string
@@ -795,7 +928,12 @@ export type Database = {
           name: string
         }[]
       }
+      heartbeat_presence: {
+        Args: { p_activity: string; p_status: string }
+        Returns: undefined
+      }
       is_partner_of: { Args: { _a: string; _b: string }; Returns: boolean }
+      join_focus_session: { Args: { p_session_id: string }; Returns: undefined }
       join_quiz_session: { Args: { p_session_id: string }; Returns: undefined }
       list_visible_profiles: {
         Args: never
@@ -807,10 +945,12 @@ export type Database = {
           name: string
         }[]
       }
+      my_partner_id: { Args: never; Returns: string }
       remove_study_partner: {
         Args: { p_partner_id: string }
         Returns: undefined
       }
+      start_focus_session: { Args: { p_duration_min: number }; Returns: string }
       start_quiz_session: {
         Args: { p_question_ids: string[]; p_session_id: string }
         Returns: undefined
