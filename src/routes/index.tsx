@@ -46,7 +46,7 @@ function Landing() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard" });
+    if (!loading && user) navigate({ to: "/home" });
   }, [user, loading, navigate]);
 
   return (
