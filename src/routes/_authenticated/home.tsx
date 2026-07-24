@@ -15,6 +15,12 @@ import {
   useTodayCheckins,
   useActiveFocusSession,
 } from "@/lib/partner";
+import { useXpFor } from "@/lib/xp";
+import { XpBar } from "@/components/xp-bar";
+import { StreakFlame } from "@/components/streak-flame";
+import { WeeklyChallengeCard } from "@/components/weekly-challenge-card";
+import { StudyTree } from "@/components/study-tree";
+import { BadgeShelf } from "@/components/badge-shelf";
 import { differenceInCalendarDays, formatDistanceToNow, isToday, parseISO, startOfDay, subDays } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Sparkles, Flame, Users, Heart, BookOpen, Trophy } from "lucide-react";
