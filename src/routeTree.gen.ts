@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedPracticeStatsRouteImport } from './routes/_authenticated/practice-stats'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
+import { Route as AuthenticatedJourneyRouteImport } from './routes/_authenticated/journey'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDailyBoardRouteImport } from './routes/_authenticated/daily-board'
@@ -51,6 +52,11 @@ const AuthenticatedPracticeStatsRoute =
 const AuthenticatedPracticeRoute = AuthenticatedPracticeRouteImport.update({
   id: '/practice',
   path: '/practice',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedJourneyRoute = AuthenticatedJourneyRouteImport.update({
+  id: '/journey',
+  path: '/journey',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/daily-board': typeof AuthenticatedDailyBoardRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/journey': typeof AuthenticatedJourneyRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/practice-stats': typeof AuthenticatedPracticeStatsRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/daily-board': typeof AuthenticatedDailyBoardRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/journey': typeof AuthenticatedJourneyRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/practice-stats': typeof AuthenticatedPracticeStatsRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/_authenticated/daily-board': typeof AuthenticatedDailyBoardRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/journey': typeof AuthenticatedJourneyRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/practice-stats': typeof AuthenticatedPracticeStatsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/daily-board'
     | '/dashboard'
     | '/home'
+    | '/journey'
     | '/practice'
     | '/practice-stats'
     | '/settings'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/daily-board'
     | '/dashboard'
     | '/home'
+    | '/journey'
     | '/practice'
     | '/practice-stats'
     | '/settings'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/_authenticated/daily-board'
     | '/_authenticated/dashboard'
     | '/_authenticated/home'
+    | '/_authenticated/journey'
     | '/_authenticated/practice'
     | '/_authenticated/practice-stats'
     | '/_authenticated/settings'
@@ -228,6 +240,13 @@ declare module '@tanstack/react-router' {
       path: '/practice'
       fullPath: '/practice'
       preLoaderRoute: typeof AuthenticatedPracticeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/journey': {
+      id: '/_authenticated/journey'
+      path: '/journey'
+      fullPath: '/journey'
+      preLoaderRoute: typeof AuthenticatedJourneyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/home': {
@@ -288,6 +307,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDailyBoardRoute: typeof AuthenticatedDailyBoardRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedJourneyRoute: typeof AuthenticatedJourneyRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedPracticeStatsRoute: typeof AuthenticatedPracticeStatsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -301,6 +321,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDailyBoardRoute: AuthenticatedDailyBoardRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  AuthenticatedJourneyRoute: AuthenticatedJourneyRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedPracticeStatsRoute: AuthenticatedPracticeStatsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,

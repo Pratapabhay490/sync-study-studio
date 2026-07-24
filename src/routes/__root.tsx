@@ -11,6 +11,8 @@ import { DataProvider } from "@/lib/data-context";
 import { NotificationsProvider } from "@/lib/notifications-context";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { BadgePopup } from "@/components/badge-popup";
+import { FloatingHearts } from "@/components/floating-hearts";
 
 function NotFoundComponent() {
   return (
@@ -117,6 +119,8 @@ function RootComponent() {
           <DataProvider>
             <NotificationsProvider>
               <Outlet />
+              <BadgePopup />
+              <FloatingHearts />
               <Toaster richColors position="top-right" />
             </NotificationsProvider>
           </DataProvider>

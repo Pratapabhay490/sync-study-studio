@@ -2,6 +2,7 @@ import { useState } from "react";
 import { REACTION_META, sendReaction, type ReactionKind } from "@/lib/partner";
 import { toast } from "sonner";
 import { celebrate } from "@/lib/celebrate";
+import { fireHearts } from "@/components/floating-hearts";
 
 export function ReactionBar({ toUserId, toName }: { toUserId?: string | null; toName?: string }) {
   const [busy, setBusy] = useState<ReactionKind | null>(null);
@@ -12,6 +13,7 @@ export function ReactionBar({ toUserId, toName }: { toUserId?: string | null; to
     try {
       await sendReaction(toUserId, kind);
       celebrate();
+      fireHearts(REACTION_META[kind].emoji);
       toast.success(`Sent ${REACTION_META[kind].emoji} to ${toName?.split(" ")[0] ?? "your partner"}`);
     } catch (e: any) {
       toast.error(e?.message ?? "Couldn't send");
