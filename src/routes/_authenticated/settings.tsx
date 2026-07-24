@@ -20,6 +20,19 @@ import claySettings from "@/assets/clay-settings-mascot.png";
 import clayPartners from "@/assets/clay-icon-partners.png";
 import clayBell from "@/assets/clay-bell.png";
 import clayProgress from "@/assets/clay-icon-progress.png";
+import avatarFox from "@/assets/avatars/avatar-fox.png";
+import avatarPanda from "@/assets/avatars/avatar-panda.png";
+import avatarAstronaut from "@/assets/avatars/avatar-astronaut.png";
+import avatarCat from "@/assets/avatars/avatar-cat.png";
+import avatarOwl from "@/assets/avatars/avatar-owl.png";
+
+const AVATAR_PRESETS = [
+  { id: "fox", src: avatarFox, label: "Fox" },
+  { id: "panda", src: avatarPanda, label: "Panda" },
+  { id: "astronaut", src: avatarAstronaut, label: "Astronaut" },
+  { id: "cat", src: avatarCat, label: "Cat" },
+  { id: "owl", src: avatarOwl, label: "Owl" },
+];
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Let's be in sync" }] }),
@@ -121,11 +134,53 @@ function SettingsPage() {
               <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div>
-              <Label htmlFor="avatar">Avatar URL</Label>
+              <Label htmlFor="avatar">Avatar URL (optional)</Label>
               <Input id="avatar" value={avatar} onChange={(e) => setAvatar(e.target.value)} placeholder="https://…" />
             </div>
           </div>
           <Button onClick={saveProfile} className="bg-gradient-primary text-white">Save</Button>
+        </div>
+
+        <div className="mt-6">
+          <div className="mb-3 flex items-center justify-between">
+            <Label className="text-sm font-semibold">Pick an avatar</Label>
+            {avatar && (
+              <button
+                type="button"
+                onClick={() => setAvatar("")}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {AVATAR_PRESETS.map((a) => {
+              const selected = avatar === a.src;
+              return (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() => setAvatar(a.src)}
+                  aria-label={`Choose ${a.label} avatar`}
+                  className={`group relative h-20 w-20 rounded-2xl p-1 transition-all ${
+                    selected
+                      ? "bg-gradient-primary shadow-clay-sm scale-105"
+                      : "bg-card shadow-clay-sm hover:-translate-y-0.5"
+                  }`}
+                >
+                  <img
+                    src={a.src}
+                    alt={a.label}
+                    loading="lazy"
+                    width={512}
+                    height={512}
+                    className="h-full w-full rounded-xl bg-background object-cover"
+                  />
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
