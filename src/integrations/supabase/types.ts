@@ -87,15 +87,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "daily_checkins_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       daily_tasks: {
         Row: {
@@ -131,15 +123,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "daily_tasks_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       focus_sessions: {
         Row: {
@@ -178,22 +162,7 @@ export type Database = {
           state?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "focus_sessions_host_id_fkey"
-            columns: ["host_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "focus_sessions_partner_id_fkey"
-            columns: ["partner_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       notification_queue: {
         Row: {
@@ -232,15 +201,7 @@ export type Database = {
           url?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "notification_queue_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       pokes: {
         Row: {
@@ -267,22 +228,7 @@ export type Database = {
           read?: boolean
           to_user?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "pokes_from_user_fkey"
-            columns: ["from_user"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "pokes_to_user_fkey"
-            columns: ["to_user"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       presence: {
         Row: {
@@ -303,15 +249,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "presence_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -338,15 +276,7 @@ export type Database = {
           name?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       push_subscriptions: {
         Row: {
@@ -379,15 +309,7 @@ export type Database = {
           user_agent?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "push_subscriptions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       quiz_answers: {
         Row: {
@@ -438,13 +360,6 @@ export type Database = {
             referencedRelation: "quiz_sessions"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "quiz_answers_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       quiz_bookmarks: {
@@ -476,13 +391,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "quiz_questions"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_bookmarks_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -521,13 +429,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "quiz_documents"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_chunks_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -574,15 +475,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_documents_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       quiz_questions: {
         Row: {
@@ -634,13 +527,6 @@ export type Database = {
           topic?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "quiz_questions_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
           {
             foreignKeyName: "quiz_questions_source_doc_id_fkey"
             columns: ["source_doc_id"]
@@ -694,13 +580,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "quiz_sessions"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_session_players_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -792,22 +671,7 @@ export type Database = {
           topic?: string | null
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_sessions_host_id_fkey"
-            columns: ["host_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quiz_sessions_partner_id_fkey"
-            columns: ["partner_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       quiz_wrong_bank: {
         Row: {
@@ -848,13 +712,6 @@ export type Database = {
             referencedRelation: "quiz_questions"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "quiz_wrong_bank_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       reactions: {
@@ -882,22 +739,7 @@ export type Database = {
           kind?: string
           to_user?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "reactions_from_user_fkey"
-            columns: ["from_user"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "reactions_to_user_fkey"
-            columns: ["to_user"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       study_partners: {
         Row: {
@@ -918,22 +760,7 @@ export type Database = {
           partner_id?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "study_partners_partner_id_fkey"
-            columns: ["partner_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "study_partners_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       subject_templates: {
         Row: {
@@ -990,22 +817,7 @@ export type Database = {
           owner_id?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "subjects_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "subjects_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       together_streaks: {
         Row: {
@@ -1072,13 +884,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "topics"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "topic_progress_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -1150,20 +955,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "topics_added_by_fkey"
-            columns: ["added_by"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "topics_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "topics_subject_id_fkey"
             columns: ["subject_id"]
             isOneToOne: false
@@ -1202,13 +993,6 @@ export type Database = {
             referencedRelation: "badges"
             referencedColumns: ["key"]
           },
-          {
-            foreignKeyName: "user_badges_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       user_xp_events: {
@@ -1242,15 +1026,7 @@ export type Database = {
           ref_type?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_xp_events_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_xp_totals"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       weekly_challenges: {
         Row: {
