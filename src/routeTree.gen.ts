@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedPracticeStatsRouteImport } from './routes/_authenticated/practice-stats'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
+import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDailyBoardRouteImport } from './routes/_authenticated/daily-board'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
@@ -50,6 +51,11 @@ const AuthenticatedPracticeStatsRoute =
 const AuthenticatedPracticeRoute = AuthenticatedPracticeRouteImport.update({
   id: '/practice',
   path: '/practice',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -91,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/daily-board': typeof AuthenticatedDailyBoardRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/home': typeof AuthenticatedHomeRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/practice-stats': typeof AuthenticatedPracticeStatsRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/daily-board': typeof AuthenticatedDailyBoardRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/home': typeof AuthenticatedHomeRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/practice-stats': typeof AuthenticatedPracticeStatsRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/daily-board': typeof AuthenticatedDailyBoardRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/practice-stats': typeof AuthenticatedPracticeStatsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -134,6 +143,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/daily-board'
     | '/dashboard'
+    | '/home'
     | '/practice'
     | '/practice-stats'
     | '/settings'
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/daily-board'
     | '/dashboard'
+    | '/home'
     | '/practice'
     | '/practice-stats'
     | '/settings'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/_authenticated/analytics'
     | '/_authenticated/daily-board'
     | '/_authenticated/dashboard'
+    | '/_authenticated/home'
     | '/_authenticated/practice'
     | '/_authenticated/practice-stats'
     | '/_authenticated/settings'
@@ -218,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPracticeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/home': {
+      id: '/_authenticated/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AuthenticatedHomeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -268,6 +287,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedDailyBoardRoute: typeof AuthenticatedDailyBoardRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedPracticeStatsRoute: typeof AuthenticatedPracticeStatsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -280,6 +300,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedDailyBoardRoute: AuthenticatedDailyBoardRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedPracticeStatsRoute: AuthenticatedPracticeStatsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
