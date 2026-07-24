@@ -15,8 +15,8 @@ self.addEventListener("push", (event) => {
   }
   const options = {
     body: payload.body,
-    icon: payload.icon || "/favicon.ico",
-    badge: payload.badge || "/favicon.ico",
+    icon: payload.icon || "/icon-192.png",
+    badge: payload.badge || "/icon-192.png",
     tag: payload.tag || payload.kind || "lbis",
     renotify: true,
     data: { url: payload.url || "/dashboard", ...payload.data },
