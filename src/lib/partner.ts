@@ -35,7 +35,7 @@ export function usePresenceHeartbeat(status: PresenceStatus = "online", activity
     let cancelled = false;
     const beat = async () => {
       if (cancelled) return;
-      await supabase.rpc("heartbeat_presence", { p_status: status, p_activity: activity ?? null });
+      await supabase.rpc("heartbeat_presence", { p_status: status, p_activity: activity ?? "" });
     };
     beat();
     const iv = setInterval(beat, 45_000);
@@ -48,7 +48,7 @@ export function usePresenceHeartbeat(status: PresenceStatus = "online", activity
       clearInterval(iv);
       document.removeEventListener("visibilitychange", onVis);
       // best-effort mark offline
-      supabase.rpc("heartbeat_presence", { p_status: "offline", p_activity: null });
+      supabase.rpc("heartbeat_presence", { p_status: "offline", p_activity: "" });
     };
   }, [user, status, activity]);
 }
