@@ -287,18 +287,42 @@ function Lobby({
         </Button>
       </header>
 
-      {invites.filter((s) => s.partner_id === user?.id && s.host_id !== user?.id).map((inv) => (
-        <div key={inv.id} className="clay flex flex-wrap items-center gap-3 p-4">
-          <Users className="h-5 w-5 text-primary" />
-          <div className="flex-1 text-sm">
-            <span className="font-semibold">Your partner started a quiz</span>{" "}
-            <span className="text-muted-foreground">
-              · {inv.subject ?? "Mixed"} · {inv.question_count}q · {inv.difficulty}
+      {invites.length > 0 && (
+        <section className="clay space-y-3 p-5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <h2 className="font-display text-lg font-bold">Quizzes waiting for you</h2>
+            </div>
+            <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">
+              {invites.length} unattempted
             </span>
           </div>
-          <Button size="sm" onClick={() => joinInvite(inv.id)}>Join</Button>
-        </div>
-      ))}
+          <p className="text-xs text-muted-foreground">
+            Quizzes {partner?.name?.split(" ")[0] ?? "your partner"} made that you haven't attempted yet — pick any one.
+          </p>
+          <ul className="divide-y divide-border/60">
+            {invites.map((inv, i) => (
+              <li key={inv.id} className="flex flex-wrap items-center gap-3 py-3">
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-muted font-display text-sm font-bold">
+                  {i + 1}
+                </div>
+                <div className="min-w-0 flex-1 text-sm">
+                  <div className="truncate font-semibold">
+                    {[inv.subject, inv.topic].filter(Boolean).join(" • ") || "Mixed questions"}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {inv.question_count}q · {inv.difficulty} · {inv.seconds_per_question}s/q ·{" "}
+                    {new Date(inv.created_at).toLocaleString()}
+                  </div>
+                </div>
+                <Button size="sm" onClick={() => joinInvite(inv.id)}>Attempt</Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* setup card */}
