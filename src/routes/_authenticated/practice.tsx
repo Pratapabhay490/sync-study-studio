@@ -46,14 +46,26 @@ function PracticePage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [view, setView] = useState<"lobby" | "active" | "results">("lobby");
 
-  // Resume any active session this user belongs to
+  // Resume only a session *I* have actually started attempting (and not finished).
+  // Never auto-jump into a partner's freshly created session — those are listed
+  // as pending invites so the partner can pick which one to attempt.
   useEffect(() => {
     if (!user) return;
     (async () => {
+      const { data: mine } = await sb
+        .from("quiz_session_players")
+        .select("session_id, attempted_count, finished_at, joined_at")
+        .eq("user_id", user.id)
+        .is("finished_at", null)
+        .gt("attempted_count", 0)
+        .order("joined_at", { ascending: false })
+        .limit(10);
+      const ids = ((mine as any[] | null) ?? []).map((r) => r.session_id);
+      if (!ids.length) return;
       const { data } = await sb
         .from("quiz_sessions")
         .select("*")
-        .or(`host_id.eq.${user.id},partner_id.eq.${user.id}`)
+        .in("id", ids)
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .limit(1);
@@ -63,6 +75,7 @@ function PracticePage() {
       }
     })();
   }, [user]);
+
 
   if (view === "active" && sessionId) {
     return (
