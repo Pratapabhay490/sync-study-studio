@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Brain, Sparkles, Play, Upload, FileText, Trash2, Check, X as XIcon,
   Bookmark, BookmarkCheck, Clock, Trophy, Zap, ChevronRight, Loader2, Users,
-  AlertCircle, RefreshCw, BookOpen, BarChart3, Pause,
+  AlertCircle, RefreshCw, BookOpen, BarChart3, Pause, Bell,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useData } from "@/lib/data-context";
@@ -180,6 +180,68 @@ function Lobby({
     return () => { sb.removeChannel(ch); };
   }, [user]);
 
+  // Duo quizzes I created that my partner hasn't attempted yet — so I can nudge them.
+  const [awaitingPartner, setAwaitingPartner] = useState<QuizSession[]>([]);
+  const [reminding, setReminding] = useState<string | null>(null);
+  useEffect(() => {
+    if (!user || !partner?.id) { setAwaitingPartner([]); return; }
+    const load = async () => {
+      const { data: sess } = await sb
+        .from("quiz_sessions")
+        .select("*")
+        .eq("host_id", user.id)
+        .eq("partner_id", partner.id)
+        .in("status", ["lobby", "active", "finished"])
+        .order("created_at", { ascending: false })
+        .limit(50);
+      const list = (sess as QuizSession[] | null) ?? [];
+      if (!list.length) { setAwaitingPartner([]); return; }
+      const { data: theirs } = await sb
+        .from("quiz_session_players")
+        .select("session_id, attempted_count, finished_at")
+        .eq("user_id", partner.id)
+        .in("session_id", list.map((s) => s.id));
+      const attempted = new Set(
+        ((theirs as any[] | null) ?? [])
+          .filter((p) => (p.attempted_count ?? 0) > 0 || p.finished_at)
+          .map((p) => p.session_id),
+      );
+      setAwaitingPartner(list.filter((s) => !attempted.has(s.id)));
+    };
+    load();
+    const ch = sb.channel("awaiting-partner-watch")
+      .on("postgres_changes", { event: "*", schema: "public", table: "quiz_sessions" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "quiz_session_players" }, load)
+      .subscribe();
+    return () => { sb.removeChannel(ch); };
+  }, [user, partner?.id]);
+
+  async function remindPartner(s: QuizSession) {
+    if (!user) return;
+    setReminding(s.id);
+    try {
+      const { data: meProf } = await sb.from("profiles").select("name,email").eq("id", user.id).maybeSingle();
+      const senderName = (meProf as any)?.name?.split(" ")[0] ?? (meProf as any)?.email ?? "Your partner";
+      const label = [s.subject, s.topic].filter(Boolean).join(" • ") || `${s.question_count} ${s.difficulty} questions`;
+      const { error } = await sb.rpc("enqueue_quiz_invite", {
+        p_session_id: s.id,
+        p_title: `${senderName} is waiting on you 👀`,
+        p_body: `You still have an unattempted quiz: ${label}`,
+        p_url: `/practice?session=${s.id}`,
+      });
+      if (error) throw error;
+      toast.success("Reminder sent to your partner");
+    } catch (e: any) {
+      toast.error("Couldn't send reminder: " + (e?.message ?? String(e)));
+    } finally {
+      setReminding(null);
+    }
+  }
+
+  async function remindAll() {
+    for (const s of awaitingPartner) await remindPartner(s);
+  }
+
 
   async function startSession() {
     if (!user) return;
@@ -323,6 +385,48 @@ function Lobby({
         </section>
       )}
 
+      {awaitingPartner.length > 0 && (
+        <section className="clay space-y-3 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Bell className="h-5 w-5 text-primary" />
+              <h2 className="font-display text-lg font-bold">Waiting on your partner</h2>
+            </div>
+            <Button size="sm" variant="outline" className="gap-2" onClick={remindAll} disabled={!!reminding}>
+              {reminding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
+              Notify for all
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Quizzes you made that {partner?.name?.split(" ")[0] ?? "your partner"} hasn't attempted yet — send a nudge.
+          </p>
+          <ul className="divide-y divide-border/60">
+            {awaitingPartner.map((s) => (
+              <li key={s.id} className="flex flex-wrap items-center gap-3 py-3">
+                <div className="min-w-0 flex-1 text-sm">
+                  <div className="truncate font-semibold">
+                    {[s.subject, s.topic].filter(Boolean).join(" • ") || "Mixed questions"}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {s.question_count}q · {s.difficulty} · {new Date(s.created_at).toLocaleString()}
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1"
+                  onClick={() => remindPartner(s)}
+                  disabled={reminding === s.id}
+                >
+                  {reminding === s.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
+                  Notify
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* setup card */}
@@ -459,28 +563,34 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
   const { user } = useAuth();
   const { profiles } = useData();
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState<QuizSession | null>(null);
-  const [players, setPlayers] = useState<QuizPlayer[]>([]);
+  const [sessions, setSessions] = useState<QuizSession[]>([]);
+  const [playersBySession, setPlayersBySession] = useState<Record<string, QuizPlayer[]>>({});
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       setLoading(true);
-      const { data: sessions } = await sb
+      const { data: rows } = await sb
         .from("quiz_sessions")
         .select("*")
         .or(`host_id.eq.${user.id},partner_id.eq.${user.id}`)
         .eq("status", "finished")
         .order("finished_at", { ascending: false, nullsFirst: false })
-        .limit(1);
-      const s = (sessions as QuizSession[] | null)?.[0] ?? null;
-      setSession(s);
-      if (s) {
+        .limit(5);
+      const list = (rows as QuizSession[] | null) ?? [];
+      setSessions(list);
+      setSelectedId(list[0]?.id ?? null);
+      if (list.length) {
         const { data: pp } = await sb
           .from("quiz_session_players")
           .select("*")
-          .eq("session_id", s.id);
-        setPlayers((pp as QuizPlayer[] | null) ?? []);
+          .in("session_id", list.map((s) => s.id));
+        const map: Record<string, QuizPlayer[]> = {};
+        ((pp as QuizPlayer[] | null) ?? []).forEach((p) => {
+          (map[p.session_id] ??= []).push(p);
+        });
+        setPlayersBySession(map);
       }
       setLoading(false);
     })();
@@ -490,15 +600,15 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
     return (
       <section className="clay p-6">
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Loading last quiz…
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading recent quizzes…
         </div>
       </section>
     );
   }
-  if (!session) {
+  if (!sessions.length) {
     return (
       <section className="clay p-6">
-        <h2 className="font-display text-lg font-bold">Last Quiz</h2>
+        <h2 className="font-display text-lg font-bold">Recent quizzes</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           No completed quizzes yet. Start a session above and it'll show up here.
         </p>
@@ -506,6 +616,8 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
     );
   }
 
+  const session = sessions.find((s) => s.id === selectedId) ?? sessions[0];
+  const players = playersBySession[session.id] ?? [];
   const me = players.find((p) => p.user_id === user?.id);
   const partner = players.find((p) => p.user_id !== user?.id);
   const partnerProfile = partner ? profiles.find((x) => x.id === partner.user_id) : null;
@@ -532,7 +644,6 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
     ? attemptDate.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
     : "—";
 
-
   return (
     <section className="clay space-y-5 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -541,8 +652,8 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
             <Trophy className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="font-display text-lg font-bold">Last Quiz</h2>
-            <p className="text-xs text-muted-foreground">Your most recent completed session</p>
+            <h2 className="font-display text-lg font-bold">Recent quizzes</h2>
+            <p className="text-xs text-muted-foreground">Review any of your last {sessions.length} completed sessions</p>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -551,6 +662,46 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
           <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" /> {takenLabel}</Badge>
         </div>
       </div>
+
+      <ul className="space-y-2">
+        {sessions.map((s, i) => {
+          const sp = (playersBySession[s.id] ?? []).find((p) => p.user_id === user?.id);
+          const on = s.id === session.id;
+          return (
+            <li key={s.id}>
+              <div
+                className={cn(
+                  "flex flex-wrap items-center gap-3 rounded-2xl p-3 transition-all",
+                  on ? "bg-primary/10 ring-2 ring-primary/40" : "bg-foreground/[0.03]",
+                )}
+              >
+                <button
+                  onClick={() => setSelectedId(s.id)}
+                  className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                >
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-card font-display text-sm font-bold shadow-clay-sm">
+                    {i + 1}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold">
+                      {[s.subject, s.topic].filter(Boolean).join(" • ") || "Mixed questions"}
+                    </span>
+                    <span className="block text-xs text-muted-foreground">
+                      {s.question_count}q · {s.difficulty} · score {sp?.score ?? 0} ·{" "}
+                      {new Date(s.finished_at ?? s.created_at).toLocaleString(undefined, {
+                        dateStyle: "medium", timeStyle: "short",
+                      })}
+                    </span>
+                  </span>
+                </button>
+                <Button size="sm" variant={on ? "default" : "outline"} className="gap-1" onClick={() => onReview(s.id)}>
+                  <BookOpen className="h-3.5 w-3.5" /> Review
+                </Button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <ScoreTile
@@ -584,7 +735,7 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
 
       <div className="flex flex-wrap gap-2">
         <Button onClick={() => onReview(session.id)} className="gap-2">
-          <BookOpen className="h-4 w-4" /> Review Last Test
+          <BookOpen className="h-4 w-4" /> Review selected test
         </Button>
         <Button
           variant="outline"
@@ -597,6 +748,7 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
     </section>
   );
 }
+
 
 function ScoreTile({
   label, score, correct, attempted, name, highlight,
