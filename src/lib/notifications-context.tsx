@@ -148,6 +148,9 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user) return;
     if (typeof window === "undefined") return;
+    // iOS Safari (and some browser tabs) expose no Notification/PushManager unless
+    // the app is installed — touching them unguarded throws and crashes the tree.
+    if (!("Notification" in window) || !("PushManager" in window) || !("serviceWorker" in navigator)) return;
     if (Notification.permission !== "default") return;
     if (localStorage.getItem("lbis_push_auto_ask_v2")) return;
     const t = setTimeout(() => {
