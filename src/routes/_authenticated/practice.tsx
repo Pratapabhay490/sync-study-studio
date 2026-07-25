@@ -385,6 +385,48 @@ function Lobby({
         </section>
       )}
 
+      {awaitingPartner.length > 0 && (
+        <section className="clay space-y-3 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Bell className="h-5 w-5 text-primary" />
+              <h2 className="font-display text-lg font-bold">Waiting on your partner</h2>
+            </div>
+            <Button size="sm" variant="outline" className="gap-2" onClick={remindAll} disabled={!!reminding}>
+              {reminding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
+              Notify for all
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Quizzes you made that {partner?.name?.split(" ")[0] ?? "your partner"} hasn't attempted yet — send a nudge.
+          </p>
+          <ul className="divide-y divide-border/60">
+            {awaitingPartner.map((s) => (
+              <li key={s.id} className="flex flex-wrap items-center gap-3 py-3">
+                <div className="min-w-0 flex-1 text-sm">
+                  <div className="truncate font-semibold">
+                    {[s.subject, s.topic].filter(Boolean).join(" • ") || "Mixed questions"}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {s.question_count}q · {s.difficulty} · {new Date(s.created_at).toLocaleString()}
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1"
+                  onClick={() => remindPartner(s)}
+                  disabled={reminding === s.id}
+                >
+                  {reminding === s.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
+                  Notify
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* setup card */}
