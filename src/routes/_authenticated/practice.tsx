@@ -144,26 +144,42 @@ function Lobby({
   }, []);
   useEffect(() => { loadDocs(); }, [loadDocs]);
 
-  // Pending invites (sessions where I'm partner but not yet active)
+  // Every quiz my partner made that I haven't attempted yet (oldest first),
+  // regardless of whether the host already finished theirs.
   const [invites, setInvites] = useState<QuizSession[]>([]);
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const { data } = await sb
+      const { data: sess } = await sb
         .from("quiz_sessions")
         .select("*")
-        .eq("status", "lobby")
-        .or(`host_id.eq.${user.id},partner_id.eq.${user.id}`)
-        .order("created_at", { ascending: false })
-        .limit(5);
-      setInvites((data as QuizSession[] | null) ?? []);
+        .eq("partner_id", user.id)
+        .neq("host_id", user.id)
+        .in("status", ["lobby", "active", "finished"])
+        .order("created_at", { ascending: true })
+        .limit(50);
+      const list = (sess as QuizSession[] | null) ?? [];
+      if (!list.length) { setInvites([]); return; }
+      const { data: mine } = await sb
+        .from("quiz_session_players")
+        .select("session_id, attempted_count, finished_at")
+        .eq("user_id", user.id)
+        .in("session_id", list.map((s) => s.id));
+      const attempted = new Set(
+        ((mine as any[] | null) ?? [])
+          .filter((p) => (p.attempted_count ?? 0) > 0 || p.finished_at)
+          .map((p) => p.session_id),
+      );
+      setInvites(list.filter((s) => !attempted.has(s.id)));
     };
     load();
     const ch = sb.channel("lobby-watch")
       .on("postgres_changes", { event: "*", schema: "public", table: "quiz_sessions" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "quiz_session_players" }, load)
       .subscribe();
     return () => { sb.removeChannel(ch); };
   }, [user]);
+
 
   async function startSession() {
     if (!user) return;
