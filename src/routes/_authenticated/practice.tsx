@@ -459,28 +459,34 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
   const { user } = useAuth();
   const { profiles } = useData();
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState<QuizSession | null>(null);
-  const [players, setPlayers] = useState<QuizPlayer[]>([]);
+  const [sessions, setSessions] = useState<QuizSession[]>([]);
+  const [playersBySession, setPlayersBySession] = useState<Record<string, QuizPlayer[]>>({});
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       setLoading(true);
-      const { data: sessions } = await sb
+      const { data: rows } = await sb
         .from("quiz_sessions")
         .select("*")
         .or(`host_id.eq.${user.id},partner_id.eq.${user.id}`)
         .eq("status", "finished")
         .order("finished_at", { ascending: false, nullsFirst: false })
-        .limit(1);
-      const s = (sessions as QuizSession[] | null)?.[0] ?? null;
-      setSession(s);
-      if (s) {
+        .limit(5);
+      const list = (rows as QuizSession[] | null) ?? [];
+      setSessions(list);
+      setSelectedId(list[0]?.id ?? null);
+      if (list.length) {
         const { data: pp } = await sb
           .from("quiz_session_players")
           .select("*")
-          .eq("session_id", s.id);
-        setPlayers((pp as QuizPlayer[] | null) ?? []);
+          .in("session_id", list.map((s) => s.id));
+        const map: Record<string, QuizPlayer[]> = {};
+        ((pp as QuizPlayer[] | null) ?? []).forEach((p) => {
+          (map[p.session_id] ??= []).push(p);
+        });
+        setPlayersBySession(map);
       }
       setLoading(false);
     })();
@@ -490,15 +496,15 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
     return (
       <section className="clay p-6">
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Loading last quiz…
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading recent quizzes…
         </div>
       </section>
     );
   }
-  if (!session) {
+  if (!sessions.length) {
     return (
       <section className="clay p-6">
-        <h2 className="font-display text-lg font-bold">Last Quiz</h2>
+        <h2 className="font-display text-lg font-bold">Recent quizzes</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           No completed quizzes yet. Start a session above and it'll show up here.
         </p>
@@ -506,6 +512,8 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
     );
   }
 
+  const session = sessions.find((s) => s.id === selectedId) ?? sessions[0];
+  const players = playersBySession[session.id] ?? [];
   const me = players.find((p) => p.user_id === user?.id);
   const partner = players.find((p) => p.user_id !== user?.id);
   const partnerProfile = partner ? profiles.find((x) => x.id === partner.user_id) : null;
@@ -532,7 +540,6 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
     ? attemptDate.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
     : "—";
 
-
   return (
     <section className="clay space-y-5 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -541,8 +548,8 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
             <Trophy className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="font-display text-lg font-bold">Last Quiz</h2>
-            <p className="text-xs text-muted-foreground">Your most recent completed session</p>
+            <h2 className="font-display text-lg font-bold">Recent quizzes</h2>
+            <p className="text-xs text-muted-foreground">Review any of your last {sessions.length} completed sessions</p>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -551,6 +558,46 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
           <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" /> {takenLabel}</Badge>
         </div>
       </div>
+
+      <ul className="space-y-2">
+        {sessions.map((s, i) => {
+          const sp = (playersBySession[s.id] ?? []).find((p) => p.user_id === user?.id);
+          const on = s.id === session.id;
+          return (
+            <li key={s.id}>
+              <div
+                className={cn(
+                  "flex flex-wrap items-center gap-3 rounded-2xl p-3 transition-all",
+                  on ? "bg-primary/10 ring-2 ring-primary/40" : "bg-foreground/[0.03]",
+                )}
+              >
+                <button
+                  onClick={() => setSelectedId(s.id)}
+                  className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                >
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-card font-display text-sm font-bold shadow-clay-sm">
+                    {i + 1}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold">
+                      {[s.subject, s.topic].filter(Boolean).join(" • ") || "Mixed questions"}
+                    </span>
+                    <span className="block text-xs text-muted-foreground">
+                      {s.question_count}q · {s.difficulty} · score {sp?.score ?? 0} ·{" "}
+                      {new Date(s.finished_at ?? s.created_at).toLocaleString(undefined, {
+                        dateStyle: "medium", timeStyle: "short",
+                      })}
+                    </span>
+                  </span>
+                </button>
+                <Button size="sm" variant={on ? "default" : "outline"} className="gap-1" onClick={() => onReview(s.id)}>
+                  <BookOpen className="h-3.5 w-3.5" /> Review
+                </Button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <ScoreTile
@@ -584,7 +631,7 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
 
       <div className="flex flex-wrap gap-2">
         <Button onClick={() => onReview(session.id)} className="gap-2">
-          <BookOpen className="h-4 w-4" /> Review Last Test
+          <BookOpen className="h-4 w-4" /> Review selected test
         </Button>
         <Button
           variant="outline"
@@ -597,6 +644,7 @@ function LastQuizCard({ onReview }: { onReview: (sessionId: string) => void }) {
     </section>
   );
 }
+
 
 function ScoreTile({
   label, score, correct, attempted, name, highlight,
