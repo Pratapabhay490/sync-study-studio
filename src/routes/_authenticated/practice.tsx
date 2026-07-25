@@ -46,14 +46,26 @@ function PracticePage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [view, setView] = useState<"lobby" | "active" | "results">("lobby");
 
-  // Resume any active session this user belongs to
+  // Resume only a session *I* have actually started attempting (and not finished).
+  // Never auto-jump into a partner's freshly created session — those are listed
+  // as pending invites so the partner can pick which one to attempt.
   useEffect(() => {
     if (!user) return;
     (async () => {
+      const { data: mine } = await sb
+        .from("quiz_session_players")
+        .select("session_id, attempted_count, finished_at, joined_at")
+        .eq("user_id", user.id)
+        .is("finished_at", null)
+        .gt("attempted_count", 0)
+        .order("joined_at", { ascending: false })
+        .limit(10);
+      const ids = ((mine as any[] | null) ?? []).map((r) => r.session_id);
+      if (!ids.length) return;
       const { data } = await sb
         .from("quiz_sessions")
         .select("*")
-        .or(`host_id.eq.${user.id},partner_id.eq.${user.id}`)
+        .in("id", ids)
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .limit(1);
@@ -63,6 +75,7 @@ function PracticePage() {
       }
     })();
   }, [user]);
+
 
   if (view === "active" && sessionId) {
     return (
@@ -131,26 +144,42 @@ function Lobby({
   }, []);
   useEffect(() => { loadDocs(); }, [loadDocs]);
 
-  // Pending invites (sessions where I'm partner but not yet active)
+  // Every quiz my partner made that I haven't attempted yet (oldest first),
+  // regardless of whether the host already finished theirs.
   const [invites, setInvites] = useState<QuizSession[]>([]);
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const { data } = await sb
+      const { data: sess } = await sb
         .from("quiz_sessions")
         .select("*")
-        .eq("status", "lobby")
-        .or(`host_id.eq.${user.id},partner_id.eq.${user.id}`)
-        .order("created_at", { ascending: false })
-        .limit(5);
-      setInvites((data as QuizSession[] | null) ?? []);
+        .eq("partner_id", user.id)
+        .neq("host_id", user.id)
+        .in("status", ["lobby", "active", "finished"])
+        .order("created_at", { ascending: true })
+        .limit(50);
+      const list = (sess as QuizSession[] | null) ?? [];
+      if (!list.length) { setInvites([]); return; }
+      const { data: mine } = await sb
+        .from("quiz_session_players")
+        .select("session_id, attempted_count, finished_at")
+        .eq("user_id", user.id)
+        .in("session_id", list.map((s) => s.id));
+      const attempted = new Set(
+        ((mine as any[] | null) ?? [])
+          .filter((p) => (p.attempted_count ?? 0) > 0 || p.finished_at)
+          .map((p) => p.session_id),
+      );
+      setInvites(list.filter((s) => !attempted.has(s.id)));
     };
     load();
     const ch = sb.channel("lobby-watch")
       .on("postgres_changes", { event: "*", schema: "public", table: "quiz_sessions" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "quiz_session_players" }, load)
       .subscribe();
     return () => { sb.removeChannel(ch); };
   }, [user]);
+
 
   async function startSession() {
     if (!user) return;
@@ -258,18 +287,42 @@ function Lobby({
         </Button>
       </header>
 
-      {invites.filter((s) => s.partner_id === user?.id && s.host_id !== user?.id).map((inv) => (
-        <div key={inv.id} className="clay flex flex-wrap items-center gap-3 p-4">
-          <Users className="h-5 w-5 text-primary" />
-          <div className="flex-1 text-sm">
-            <span className="font-semibold">Your partner started a quiz</span>{" "}
-            <span className="text-muted-foreground">
-              · {inv.subject ?? "Mixed"} · {inv.question_count}q · {inv.difficulty}
+      {invites.length > 0 && (
+        <section className="clay space-y-3 p-5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <h2 className="font-display text-lg font-bold">Quizzes waiting for you</h2>
+            </div>
+            <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">
+              {invites.length} unattempted
             </span>
           </div>
-          <Button size="sm" onClick={() => joinInvite(inv.id)}>Join</Button>
-        </div>
-      ))}
+          <p className="text-xs text-muted-foreground">
+            Quizzes {partner?.name?.split(" ")[0] ?? "your partner"} made that you haven't attempted yet — pick any one.
+          </p>
+          <ul className="divide-y divide-border/60">
+            {invites.map((inv, i) => (
+              <li key={inv.id} className="flex flex-wrap items-center gap-3 py-3">
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-muted font-display text-sm font-bold">
+                  {i + 1}
+                </div>
+                <div className="min-w-0 flex-1 text-sm">
+                  <div className="truncate font-semibold">
+                    {[inv.subject, inv.topic].filter(Boolean).join(" • ") || "Mixed questions"}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {inv.question_count}q · {inv.difficulty} · {inv.seconds_per_question}s/q ·{" "}
+                    {new Date(inv.created_at).toLocaleString()}
+                  </div>
+                </div>
+                <Button size="sm" onClick={() => joinInvite(inv.id)}>Attempt</Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* setup card */}
