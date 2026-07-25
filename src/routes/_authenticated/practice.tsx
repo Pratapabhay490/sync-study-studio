@@ -180,6 +180,68 @@ function Lobby({
     return () => { sb.removeChannel(ch); };
   }, [user]);
 
+  // Duo quizzes I created that my partner hasn't attempted yet — so I can nudge them.
+  const [awaitingPartner, setAwaitingPartner] = useState<QuizSession[]>([]);
+  const [reminding, setReminding] = useState<string | null>(null);
+  useEffect(() => {
+    if (!user || !partner?.id) { setAwaitingPartner([]); return; }
+    const load = async () => {
+      const { data: sess } = await sb
+        .from("quiz_sessions")
+        .select("*")
+        .eq("host_id", user.id)
+        .eq("partner_id", partner.id)
+        .in("status", ["lobby", "active", "finished"])
+        .order("created_at", { ascending: false })
+        .limit(50);
+      const list = (sess as QuizSession[] | null) ?? [];
+      if (!list.length) { setAwaitingPartner([]); return; }
+      const { data: theirs } = await sb
+        .from("quiz_session_players")
+        .select("session_id, attempted_count, finished_at")
+        .eq("user_id", partner.id)
+        .in("session_id", list.map((s) => s.id));
+      const attempted = new Set(
+        ((theirs as any[] | null) ?? [])
+          .filter((p) => (p.attempted_count ?? 0) > 0 || p.finished_at)
+          .map((p) => p.session_id),
+      );
+      setAwaitingPartner(list.filter((s) => !attempted.has(s.id)));
+    };
+    load();
+    const ch = sb.channel("awaiting-partner-watch")
+      .on("postgres_changes", { event: "*", schema: "public", table: "quiz_sessions" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "quiz_session_players" }, load)
+      .subscribe();
+    return () => { sb.removeChannel(ch); };
+  }, [user, partner?.id]);
+
+  async function remindPartner(s: QuizSession) {
+    if (!user) return;
+    setReminding(s.id);
+    try {
+      const { data: meProf } = await sb.from("profiles").select("name,email").eq("id", user.id).maybeSingle();
+      const senderName = (meProf as any)?.name?.split(" ")[0] ?? (meProf as any)?.email ?? "Your partner";
+      const label = [s.subject, s.topic].filter(Boolean).join(" • ") || `${s.question_count} ${s.difficulty} questions`;
+      const { error } = await sb.rpc("enqueue_quiz_invite", {
+        p_session_id: s.id,
+        p_title: `${senderName} is waiting on you 👀`,
+        p_body: `You still have an unattempted quiz: ${label}`,
+        p_url: `/practice?session=${s.id}`,
+      });
+      if (error) throw error;
+      toast.success("Reminder sent to your partner");
+    } catch (e: any) {
+      toast.error("Couldn't send reminder: " + (e?.message ?? String(e)));
+    } finally {
+      setReminding(null);
+    }
+  }
+
+  async function remindAll() {
+    for (const s of awaitingPartner) await remindPartner(s);
+  }
+
 
   async function startSession() {
     if (!user) return;
