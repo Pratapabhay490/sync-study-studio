@@ -46,6 +46,11 @@ const PROMPT_CHAR_WARN = 50_000;
 const PROMPT_TOKEN_WARN = 25_000;
 const estTokens = (s: string) => Math.ceil(s.length / 4); // rough heuristic
 
+// Normalized stem used for duplicate detection across quizzes.
+const normStem = (s: string) =>
+  String(s ?? "").toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+
+
 interface GeminiCallResult {
   text: string;
   status: number;
