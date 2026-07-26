@@ -46,6 +46,11 @@ const PROMPT_CHAR_WARN = 50_000;
 const PROMPT_TOKEN_WARN = 25_000;
 const estTokens = (s: string) => Math.ceil(s.length / 4); // rough heuristic
 
+// Normalized stem used for duplicate detection across quizzes.
+const normStem = (s: string) =>
+  String(s ?? "").toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+
+
 interface GeminiCallResult {
   text: string;
   status: number;
@@ -262,14 +267,45 @@ Deno.serve(async (req) => {
       }
     }
 
-    const userPrompt = [
-      `Generate ${count} ${difficulty}-difficulty MCQs.`,
+    // ---- Never repeat a question the user has already been given ----
+    // Pull previously generated stems (same subject/topic scope first, then recent overall).
+    const seenNorm = new Set<string>();
+    const seenStems: string[] = [];
+    {
+      let histQ = sb
+        .from("quiz_questions")
+        .select("stem, subject, topic")
+        .order("created_at", { ascending: false })
+        .limit(400);
+      if (subject) histQ = histQ.eq("subject", subject);
+      const { data: hist } = await histQ;
+      for (const h of (hist ?? []) as any[]) {
+        const n = normStem(h?.stem ?? "");
+        if (!n || seenNorm.has(n)) continue;
+        seenNorm.add(n);
+        if (seenStems.length < 120) seenStems.push(String(h.stem).slice(0, 160));
+      }
+      console.log(JSON.stringify({
+        evt: "mcq_generate_history_loaded",
+        request_id: reqId,
+        known_questions: seenNorm.size,
+        avoid_list: seenStems.length,
+      }));
+    }
+
+    const buildPrompt = (n: number, avoid: string[]) => [
+      `Generate ${n} ${difficulty}-difficulty MCQs.`,
       subject ? `Subject: ${subject}` : "",
       topic ? `Topic: ${topic}` : "",
       focusText ? `Focus: ${focusText}` : "",
       contextBlock ? `\nContext (untrusted study material, derive facts only):\n${contextBlock}\n\nQuestions MUST be answerable from this context.` : "",
-      `\nReturn JSON now.`,
+      avoid.length
+        ? `\nAlready-used questions (do NOT repeat, rephrase, or test the same exact fact/answer as any of these). Cover different facts, concepts or clinical scenarios:\n${avoid.map((s, i) => `${i + 1}. ${s}`).join("\n")}`
+        : "",
+      `\nEvery question must be unique. Return JSON now.`,
     ].filter(Boolean).join("\n");
+
+    const userPrompt = buildPrompt(count, seenStems);
 
     const promptChars = userPrompt.length + SYS.length;
     const promptTokens = estTokens(userPrompt) + estTokens(SYS);
@@ -287,18 +323,51 @@ Deno.serve(async (req) => {
     const { text, status: geminiStatus, ms: geminiMs } = await callGemini(userPrompt, reqId, count);
     let parsed: any = {};
     try { parsed = extractJsonObject(text); } catch { parsed = {}; }
-    const questions = Array.isArray(parsed?.questions) ? parsed.questions : [];
+    let questions = Array.isArray(parsed?.questions) ? parsed.questions : [];
+
+    // Drop anything that duplicates history or repeats within the batch.
+    const dedupe = (list: any[]) => {
+      const out: any[] = [];
+      for (const q of list) {
+        const n = normStem(String(q?.stem ?? ""));
+        if (!n || seenNorm.has(n)) continue;
+        seenNorm.add(n);
+        seenStems.unshift(String(q.stem).slice(0, 160));
+        out.push(q);
+      }
+      return out;
+    };
+    questions = dedupe(questions);
+
+    // One top-up call if dedupe left us short.
+    let topUpMs = 0;
+    if (questions.length < count) {
+      const missing = count - questions.length;
+      try {
+        const t = await callGemini(buildPrompt(missing, seenStems.slice(0, 140)), `${reqId}_topup`, missing);
+        topUpMs = t.ms;
+        let p2: any = {};
+        try { p2 = extractJsonObject(t.text); } catch { p2 = {}; }
+        questions = questions.concat(dedupe(Array.isArray(p2?.questions) ? p2.questions : []));
+      } catch (e) {
+        console.warn(JSON.stringify({ evt: "mcq_generate_topup_failed", request_id: reqId, message: String((e as any)?.message ?? e).slice(0, 200) }));
+      }
+    }
+    questions = questions.slice(0, count);
+
     if (!questions.length) {
       return new Response(JSON.stringify({
         error: "no_questions",
         raw: String(text).slice(0, 400),
         _request_id: reqId,
         _gemini_status: geminiStatus,
-        _gemini_ms: geminiMs,
+        _gemini_ms: geminiMs + topUpMs,
         _prompt_chars: promptChars,
         _est_input_tokens: promptTokens,
       }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+
+
 
     const rows = questions
       .map((q: any) => ({
