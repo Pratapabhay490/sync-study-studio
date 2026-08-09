@@ -235,11 +235,27 @@ export function FocusOverlay() {
     v.muted = true;
     v.playsInline = true;
 
+    const blocked = () => {
+      if (isIosStandalone()) {
+        toast.error(
+          "iPad home-screen apps block floating windows. Open the site in the Safari browser tab and tap pop-out there.",
+        );
+      } else {
+        toast.error("Your browser blocked the floating timer. Keep this tab open instead.");
+      }
+    };
+
     // stay inside the user gesture: don't await play() before requesting PiP
     const request = () => {
       if (v.webkitSetPresentationMode) {
         v.webkitSetPresentationMode("picture-in-picture");
-        return Promise.resolve();
+        // Safari fails silently — verify it actually entered PiP
+        return new Promise<void>((resolve, reject) =>
+          setTimeout(
+            () => (v.webkitPresentationMode === "picture-in-picture" ? resolve() : reject(new Error("blocked"))),
+            700,
+          ),
+        );
       }
       if (v.requestPictureInPicture) return v.requestPictureInPicture();
       return Promise.reject(new Error("unsupported"));
@@ -250,15 +266,12 @@ export function FocusOverlay() {
       playPromise
         .then(() => request())
         .catch(() => request())
-        .catch(() => {
-          toast.error("Your browser blocked the floating timer. Try again from the installed app.");
-        });
+        .catch(blocked);
     } else {
-      request().catch(() => {
-        toast.error("Your browser blocked the floating timer.");
-      });
+      request().catch(blocked);
     }
   }
+
 
   async function openPip() {
     const dpip = (window as any).documentPictureInPicture;
