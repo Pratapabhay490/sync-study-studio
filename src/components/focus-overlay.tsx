@@ -211,33 +211,56 @@ export function FocusOverlay() {
   }
 
   /** Video PiP floats above other apps and the home screen on iPadOS / Android */
-  async function openVideoPip() {
+  function openVideoPip() {
     const c = canvasRef.current;
     const v = videoRef.current as any;
-    if (!c || !v) return;
+    if (!c || !v) {
+      toast.error("Pop-out isn't available on this device");
+      return;
+    }
     paint();
     if (!v.srcObject) {
       const stream = (c as any).captureStream?.(12);
-      if (!stream) return;
+      if (!stream) {
+        toast.error("This browser can't float the timer. Keep the tab open instead.");
+        return;
+      }
       v.srcObject = stream;
     }
-    if (paintTimerRef.current) clearInterval(paintTimerRef.current);
-    paintTimerRef.current = setInterval(paint, 500);
-    try {
-      v.muted = true;
-      v.playsInline = true;
-      await v.play();
-      if (v.requestPictureInPicture) await v.requestPictureInPicture();
-      else if (v.webkitSetPresentationMode) v.webkitSetPresentationMode("picture-in-picture");
-    } catch {
-      stopVideoPip();
+    if (!paintTimerRef.current) paintTimerRef.current = setInterval(paint, 500);
+    v.muted = true;
+    v.playsInline = true;
+
+    // stay inside the user gesture: don't await play() before requesting PiP
+    const request = () => {
+      if (v.webkitSetPresentationMode) {
+        v.webkitSetPresentationMode("picture-in-picture");
+        return Promise.resolve();
+      }
+      if (v.requestPictureInPicture) return v.requestPictureInPicture();
+      return Promise.reject(new Error("unsupported"));
+    };
+
+    const playPromise = v.play?.();
+    if (playPromise?.then) {
+      playPromise
+        .then(() => request())
+        .catch(() => request())
+        .catch(() => {
+          toast.error("Your browser blocked the floating timer. Try again from the installed app.");
+        });
+    } else {
+      request().catch(() => {
+        toast.error("Your browser blocked the floating timer.");
+      });
     }
   }
 
   async function openPip() {
     const dpip = (window as any).documentPictureInPicture;
     if (!dpip?.requestWindow) return openVideoPip();
-    const win: Window = await dpip.requestWindow({ width: 320, height: 190 });
+    try {
+      const win: Window = await dpip.requestWindow({ width: 320, height: 190 });
     pipRef.current = win;
     const style = win.document.createElement("style");
     style.textContent = `
