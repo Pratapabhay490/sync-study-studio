@@ -309,7 +309,14 @@ export function FocusOverlay() {
     <>
       {/* offscreen surface streamed into the floating PiP window */}
       <canvas ref={canvasRef} width={640} height={360} className="pointer-events-none fixed -left-[9999px] top-0 h-px w-px opacity-0" />
-      <video ref={videoRef} muted playsInline className="pointer-events-none fixed -left-[9999px] top-0 h-px w-px opacity-0" />
+      {/* must stay on-screen (Safari refuses PiP for offscreen/hidden video) */}
+      <video
+        ref={videoRef}
+        muted
+        playsInline
+        autoPlay
+        className="pointer-events-none fixed bottom-1 right-1 z-0 h-[2px] w-[2px] opacity-[0.02]"
+      />
 
       <AnimatePresence>
         {session && remaining > 0 && !hidden && (
