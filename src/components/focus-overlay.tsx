@@ -288,10 +288,13 @@ export function FocusOverlay() {
       bar: wrap.querySelector("#br") as HTMLElement,
       label: wrap.querySelector("#lb") as HTMLElement,
     };
-    win.addEventListener("pagehide", () => {
-      pipRef.current = null;
-      pipNodesRef.current = null;
-    });
+      win.addEventListener("pagehide", () => {
+        pipRef.current = null;
+        pipNodesRef.current = null;
+      });
+    } catch {
+      openVideoPip();
+    }
   }
 
   const pipSupported =
