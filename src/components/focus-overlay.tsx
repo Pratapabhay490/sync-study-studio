@@ -34,6 +34,10 @@ export function FocusOverlay() {
   const pipNodesRef = useRef<{ time: HTMLElement; bar: HTMLElement; label: HTMLElement } | null>(null);
   const lastSessionId = useRef<string | null>(null);
   const titleRef = useRef<string>("");
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const paintTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
 
   // wall-clock aligned tick
   useEffect(() => {
