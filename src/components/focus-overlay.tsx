@@ -105,6 +105,10 @@ export function FocusOverlay() {
     if (remaining <= 0) nodes.label.textContent = "Session complete 🎉";
   }, [remaining, pct]);
 
+  // live values for the canvas painter
+  const frameRef = useRef({ remaining: 0, pct: 0 });
+  frameRef.current = { remaining, pct };
+
   function closePip() {
     try {
       pipRef.current?.close();
@@ -113,13 +117,101 @@ export function FocusOverlay() {
     }
     pipRef.current = null;
     pipNodesRef.current = null;
+    stopVideoPip();
   }
 
   useEffect(() => () => closePip(), []);
 
+  function stopVideoPip() {
+    if (paintTimerRef.current) {
+      clearInterval(paintTimerRef.current);
+      paintTimerRef.current = null;
+    }
+    const v = videoRef.current as any;
+    try {
+      if (v) {
+        if (document.pictureInPictureElement === v) document.exitPictureInPicture();
+        else if (v.webkitSetPresentationMode) v.webkitSetPresentationMode("inline");
+        (v.srcObject as MediaStream | null)?.getTracks().forEach((t) => t.stop());
+        v.srcObject = null;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  /** Paints the countdown onto a canvas that is streamed into a <video> */
+  function paint() {
+    const c = canvasRef.current;
+    if (!c) return;
+    const ctx = c.getContext("2d");
+    if (!ctx) return;
+    const { remaining: r, pct: p } = frameRef.current;
+    const W = c.width;
+    const H = c.height;
+
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, "#0b1220");
+    g.addColorStop(1, "#131c33");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "rgba(232,238,252,.55)";
+    ctx.font = "600 22px ui-rounded, system-ui, -apple-system, sans-serif";
+    ctx.fillText(r > 0 ? "FOCUS SESSION" : "SESSION COMPLETE", W / 2, 72);
+
+    const tg = ctx.createLinearGradient(W * 0.25, 0, W * 0.75, 0);
+    tg.addColorStop(0, "#7cc4ff");
+    tg.addColorStop(1, "#b6a2ff");
+    ctx.fillStyle = tg;
+    ctx.font = "800 132px ui-rounded, system-ui, -apple-system, sans-serif";
+    ctx.fillText(r > 0 ? fmt(r) : "0:00", W / 2, H / 2 + 46);
+
+    const bw = W * 0.7;
+    const bx = (W - bw) / 2;
+    const by = H - 96;
+    ctx.fillStyle = "rgba(255,255,255,.12)";
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bw, 16, 8);
+    ctx.fill();
+    ctx.fillStyle = tg;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, Math.max(16, (bw * p) / 100), 16, 8);
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(232,238,252,.5)";
+    ctx.font = "500 22px ui-rounded, system-ui, -apple-system, sans-serif";
+    ctx.fillText("Let's be in sync · stay focused ✨", W / 2, H - 44);
+  }
+
+  /** Video PiP floats above other apps and the home screen on iPadOS / Android */
+  async function openVideoPip() {
+    const c = canvasRef.current;
+    const v = videoRef.current as any;
+    if (!c || !v) return;
+    paint();
+    if (!v.srcObject) {
+      const stream = (c as any).captureStream?.(12);
+      if (!stream) return;
+      v.srcObject = stream;
+    }
+    if (paintTimerRef.current) clearInterval(paintTimerRef.current);
+    paintTimerRef.current = setInterval(paint, 500);
+    try {
+      v.muted = true;
+      v.playsInline = true;
+      await v.play();
+      if (v.requestPictureInPicture) await v.requestPictureInPicture();
+      else if (v.webkitSetPresentationMode) v.webkitSetPresentationMode("picture-in-picture");
+    } catch {
+      stopVideoPip();
+    }
+  }
+
   async function openPip() {
     const dpip = (window as any).documentPictureInPicture;
-    if (!dpip?.requestWindow) return;
+    if (!dpip?.requestWindow) return openVideoPip();
     const win: Window = await dpip.requestWindow({ width: 320, height: 190 });
     pipRef.current = win;
     const style = win.document.createElement("style");
@@ -155,7 +247,12 @@ export function FocusOverlay() {
   }
 
   const pipSupported =
-    typeof window !== "undefined" && !!(window as any).documentPictureInPicture?.requestWindow;
+    typeof window !== "undefined" &&
+    (!!(window as any).documentPictureInPicture?.requestWindow ||
+      (typeof document !== "undefined" &&
+        ((document as any).pictureInPictureEnabled ||
+          !!(document.createElement("video") as any).webkitSetPresentationMode)));
+
 
   return (
     <>
