@@ -150,6 +150,7 @@ export function FocusOverlay() {
     v.muted = true;
     v.playsInline = true;
     v.play?.().catch(() => {});
+    primeAudio();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.id, remaining > 0]);
 
