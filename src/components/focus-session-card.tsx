@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -152,12 +153,24 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
 
         {session ? (
           <>
-            <div className="text-center">
-              <div className="font-display text-6xl font-bold tracking-tight tabular-nums">
+            <div className="relative text-center">
+              <motion.div
+                aria-hidden="true"
+                animate={{ scale: [1, 1.06, 1], opacity: [0.18, 0.3, 0.18] }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                className="pointer-events-none absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-primary blur-2xl"
+              />
+              <motion.div
+                key={secs}
+                initial={{ scale: 0.97, opacity: 0.75 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 340, damping: 20 }}
+                className="relative font-display text-6xl font-bold tracking-tight tabular-nums"
+              >
                 {hrs > 0 && `${hrs}:`}
                 {hrs > 0 ? String(mins).padStart(2, "0") : mins}:{String(secs).padStart(2, "0")}
-              </div>
-              <div className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
+              </motion.div>
+              <div className="relative mt-1 text-xs uppercase tracking-wider text-muted-foreground">
                 {fmtDuration(session.duration_min)} session · started{" "}
                 {new Date(session.started_at).toLocaleTimeString([], {
                   hour: "2-digit",
@@ -165,9 +178,24 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
                 })}{" "}
                 · {session.joined_by_partner ? "both joined" : "waiting for partner"}
               </div>
+              <div className="relative mt-2 flex justify-center gap-2 text-lg" aria-hidden="true">
+                {["📚", "☕️", "🎯"].map((e, i) => (
+                  <motion.span
+                    key={e}
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{ duration: 1.6, repeat: Infinity, delay: i * 0.2 }}
+                  >
+                    {e}
+                  </motion.span>
+                ))}
+              </div>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-muted">
-              <div className="h-full bg-gradient-primary transition-all" style={{ width: `${pct}%` }} />
+              <motion.div
+                className="h-full bg-gradient-primary"
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              />
             </div>
             <div className="flex flex-wrap justify-center gap-2">
               {iCanJoin && (

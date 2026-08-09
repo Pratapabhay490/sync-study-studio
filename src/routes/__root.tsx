@@ -13,6 +13,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { BadgePopup } from "@/components/badge-popup";
 import { FloatingHearts } from "@/components/floating-hearts";
+import { FocusOverlay } from "@/components/focus-overlay";
 
 function NotFoundComponent() {
   return (
@@ -126,6 +127,7 @@ function RootComponent() {
               <Outlet />
               <BadgePopup />
               <FloatingHearts />
+              <FocusOverlay />
               <Toaster richColors position="top-right" />
             </NotificationsProvider>
           </DataProvider>
