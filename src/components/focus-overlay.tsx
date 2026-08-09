@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { PictureInPicture2, Timer, X, PartyPopper } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { useActiveFocusSession } from "@/lib/partner";
 import { celebrate } from "@/lib/celebrate";
@@ -126,6 +127,26 @@ export function FocusOverlay() {
 
   useEffect(() => () => closePip(), []);
 
+  // Pre-warm the canvas stream while a session runs so the pop-out tap
+  // (which must stay inside the user gesture on Safari) is instant.
+  useEffect(() => {
+    if (!session || remaining <= 0) return;
+    const c = canvasRef.current;
+    const v = videoRef.current as any;
+    if (!c || !v) return;
+    paint();
+    if (!v.srcObject) {
+      const stream = (c as any).captureStream?.(12);
+      if (!stream) return;
+      v.srcObject = stream;
+    }
+    if (!paintTimerRef.current) paintTimerRef.current = setInterval(paint, 500);
+    v.muted = true;
+    v.playsInline = true;
+    v.play?.().catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.id, remaining > 0]);
+
   function stopVideoPip() {
     if (paintTimerRef.current) {
       clearInterval(paintTimerRef.current);
@@ -190,33 +211,56 @@ export function FocusOverlay() {
   }
 
   /** Video PiP floats above other apps and the home screen on iPadOS / Android */
-  async function openVideoPip() {
+  function openVideoPip() {
     const c = canvasRef.current;
     const v = videoRef.current as any;
-    if (!c || !v) return;
+    if (!c || !v) {
+      toast.error("Pop-out isn't available on this device");
+      return;
+    }
     paint();
     if (!v.srcObject) {
       const stream = (c as any).captureStream?.(12);
-      if (!stream) return;
+      if (!stream) {
+        toast.error("This browser can't float the timer. Keep the tab open instead.");
+        return;
+      }
       v.srcObject = stream;
     }
-    if (paintTimerRef.current) clearInterval(paintTimerRef.current);
-    paintTimerRef.current = setInterval(paint, 500);
-    try {
-      v.muted = true;
-      v.playsInline = true;
-      await v.play();
-      if (v.requestPictureInPicture) await v.requestPictureInPicture();
-      else if (v.webkitSetPresentationMode) v.webkitSetPresentationMode("picture-in-picture");
-    } catch {
-      stopVideoPip();
+    if (!paintTimerRef.current) paintTimerRef.current = setInterval(paint, 500);
+    v.muted = true;
+    v.playsInline = true;
+
+    // stay inside the user gesture: don't await play() before requesting PiP
+    const request = () => {
+      if (v.webkitSetPresentationMode) {
+        v.webkitSetPresentationMode("picture-in-picture");
+        return Promise.resolve();
+      }
+      if (v.requestPictureInPicture) return v.requestPictureInPicture();
+      return Promise.reject(new Error("unsupported"));
+    };
+
+    const playPromise = v.play?.();
+    if (playPromise?.then) {
+      playPromise
+        .then(() => request())
+        .catch(() => request())
+        .catch(() => {
+          toast.error("Your browser blocked the floating timer. Try again from the installed app.");
+        });
+    } else {
+      request().catch(() => {
+        toast.error("Your browser blocked the floating timer.");
+      });
     }
   }
 
   async function openPip() {
     const dpip = (window as any).documentPictureInPicture;
     if (!dpip?.requestWindow) return openVideoPip();
-    const win: Window = await dpip.requestWindow({ width: 320, height: 190 });
+    try {
+      const win: Window = await dpip.requestWindow({ width: 320, height: 190 });
     pipRef.current = win;
     const style = win.document.createElement("style");
     style.textContent = `
@@ -244,10 +288,13 @@ export function FocusOverlay() {
       bar: wrap.querySelector("#br") as HTMLElement,
       label: wrap.querySelector("#lb") as HTMLElement,
     };
-    win.addEventListener("pagehide", () => {
-      pipRef.current = null;
-      pipNodesRef.current = null;
-    });
+      win.addEventListener("pagehide", () => {
+        pipRef.current = null;
+        pipNodesRef.current = null;
+      });
+    } catch {
+      openVideoPip();
+    }
   }
 
   const pipSupported =
@@ -262,7 +309,14 @@ export function FocusOverlay() {
     <>
       {/* offscreen surface streamed into the floating PiP window */}
       <canvas ref={canvasRef} width={640} height={360} className="pointer-events-none fixed -left-[9999px] top-0 h-px w-px opacity-0" />
-      <video ref={videoRef} muted playsInline className="pointer-events-none fixed -left-[9999px] top-0 h-px w-px opacity-0" />
+      {/* must stay on-screen (Safari refuses PiP for offscreen/hidden video) */}
+      <video
+        ref={videoRef}
+        muted
+        playsInline
+        autoPlay
+        className="pointer-events-none fixed bottom-1 right-1 z-0 h-[2px] w-[2px] opacity-[0.02]"
+      />
 
       <AnimatePresence>
         {session && remaining > 0 && !hidden && (
