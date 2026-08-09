@@ -127,6 +127,26 @@ export function FocusOverlay() {
 
   useEffect(() => () => closePip(), []);
 
+  // Pre-warm the canvas stream while a session runs so the pop-out tap
+  // (which must stay inside the user gesture on Safari) is instant.
+  useEffect(() => {
+    if (!session || remaining <= 0) return;
+    const c = canvasRef.current;
+    const v = videoRef.current as any;
+    if (!c || !v) return;
+    paint();
+    if (!v.srcObject) {
+      const stream = (c as any).captureStream?.(12);
+      if (!stream) return;
+      v.srcObject = stream;
+    }
+    if (!paintTimerRef.current) paintTimerRef.current = setInterval(paint, 500);
+    v.muted = true;
+    v.playsInline = true;
+    v.play?.().catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.id, remaining > 0]);
+
   function stopVideoPip() {
     if (paintTimerRef.current) {
       clearInterval(paintTimerRef.current);
