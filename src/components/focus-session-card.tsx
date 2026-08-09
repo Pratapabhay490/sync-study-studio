@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
-import { Play, Square, Timer, Users } from "lucide-react";
+import { History, Play, Square, Timer, Users } from "lucide-react";
 
 interface Props {
   session: any | null;
@@ -10,32 +10,52 @@ interface Props {
   partnerName?: string;
 }
 
+function fmtDuration(min: number) {
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
+
 export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
   const { user } = useAuth();
   const [busy, setBusy] = useState(false);
-  const [tick, setTick] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
+  const [custom, setCustom] = useState("");
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<any[] | null>(null);
+
+  // Clock-accurate tick: re-reads the wall clock each frame-ish, and realigns
+  // to the next whole second so it never drifts behind the real time.
   useEffect(() => {
     if (!session) return;
-    const iv = setInterval(() => setTick((t) => t + 1), 1000);
-    return () => clearInterval(iv);
-  }, [session]);
+    let timeout: ReturnType<typeof setTimeout>;
+    const loop = () => {
+      const t = Date.now();
+      setNow(t);
+      timeout = setTimeout(loop, 1000 - (t % 1000));
+    };
+    loop();
+    const onVis = () => {
+      if (document.visibilityState === "visible") setNow(Date.now());
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearTimeout(timeout);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [session?.id]);
 
   const remaining = useMemo(() => {
     if (!session) return 0;
-    return Math.max(0, Math.floor((new Date(session.ends_at).getTime() - Date.now()) / 1000));
-  }, [session, tick]);
+    return Math.max(0, Math.round((new Date(session.ends_at).getTime() - now) / 1000));
+  }, [session, now]);
 
-  const mins = Math.floor(remaining / 60);
+  const hrs = Math.floor(remaining / 3600);
+  const mins = Math.floor((remaining % 3600) / 60);
   const secs = remaining % 60;
-  const pct = session
-    ? Math.min(
-        100,
-        Math.max(
-          0,
-          ((session.duration_min * 60 - remaining) / (session.duration_min * 60)) * 100,
-        ),
-      )
-    : 0;
+  const total = session ? session.duration_min * 60 : 0;
+  const pct = session ? Math.min(100, Math.max(0, ((total - remaining) / total) * 100)) : 0;
 
   const iAmParticipant =
     session && user && (session.host_id === user.id || session.partner_id === user.id);
@@ -45,12 +65,41 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
     session.host_id !== user.id &&
     (!session.partner_id || session.partner_id === user.id);
 
+  const loadHistory = useCallback(async () => {
+    if (!user) return;
+    const ids = [user.id, partnerId].filter(Boolean) as string[];
+    const { data } = await supabase
+      .from("focus_sessions")
+      .select("*")
+      .or(ids.map((id) => `host_id.eq.${id},partner_id.eq.${id}`).join(","))
+      .order("started_at", { ascending: false })
+      .limit(5);
+    setHistory(data ?? []);
+  }, [user, partnerId]);
+
+  useEffect(() => {
+    if (showHistory) loadHistory();
+  }, [showHistory, loadHistory, session?.id]);
+
   async function start(duration: number) {
+    if (!Number.isFinite(duration) || duration < 1 || duration > 480) {
+      toast.error("Pick a duration between 1 and 480 minutes");
+      return;
+    }
     setBusy(true);
-    const { data, error } = await supabase.rpc("start_focus_session", { p_duration_min: duration });
+    const { data, error } = await supabase.rpc("start_focus_session", {
+      p_duration_min: Math.round(duration),
+    });
     setBusy(false);
     if (error) toast.error(error.message);
-    else toast.success(`Focus session started · ${duration} min ▶️`);
+    else {
+      setCustom("");
+      toast.success(
+        partnerId
+          ? `Focus session started · ${fmtDuration(Math.round(duration))} — partner notified ▶️`
+          : `Focus session started · ${fmtDuration(Math.round(duration))} ▶️`,
+      );
+    }
     return data;
   }
   async function join() {
@@ -68,6 +117,9 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
     setBusy(false);
     if (error) toast.error(error.message);
   }
+
+  const nameFor = (id: string | null) =>
+    !id ? null : id === user?.id ? "You" : (partnerName?.split(" ")[0] ?? "Partner");
 
   return (
     <div className="clay group relative overflow-hidden p-6">
@@ -102,10 +154,16 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
           <>
             <div className="text-center">
               <div className="font-display text-6xl font-bold tracking-tight tabular-nums">
-                {mins}:{String(secs).padStart(2, "0")}
+                {hrs > 0 && `${hrs}:`}
+                {hrs > 0 ? String(mins).padStart(2, "0") : mins}:{String(secs).padStart(2, "0")}
               </div>
               <div className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
-                {session.duration_min} min session · {session.joined_by_partner ? "both joined" : "waiting for partner"}
+                {fmtDuration(session.duration_min)} session · started{" "}
+                {new Date(session.started_at).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}{" "}
+                · {session.joined_by_partner ? "both joined" : "waiting for partner"}
               </div>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -137,7 +195,8 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
         ) : (
           <>
             <p className="text-sm text-muted-foreground">
-              Kick off a focus block and {partnerName?.split(" ")[0] ?? "your partner"} will get a nudge to join.
+              Kick off a focus block and {partnerName?.split(" ")[0] ?? "your partner"} gets a push
+              notification to join.
             </p>
             <div className="flex flex-wrap gap-2">
               {[25, 50, 90].map((d) => (
@@ -152,6 +211,32 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
                 </button>
               ))}
             </div>
+            <form
+              className="flex flex-wrap items-center gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                start(Number(custom));
+              }}
+            >
+              <input
+                type="number"
+                min={1}
+                max={480}
+                inputMode="numeric"
+                value={custom}
+                onChange={(e) => setCustom(e.target.value)}
+                placeholder="Custom minutes"
+                className="w-40 rounded-xl border border-border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <button
+                type="submit"
+                disabled={busy || !partnerId || !custom}
+                className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 disabled:opacity-50"
+              >
+                <Play className="h-4 w-4" /> Start
+              </button>
+              <span className="text-xs text-muted-foreground">1–480 min</span>
+            </form>
             {!partnerId && (
               <p className="text-xs text-muted-foreground">
                 Add a study partner in Settings to invite them to sessions.
@@ -159,6 +244,53 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
             )}
           </>
         )}
+
+        <div className="border-t border-border/60 pt-3">
+          <button
+            type="button"
+            onClick={() => setShowHistory((v) => !v)}
+            className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground transition hover:text-foreground"
+          >
+            <History className="h-4 w-4" />
+            {showHistory ? "Hide history" : "Recent focus sessions"}
+          </button>
+          {showHistory && (
+            <div className="mt-3 flex flex-col gap-2">
+              {history === null ? (
+                <p className="text-xs text-muted-foreground">Loading…</p>
+              ) : history.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No focus sessions yet.</p>
+              ) : (
+                history.map((h) => (
+                  <div
+                    key={h.id}
+                    className="flex items-center justify-between gap-3 rounded-xl bg-muted/50 px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold">{fmtDuration(h.duration_min)}</div>
+                      <div className="truncate text-xs text-muted-foreground">
+                        {new Date(h.started_at).toLocaleString([], {
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right text-xs text-muted-foreground">
+                      <div>Started by {nameFor(h.host_id)}</div>
+                      <div>
+                        {h.joined_by_partner
+                          ? `Joined by ${nameFor(h.partner_id) ?? "partner"}`
+                          : "No one joined"}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
