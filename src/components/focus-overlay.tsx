@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { useActiveFocusSession } from "@/lib/partner";
 import { celebrate } from "@/lib/celebrate";
+import { useFloatingTimerPref } from "@/lib/floating-timer";
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -28,6 +29,8 @@ export function FocusOverlay() {
   const { user } = useAuth();
   const userIds = useMemo(() => (user ? [user.id] : []), [user?.id]);
   const session = useActiveFocusSession(userIds);
+  const { enabled: floatEnabled, setEnabled: setFloatEnabled, support: floatSupport } =
+    useFloatingTimerPref();
   const [now, setNow] = useState(() => Date.now());
   const [hidden, setHidden] = useState(false);
   const [done, setDone] = useState(false);
@@ -297,12 +300,13 @@ export function FocusOverlay() {
     }
   }
 
-  const pipSupported =
-    typeof window !== "undefined" &&
-    (!!(window as any).documentPictureInPicture?.requestWindow ||
-      (typeof document !== "undefined" &&
-        ((document as any).pictureInPictureEnabled ||
-          !!(document.createElement("video") as any).webkitSetPresentationMode)));
+  const pipSupported = floatSupport !== "unsupported" && floatEnabled !== false;
+
+  // ask once per device, the first time a session runs
+  const showAsk =
+    !!session && remaining > 0 && !hidden && floatEnabled === null && floatSupport !== "unsupported";
+
+
 
 
   return (
@@ -317,6 +321,43 @@ export function FocusOverlay() {
         autoPlay
         className="pointer-events-none fixed bottom-1 right-1 z-0 h-[2px] w-[2px] opacity-[0.02]"
       />
+
+      <AnimatePresence>
+        {showAsk && (
+          <motion.div
+            key="float-ask"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="clay fixed bottom-40 right-4 z-[85] w-64 p-4 sm:bottom-24"
+          >
+            <div className="font-display text-sm font-bold">Float the timer?</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Keep your countdown on top while you use other apps. You can change this anytime in Settings.
+            </p>
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setFloatEnabled(true);
+                  openPip();
+                }}
+                className="flex-1 rounded-xl bg-gradient-primary px-3 py-2 text-xs font-semibold text-white shadow-clay-sm"
+              >
+                Allow
+              </button>
+              <button
+                type="button"
+                onClick={() => setFloatEnabled(false)}
+                className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-medium text-muted-foreground"
+              >
+                Not now
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
 
       <AnimatePresence>
         {session && remaining > 0 && !hidden && (

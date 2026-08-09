@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Download, LogOut, RotateCcw, UserX, Mail, Bell, BellOff, Send, UserPlus, Loader2 } from "lucide-react";
 import { useNotifications } from "@/lib/notifications-context";
+import { useFloatingTimerPref } from "@/lib/floating-timer";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -44,6 +45,7 @@ function SettingsPage() {
   const { profiles, subjects, topics, progress, resetMyProgress } = useData();
   const { pushEnabled, enablePush, disablePush, sendTestPush, permission } = useNotifications();
   const { theme, toggle } = useTheme();
+  const { enabled: floatEnabled, setEnabled: setFloatEnabled, support: floatSupport } = useFloatingTimerPref();
   const me = profiles.find((p) => p.id === user?.id);
   const [name, setName] = useState(me?.name ?? "");
   const [avatar, setAvatar] = useState(me?.avatar_url ?? "");
@@ -278,6 +280,38 @@ function SettingsPage() {
           )}
         </div>
       </div>
+
+      <div className="clay rounded-3xl border-0 p-6">
+        <h3 className="font-display text-lg font-semibold">Floating focus timer</h3>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Pops the countdown into a small always-on-top window so you can see it while using other apps.
+        </p>
+        <div className="mt-4 flex items-center justify-between gap-4">
+          <div className="text-sm font-medium">
+            {floatSupport === "unsupported"
+              ? "Not available on this device"
+              : floatEnabled
+                ? "On for this device"
+                : "Off"}
+          </div>
+          <Switch
+            checked={!!floatEnabled && floatSupport !== "unsupported"}
+            disabled={floatSupport === "unsupported"}
+            onCheckedChange={(v) => {
+              setFloatEnabled(v);
+              toast.success(v ? "Floating timer enabled" : "Floating timer turned off");
+            }}
+          />
+        </div>
+        {floatSupport === "unsupported" && (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Safari on the iPhone home-screen app doesn't allow floating windows. Open the app in the Safari browser
+            tab (or use an iPad/Android) to float the timer — the countdown still shows in the tab title and you'll
+            get a notification when it finishes.
+          </p>
+        )}
+      </div>
+
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="clay rounded-3xl border-0 p-6">
