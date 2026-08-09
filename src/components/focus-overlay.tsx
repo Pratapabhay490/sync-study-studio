@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { useActiveFocusSession } from "@/lib/partner";
 import { celebrate } from "@/lib/celebrate";
-import { useFloatingTimerPref } from "@/lib/floating-timer";
+import { playChime, primeAudio } from "@/lib/chime";
+import { useFloatingTimerPref, isIosStandalone } from "@/lib/floating-timer";
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
