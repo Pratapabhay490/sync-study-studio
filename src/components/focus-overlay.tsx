@@ -336,8 +336,28 @@ export function FocusOverlay() {
         muted
         playsInline
         autoPlay
-        className="pointer-events-none fixed bottom-1 right-1 z-0 h-[2px] w-[2px] opacity-[0.02]"
+        className="pointer-events-none fixed bottom-0 right-0 z-0 h-[96px] w-[160px] opacity-[0.015]"
       />
+
+      {/* bring the pill back if it was dismissed mid-session */}
+      <AnimatePresence>
+        {session && remaining > 0 && hidden && (
+          <motion.button
+            key="focus-restore"
+            type="button"
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.7 }}
+            onClick={() => setHidden(false)}
+            title="Show focus timer"
+            className="clay fixed bottom-24 right-4 z-[80] grid h-12 w-12 place-items-center rounded-2xl text-primary sm:bottom-6"
+          >
+            <Timer className="h-5 w-5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+
 
       <AnimatePresence>
         {showAsk && (
