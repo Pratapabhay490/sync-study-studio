@@ -81,6 +81,8 @@ export function FocusOverlay() {
     if (!session || remaining > 0) return;
     if (done) return;
     setDone(true);
+    setHidden(false);
+    playChime();
     celebrate(0.5, 0.4);
     setTimeout(() => celebrate(0.25, 0.5), 300);
     setTimeout(() => celebrate(0.75, 0.5), 600);
