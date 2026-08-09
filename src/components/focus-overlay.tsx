@@ -323,6 +323,43 @@ export function FocusOverlay() {
       />
 
       <AnimatePresence>
+        {showAsk && (
+          <motion.div
+            key="float-ask"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="clay fixed bottom-40 right-4 z-[85] w-64 p-4 sm:bottom-24"
+          >
+            <div className="font-display text-sm font-bold">Float the timer?</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Keep your countdown on top while you use other apps. You can change this anytime in Settings.
+            </p>
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setFloatEnabled(true);
+                  openPip();
+                }}
+                className="flex-1 rounded-xl bg-gradient-primary px-3 py-2 text-xs font-semibold text-white shadow-clay-sm"
+              >
+                Allow
+              </button>
+              <button
+                type="button"
+                onClick={() => setFloatEnabled(false)}
+                className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-medium text-muted-foreground"
+              >
+                Not now
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+
+      <AnimatePresence>
         {session && remaining > 0 && !hidden && (
           <motion.div
             key="focus-pill"
