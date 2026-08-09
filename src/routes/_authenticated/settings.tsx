@@ -45,6 +45,7 @@ function SettingsPage() {
   const { profiles, subjects, topics, progress, resetMyProgress } = useData();
   const { pushEnabled, enablePush, disablePush, sendTestPush, permission } = useNotifications();
   const { theme, toggle } = useTheme();
+  const { enabled: floatEnabled, setEnabled: setFloatEnabled, support: floatSupport } = useFloatingTimerPref();
   const me = profiles.find((p) => p.id === user?.id);
   const [name, setName] = useState(me?.name ?? "");
   const [avatar, setAvatar] = useState(me?.avatar_url ?? "");
