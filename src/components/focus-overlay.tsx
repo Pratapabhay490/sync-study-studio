@@ -260,6 +260,10 @@ export function FocusOverlay() {
 
   return (
     <>
+      {/* offscreen surface streamed into the floating PiP window */}
+      <canvas ref={canvasRef} width={640} height={360} className="pointer-events-none fixed -left-[9999px] top-0 h-px w-px opacity-0" />
+      <video ref={videoRef} muted playsInline className="pointer-events-none fixed -left-[9999px] top-0 h-px w-px opacity-0" />
+
       <AnimatePresence>
         {session && remaining > 0 && !hidden && (
           <motion.div
