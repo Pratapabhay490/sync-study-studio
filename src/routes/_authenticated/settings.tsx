@@ -281,6 +281,38 @@ function SettingsPage() {
         </div>
       </div>
 
+      <div className="clay rounded-3xl border-0 p-6">
+        <h3 className="font-display text-lg font-semibold">Floating focus timer</h3>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Pops the countdown into a small always-on-top window so you can see it while using other apps.
+        </p>
+        <div className="mt-4 flex items-center justify-between gap-4">
+          <div className="text-sm font-medium">
+            {floatSupport === "unsupported"
+              ? "Not available on this device"
+              : floatEnabled
+                ? "On for this device"
+                : "Off"}
+          </div>
+          <Switch
+            checked={!!floatEnabled && floatSupport !== "unsupported"}
+            disabled={floatSupport === "unsupported"}
+            onCheckedChange={(v) => {
+              setFloatEnabled(v);
+              toast.success(v ? "Floating timer enabled" : "Floating timer turned off");
+            }}
+          />
+        </div>
+        {floatSupport === "unsupported" && (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Safari on the iPhone home-screen app doesn't allow floating windows. Open the app in the Safari browser
+            tab (or use an iPad/Android) to float the timer — the countdown still shows in the tab title and you'll
+            get a notification when it finishes.
+          </p>
+        )}
+      </div>
+
+
       <div className="grid gap-6 md:grid-cols-2">
         <div className="clay rounded-3xl border-0 p-6">
           <h3 className="mb-4 font-display text-lg font-semibold">Appearance</h3>
