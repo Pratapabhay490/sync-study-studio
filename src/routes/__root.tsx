@@ -127,6 +127,7 @@ function RootComponent() {
               <Outlet />
               <BadgePopup />
               <FloatingHearts />
+              <FocusOverlay />
               <Toaster richColors position="top-right" />
             </NotificationsProvider>
           </DataProvider>
