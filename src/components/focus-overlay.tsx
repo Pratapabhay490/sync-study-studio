@@ -298,12 +298,13 @@ export function FocusOverlay() {
     }
   }
 
-  const pipSupported =
-    typeof window !== "undefined" &&
-    (!!(window as any).documentPictureInPicture?.requestWindow ||
-      (typeof document !== "undefined" &&
-        ((document as any).pictureInPictureEnabled ||
-          !!(document.createElement("video") as any).webkitSetPresentationMode)));
+  const pipSupported = floatSupport !== "unsupported" && floatEnabled !== false;
+
+  // ask once per device, the first time a session runs
+  const showAsk =
+    !!session && remaining > 0 && !hidden && floatEnabled === null && floatSupport !== "unsupported";
+
+
 
 
   return (
