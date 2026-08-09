@@ -70,7 +70,7 @@ export function usePresence(userIds: string[]) {
         setRows(next);
       });
     const ch = supabase
-      .channel("presence-watch")
+      .channel(`presence-watch:${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "presence" },
@@ -111,7 +111,7 @@ export function useTodayCheckins(userIds: string[]) {
     };
     load();
     const ch = supabase
-      .channel("checkin-watch")
+      .channel(`checkin-watch:${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "daily_checkins" },
@@ -146,7 +146,7 @@ export function useActiveFocusSession(userIds: string[]) {
     };
     load();
     const ch = supabase
-      .channel("focus-watch")
+      .channel(`focus-watch:${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "focus_sessions" },
