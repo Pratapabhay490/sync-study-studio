@@ -146,7 +146,7 @@ export function useActiveFocusSession(userIds: string[]) {
     };
     load();
     const ch = supabase
-      .channel("focus-watch")
+      .channel(`focus-watch:${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "focus_sessions" },
