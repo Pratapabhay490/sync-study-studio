@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { useActiveFocusSession } from "@/lib/partner";
 import { celebrate } from "@/lib/celebrate";
-import { useFloatingTimerPref } from "@/lib/floating-timer";
+import { playChime, primeAudio } from "@/lib/chime";
+import { useFloatingTimerPref, isIosStandalone } from "@/lib/floating-timer";
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -80,6 +81,8 @@ export function FocusOverlay() {
     if (!session || remaining > 0) return;
     if (done) return;
     setDone(true);
+    setHidden(false);
+    playChime();
     celebrate(0.5, 0.4);
     setTimeout(() => celebrate(0.25, 0.5), 300);
     setTimeout(() => celebrate(0.75, 0.5), 600);
@@ -147,6 +150,7 @@ export function FocusOverlay() {
     v.muted = true;
     v.playsInline = true;
     v.play?.().catch(() => {});
+    primeAudio();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.id, remaining > 0]);
 
@@ -234,11 +238,27 @@ export function FocusOverlay() {
     v.muted = true;
     v.playsInline = true;
 
+    const blocked = () => {
+      if (isIosStandalone()) {
+        toast.error(
+          "iPad home-screen apps block floating windows. Open the site in the Safari browser tab and tap pop-out there.",
+        );
+      } else {
+        toast.error("Your browser blocked the floating timer. Keep this tab open instead.");
+      }
+    };
+
     // stay inside the user gesture: don't await play() before requesting PiP
     const request = () => {
       if (v.webkitSetPresentationMode) {
         v.webkitSetPresentationMode("picture-in-picture");
-        return Promise.resolve();
+        // Safari fails silently — verify it actually entered PiP
+        return new Promise<void>((resolve, reject) =>
+          setTimeout(
+            () => (v.webkitPresentationMode === "picture-in-picture" ? resolve() : reject(new Error("blocked"))),
+            700,
+          ),
+        );
       }
       if (v.requestPictureInPicture) return v.requestPictureInPicture();
       return Promise.reject(new Error("unsupported"));
@@ -249,15 +269,12 @@ export function FocusOverlay() {
       playPromise
         .then(() => request())
         .catch(() => request())
-        .catch(() => {
-          toast.error("Your browser blocked the floating timer. Try again from the installed app.");
-        });
+        .catch(blocked);
     } else {
-      request().catch(() => {
-        toast.error("Your browser blocked the floating timer.");
-      });
+      request().catch(blocked);
     }
   }
+
 
   async function openPip() {
     const dpip = (window as any).documentPictureInPicture;
@@ -319,8 +336,28 @@ export function FocusOverlay() {
         muted
         playsInline
         autoPlay
-        className="pointer-events-none fixed bottom-1 right-1 z-0 h-[2px] w-[2px] opacity-[0.02]"
+        className="pointer-events-none fixed bottom-0 right-0 z-0 h-[96px] w-[160px] opacity-[0.015]"
       />
+
+      {/* bring the pill back if it was dismissed mid-session */}
+      <AnimatePresence>
+        {session && remaining > 0 && hidden && (
+          <motion.button
+            key="focus-restore"
+            type="button"
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.7 }}
+            onClick={() => setHidden(false)}
+            title="Show focus timer"
+            className="clay fixed bottom-24 right-4 z-[80] grid h-12 w-12 place-items-center rounded-2xl text-primary sm:bottom-6"
+          >
+            <Timer className="h-5 w-5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+
 
       <AnimatePresence>
         {showAsk && (

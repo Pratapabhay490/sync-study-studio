@@ -4,17 +4,27 @@ const KEY = "floating-timer-enabled";
 
 export type FloatSupport = "document-pip" | "video-pip" | "unsupported";
 
+/** True when running as an iOS/iPadOS home-screen app (Safari standalone). */
+export function isIosStandalone(): boolean {
+  if (typeof window === "undefined" || typeof navigator === "undefined") return false;
+  const isApple =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && (navigator as any).maxTouchPoints > 1);
+  const standalone =
+    (window.navigator as any).standalone === true ||
+    window.matchMedia?.("(display-mode: standalone)").matches === true;
+  return isApple && standalone;
+}
+
 /** What kind of floating window (if any) this browser can give us. */
 export function detectFloatSupport(): FloatSupport {
   if (typeof window === "undefined") return "unsupported";
   if ((window as any).documentPictureInPicture?.requestWindow) return "document-pip";
   if (typeof document === "undefined") return "unsupported";
   const v = document.createElement("video") as any;
-  const iosStandalone =
-    (window.navigator as any).standalone === true &&
-    /iPad|iPhone|iPod/.test(navigator.userAgent);
-  // iOS home-screen apps do not expose Picture-in-Picture at all.
-  if (iosStandalone && !v.webkitSetPresentationMode) return "unsupported";
+  // iPhone home-screen apps do not expose Picture-in-Picture; iPad often still does.
+  if (isIosStandalone() && !v.webkitSetPresentationMode && !(document as any).pictureInPictureEnabled)
+    return "unsupported";
   if ((document as any).pictureInPictureEnabled) return "video-pip";
   if (v.webkitSetPresentationMode) return "video-pip";
   return "unsupported";
