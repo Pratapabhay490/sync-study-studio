@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Download, LogOut, RotateCcw, UserX, Mail, Bell, BellOff, Send, UserPlus, Loader2 } from "lucide-react";
 import { useNotifications } from "@/lib/notifications-context";
+import { useFloatingTimerPref } from "@/lib/floating-timer";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
