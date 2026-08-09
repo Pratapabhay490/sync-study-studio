@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { PictureInPicture2, Timer, X, PartyPopper } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { useActiveFocusSession } from "@/lib/partner";
 import { celebrate } from "@/lib/celebrate";
