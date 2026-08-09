@@ -29,6 +29,8 @@ export function FocusOverlay() {
   const { user } = useAuth();
   const userIds = useMemo(() => (user ? [user.id] : []), [user?.id]);
   const session = useActiveFocusSession(userIds);
+  const { enabled: floatEnabled, setEnabled: setFloatEnabled, support: floatSupport } =
+    useFloatingTimerPref();
   const [now, setNow] = useState(() => Date.now());
   const [hidden, setHidden] = useState(false);
   const [done, setDone] = useState(false);
