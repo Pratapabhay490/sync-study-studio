@@ -129,6 +129,7 @@ export type Database = {
         Row: {
           created_at: string
           duration_min: number
+          end_notified: boolean
           ends_at: string
           host_id: string
           id: string
@@ -141,6 +142,7 @@ export type Database = {
         Insert: {
           created_at?: string
           duration_min: number
+          end_notified?: boolean
           ends_at: string
           host_id: string
           id?: string
@@ -153,6 +155,7 @@ export type Database = {
         Update: {
           created_at?: string
           duration_min?: number
+          end_notified?: boolean
           ends_at?: string
           host_id?: string
           id?: string
@@ -1101,6 +1104,7 @@ export type Database = {
         Returns: boolean
       }
       claim_weekly_challenge: { Args: { p_id: string }; Returns: boolean }
+      close_finished_focus_sessions: { Args: never; Returns: number }
       end_focus_session: { Args: { p_session_id: string }; Returns: undefined }
       enqueue_quiz_invite: {
         Args: {
