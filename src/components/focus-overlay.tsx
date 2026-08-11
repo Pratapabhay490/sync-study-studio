@@ -133,26 +133,28 @@ export function FocusOverlay() {
 
   useEffect(() => () => closePip(), []);
 
-  // Pre-warm the canvas stream while a session runs so the pop-out tap
-  // (which must stay inside the user gesture on Safari) is instant.
+  // Only warm up the audio context when a session starts. The canvas capture
+  // stream is started lazily on the pop-out tap — running it for every session
+  // made the app noticeably laggy.
   useEffect(() => {
     if (!session || remaining <= 0) return;
-    const c = canvasRef.current;
-    const v = videoRef.current as any;
-    if (!c || !v) return;
-    paint();
-    if (!v.srcObject) {
-      const stream = (c as any).captureStream?.(12);
-      if (!stream) return;
-      v.srcObject = stream;
-    }
-    if (!paintTimerRef.current) paintTimerRef.current = setInterval(paint, 500);
-    v.muted = true;
-    v.playsInline = true;
-    v.play?.().catch(() => {});
     primeAudio();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.id, remaining > 0]);
+  }, [session?.id]);
+
+  // stop painting as soon as the floating window is closed
+  useEffect(() => {
+    const v = videoRef.current as any;
+    if (!v) return;
+    const onLeave = () => stopVideoPip();
+    v.addEventListener("leavepictureinpicture", onLeave);
+    v.addEventListener("webkitpresentationmodechanged", () => {
+      if (v.webkitPresentationMode === "inline") stopVideoPip();
+    });
+    return () => v.removeEventListener("leavepictureinpicture", onLeave);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   function stopVideoPip() {
     if (paintTimerRef.current) {
