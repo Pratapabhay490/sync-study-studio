@@ -236,7 +236,7 @@ export function FocusOverlay() {
       }
       v.srcObject = stream;
     }
-    if (!paintTimerRef.current) paintTimerRef.current = setInterval(paint, 500);
+    if (!paintTimerRef.current) paintTimerRef.current = setInterval(paint, 1000);
     v.muted = true;
     v.playsInline = true;
 
