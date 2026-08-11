@@ -30,7 +30,7 @@ export function statusDot(status: PresenceStatus, updated_at?: string) {
   }
 }
 
-/** Sends a presence heartbeat every 45s while mounted. */
+/** Sends a presence heartbeat every 25s while mounted (and on focus/visibility). */
 export function usePresenceHeartbeat(status: PresenceStatus = "online", activity?: string) {
   const { user } = useAuth();
   useEffect(() => {
@@ -38,18 +38,27 @@ export function usePresenceHeartbeat(status: PresenceStatus = "online", activity
     let cancelled = false;
     const beat = async () => {
       if (cancelled) return;
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
       await supabase.rpc("heartbeat_presence", { p_status: status, p_activity: activity ?? "" });
     };
     beat();
-    const iv = setInterval(beat, 45_000);
+    const iv = setInterval(beat, 25_000);
     const onVis = () => {
       if (document.visibilityState === "visible") beat();
+      else supabase.rpc("heartbeat_presence", { p_status: "offline", p_activity: "" });
+    };
+    const onHide = () => {
+      supabase.rpc("heartbeat_presence", { p_status: "offline", p_activity: "" });
     };
     document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("focus", beat);
+    window.addEventListener("pagehide", onHide);
     return () => {
       cancelled = true;
       clearInterval(iv);
       document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", beat);
+      window.removeEventListener("pagehide", onHide);
       // best-effort mark offline
       supabase.rpc("heartbeat_presence", { p_status: "offline", p_activity: "" });
     };
@@ -58,20 +67,23 @@ export function usePresenceHeartbeat(status: PresenceStatus = "online", activity
 
 export function usePresence(userIds: string[]) {
   const [rows, setRows] = useState<Record<string, PresenceRow>>({});
+  const [, setTick] = useState(0);
   const key = userIds.join(",");
   useEffect(() => {
     if (!userIds.length) return;
     let live = true;
-    supabase
-      .from("presence")
-      .select("*")
-      .in("user_id", userIds)
-      .then(({ data }) => {
-        if (!live || !data) return;
-        const next: Record<string, PresenceRow> = {};
-        for (const r of data as PresenceRow[]) next[r.user_id] = r;
-        setRows(next);
-      });
+    const load = () =>
+      supabase
+        .from("presence")
+        .select("*")
+        .in("user_id", userIds)
+        .then(({ data }) => {
+          if (!live || !data) return;
+          const next: Record<string, PresenceRow> = {};
+          for (const r of data as PresenceRow[]) next[r.user_id] = r;
+          setRows(next);
+        });
+    load();
     const ch = supabase
       .channel(`presence-watch:${Math.random().toString(36).slice(2)}`)
       .on(
@@ -85,14 +97,24 @@ export function usePresence(userIds: string[]) {
         },
       )
       .subscribe();
+    // re-render so a heartbeat that goes stale flips to "offline" on its own,
+    // and re-poll in case a realtime event was missed
+    const tick = setInterval(() => setTick((t) => t + 1), 15_000);
+    const poll = setInterval(load, 60_000);
+    const onVis = () => document.visibilityState === "visible" && load();
+    document.addEventListener("visibilitychange", onVis);
     return () => {
       live = false;
       supabase.removeChannel(ch);
+      clearInterval(tick);
+      clearInterval(poll);
+      document.removeEventListener("visibilitychange", onVis);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
   return rows;
 }
+
 
 export function useTodayCheckins(userIds: string[]) {
   const [rows, setRows] = useState<Record<string, any>>({});
