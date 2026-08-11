@@ -11,9 +11,12 @@ export interface PresenceRow {
   updated_at: string;
 }
 
+/** A heartbeat older than this means the person is no longer on the app. */
+export const PRESENCE_STALE_MS = 75 * 1000;
+
 export function statusDot(status: PresenceStatus, updated_at?: string) {
   const stale =
-    updated_at && Date.now() - new Date(updated_at).getTime() > 3 * 60 * 1000;
+    !updated_at || Date.now() - new Date(updated_at).getTime() > PRESENCE_STALE_MS;
   if (stale) return { color: "bg-muted-foreground/40", label: "Offline" };
   switch (status) {
     case "studying":
