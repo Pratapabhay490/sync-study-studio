@@ -329,6 +329,13 @@ function Dashboard() {
         />
       </ScrollReveal>
 
+      {/* Focus hours */}
+      <ScrollReveal as="section" direction="up" delay={70}>
+        <StudyHoursCard me={me} partner={other} />
+      </ScrollReveal>
+
+
+
       {/* Side-by-side */}
       <ScrollReveal as="section" className="grid gap-4 md:grid-cols-2" direction="up" delay={80}>
         <UserCard profile={me} stats={myStats} accent="abhay" label="You" />
