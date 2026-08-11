@@ -22,6 +22,8 @@ import {
 } from "date-fns";
 import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
 import { PokeButton } from "@/components/poke-button";
+import { StudyHoursCard } from "@/components/study-hours-card";
+
 import clayTopics from "@/assets/clay-icon-topics.png";
 import clayCompleted from "@/assets/clay-icon-completed.png";
 import clayProgress from "@/assets/clay-icon-progress.png";
