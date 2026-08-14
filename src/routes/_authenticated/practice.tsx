@@ -180,8 +180,41 @@ function Lobby({
     return () => { sb.removeChannel(ch); };
   }, [user]);
 
+  // Sessions I'm in that are still active and unfinished for me — so a refresh
+  // right after starting never strands me outside my own quiz.
+  const [myActive, setMyActive] = useState<QuizSession[]>([]);
+  useEffect(() => {
+    if (!user) return;
+    const load = async () => {
+      const { data: mine } = await sb
+        .from("quiz_session_players")
+        .select("session_id, finished_at")
+        .eq("user_id", user.id)
+        .is("finished_at", null)
+        .order("joined_at", { ascending: false })
+        .limit(20);
+      const ids = ((mine as any[] | null) ?? []).map((r) => r.session_id);
+      if (!ids.length) { setMyActive([]); return; }
+      const { data } = await sb
+        .from("quiz_sessions")
+        .select("*")
+        .in("id", ids)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(5);
+      setMyActive((data as QuizSession[] | null) ?? []);
+    };
+    load();
+    const ch = sb.channel(`my-active-watch:${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "quiz_sessions" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "quiz_session_players" }, load)
+      .subscribe();
+    return () => { sb.removeChannel(ch); };
+  }, [user]);
+
   // Duo quizzes I created that my partner hasn't attempted yet — so I can nudge them.
   const [awaitingPartner, setAwaitingPartner] = useState<QuizSession[]>([]);
+
   const [reminding, setReminding] = useState<string | null>(null);
   useEffect(() => {
     if (!user || !partner?.id) { setAwaitingPartner([]); return; }
@@ -348,6 +381,29 @@ function Lobby({
           <Upload className="h-4 w-4" /> Upload notes
         </Button>
       </header>
+
+      {myActive.length > 0 && (
+        <section className="clay space-y-3 p-5">
+          <h2 className="font-display text-lg font-bold">Continue where you left off</h2>
+          <ul className="divide-y divide-border/60">
+            {myActive.map((s) => (
+              <li key={s.id} className="flex flex-wrap items-center gap-3 py-3">
+                <div className="min-w-0 flex-1 text-sm">
+                  <div className="truncate font-semibold">
+                    {[s.subject, s.topic].filter(Boolean).join(" • ") || "Mixed questions"}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {s.question_count}q · {s.difficulty} · {s.seconds_per_question}s/q ·{" "}
+                    {new Date(s.created_at).toLocaleString()}
+                  </div>
+                </div>
+                <Button size="sm" onClick={() => onSessionStarted(s.id)}>Resume</Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
 
       {invites.length > 0 && (
         <section className="clay space-y-3 p-5">

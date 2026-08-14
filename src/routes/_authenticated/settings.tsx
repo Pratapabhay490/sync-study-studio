@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useData } from "@/lib/data-context";
 import { useTheme } from "@/lib/theme-provider";
@@ -49,9 +49,17 @@ function SettingsPage() {
   const me = profiles.find((p) => p.id === user?.id);
   const [name, setName] = useState(me?.name ?? "");
   const [avatar, setAvatar] = useState(me?.avatar_url ?? "");
+  const hydrated = useRef(false);
+  useEffect(() => {
+    if (hydrated.current || !me) return;
+    hydrated.current = true;
+    setName(me.name ?? "");
+    setAvatar(me.avatar_url ?? "");
+  }, [me]);
   const [removePartner, setRemovePartner] = useState<{ id: string; name: string } | null>(null);
   const [partnerEmail, setPartnerEmail] = useState("");
   const [addingPartner, setAddingPartner] = useState(false);
+
 
   async function handleRemovePartner() {
     if (!removePartner) return;
@@ -84,10 +92,16 @@ function SettingsPage() {
 
   async function saveProfile() {
     if (!user) return;
-    const { error } = await supabase.from("profiles").update({ name, avatar_url: avatar || null }).eq("id", user.id);
+    const trimmed = name.trim();
+    if (!trimmed) {
+      toast.error("Display name can't be empty");
+      return;
+    }
+    const { error } = await supabase.from("profiles").update({ name: trimmed, avatar_url: avatar || null }).eq("id", user.id);
     if (error) toast.error(error.message);
     else toast.success("Profile updated");
   }
+
 
   function exportData() {
     const payload = { profiles, subjects, topics, progress };

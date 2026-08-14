@@ -38,21 +38,28 @@ export function usePresenceHeartbeat(status: PresenceStatus = "online", activity
     let cancelled = false;
     const beat = async () => {
       if (cancelled) return;
-      if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+      if (status !== "studying" && typeof document !== "undefined" && document.visibilityState === "hidden") return;
       await supabase.rpc("heartbeat_presence", { p_status: status, p_activity: activity ?? "" });
     };
     beat();
     const iv = setInterval(beat, 25_000);
+    // While a focus session is running ("studying"), keep the status as-is when the
+    // app is backgrounded — that's exactly the floating-timer flow. Otherwise mark offline.
+    const markAway = () => {
+      if (status === "studying") return;
+      supabase.rpc("heartbeat_presence", { p_status: "offline", p_activity: "" });
+    };
     const onVis = () => {
       if (document.visibilityState === "visible") beat();
-      else supabase.rpc("heartbeat_presence", { p_status: "offline", p_activity: "" });
+      else markAway();
     };
     const onHide = () => {
-      supabase.rpc("heartbeat_presence", { p_status: "offline", p_activity: "" });
+      markAway();
     };
     document.addEventListener("visibilitychange", onVis);
     window.addEventListener("focus", beat);
     window.addEventListener("pagehide", onHide);
+
     return () => {
       cancelled = true;
       clearInterval(iv);
