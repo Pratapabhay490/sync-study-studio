@@ -38,7 +38,7 @@ export function usePresenceHeartbeat(status: PresenceStatus = "online", activity
     let cancelled = false;
     const beat = async () => {
       if (cancelled) return;
-      if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+      if (status !== "studying" && typeof document !== "undefined" && document.visibilityState === "hidden") return;
       await supabase.rpc("heartbeat_presence", { p_status: status, p_activity: activity ?? "" });
     };
     beat();
