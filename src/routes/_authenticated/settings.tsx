@@ -49,9 +49,17 @@ function SettingsPage() {
   const me = profiles.find((p) => p.id === user?.id);
   const [name, setName] = useState(me?.name ?? "");
   const [avatar, setAvatar] = useState(me?.avatar_url ?? "");
+  const hydrated = useRef(false);
+  useEffect(() => {
+    if (hydrated.current || !me) return;
+    hydrated.current = true;
+    setName(me.name ?? "");
+    setAvatar(me.avatar_url ?? "");
+  }, [me]);
   const [removePartner, setRemovePartner] = useState<{ id: string; name: string } | null>(null);
   const [partnerEmail, setPartnerEmail] = useState("");
   const [addingPartner, setAddingPartner] = useState(false);
+
 
   async function handleRemovePartner() {
     if (!removePartner) return;
