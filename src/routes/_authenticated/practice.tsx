@@ -180,8 +180,41 @@ function Lobby({
     return () => { sb.removeChannel(ch); };
   }, [user]);
 
+  // Sessions I'm in that are still active and unfinished for me — so a refresh
+  // right after starting never strands me outside my own quiz.
+  const [myActive, setMyActive] = useState<QuizSession[]>([]);
+  useEffect(() => {
+    if (!user) return;
+    const load = async () => {
+      const { data: mine } = await sb
+        .from("quiz_session_players")
+        .select("session_id, finished_at")
+        .eq("user_id", user.id)
+        .is("finished_at", null)
+        .order("joined_at", { ascending: false })
+        .limit(20);
+      const ids = ((mine as any[] | null) ?? []).map((r) => r.session_id);
+      if (!ids.length) { setMyActive([]); return; }
+      const { data } = await sb
+        .from("quiz_sessions")
+        .select("*")
+        .in("id", ids)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(5);
+      setMyActive((data as QuizSession[] | null) ?? []);
+    };
+    load();
+    const ch = sb.channel(`my-active-watch:${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "quiz_sessions" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "quiz_session_players" }, load)
+      .subscribe();
+    return () => { sb.removeChannel(ch); };
+  }, [user]);
+
   // Duo quizzes I created that my partner hasn't attempted yet — so I can nudge them.
   const [awaitingPartner, setAwaitingPartner] = useState<QuizSession[]>([]);
+
   const [reminding, setReminding] = useState<string | null>(null);
   useEffect(() => {
     if (!user || !partner?.id) { setAwaitingPartner([]); return; }
