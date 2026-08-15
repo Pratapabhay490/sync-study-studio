@@ -39,7 +39,11 @@ export interface TopicProgress {
   completed: boolean;
   completed_at: string | null;
   updated_at: string;
+  revisions?: number;
+  last_revised_at?: string | null;
 }
+
+export const REVISION_TARGET = 5;
 
 interface DataContextValue {
   loading: boolean;
@@ -49,6 +53,7 @@ interface DataContextValue {
   progress: TopicProgress[];
   refresh: () => Promise<void>;
   toggleTopic: (topicId: string, completed: boolean) => Promise<void>;
+  setTopicRevisions: (topicId: string, revisions: number) => Promise<void>;
   addTopic: (subjectId: string, topicName: string, description?: string) => Promise<void>;
   bulkAddTopics: (subjectId: string, topicNames: string[]) => Promise<void>;
   updateTopic: (
@@ -143,6 +148,50 @@ export function DataProvider({ children }: { children: ReactNode }) {
         await supabase
           .from("topic_progress")
           .insert({ topic_id: topicId, user_id: user.id, completed, completed_at });
+      }
+    },
+    [user, progress],
+  );
+
+  const setTopicRevisions = useCallback(
+    async (topicId: string, revisions: number) => {
+      if (!user) return;
+      const next = Math.max(0, Math.min(REVISION_TARGET, Math.round(revisions)));
+      const existing = progress.find((p) => p.topic_id === topicId && p.user_id === user.id);
+      const last_revised_at = next > 0 ? new Date().toISOString() : null;
+      setProgress((prev) => {
+        if (existing)
+          return prev.map((p) =>
+            p.id === existing.id ? { ...p, revisions: next, last_revised_at } : p,
+          );
+        return [
+          ...prev,
+          {
+            id: `tmp-rev-${topicId}`,
+            topic_id: topicId,
+            user_id: user.id,
+            completed: false,
+            completed_at: null,
+            updated_at: new Date().toISOString(),
+            revisions: next,
+            last_revised_at,
+          },
+        ];
+      });
+      if (existing) {
+        await supabase
+          .from("topic_progress")
+          .update({ revisions: next, last_revised_at })
+          .eq("id", existing.id);
+      } else {
+        await supabase.from("topic_progress").insert({
+          topic_id: topicId,
+          user_id: user.id,
+          completed: false,
+          completed_at: null,
+          revisions: next,
+          last_revised_at,
+        });
       }
     },
     [user, progress],
@@ -283,6 +332,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       progress,
       refresh,
       toggleTopic,
+      setTopicRevisions,
       addTopic,
       bulkAddTopics,
       updateTopic,
@@ -300,6 +350,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       progress,
       refresh,
       toggleTopic,
+      setTopicRevisions,
       addTopic,
       bulkAddTopics,
       updateTopic,
@@ -318,6 +369,28 @@ export function useData() {
   const ctx = useContext(DataContext);
   if (!ctx) throw new Error("useData must be used within DataProvider");
   return ctx;
+}
+
+/**
+ * Exam readiness: each topic is worth 1 point, split 50% for completing it and
+ * 50% for finishing all 5 revisions. Returns a 0-100 score.
+ */
+export function computeReadiness(userId: string, topics: Topic[], progress: TopicProgress[]) {
+  const total = topics.length;
+  if (!total) return { score: 0, completed: 0, revisions: 0, revisionTotal: 0 };
+  const mine = new Map(
+    progress.filter((p) => p.user_id === userId).map((p) => [p.topic_id, p] as const),
+  );
+  let completed = 0;
+  let revisions = 0;
+  for (const t of topics) {
+    const p = mine.get(t.id);
+    if (p?.completed) completed += 1;
+    revisions += Math.min(REVISION_TARGET, Math.max(0, p?.revisions ?? 0));
+  }
+  const revisionTotal = total * REVISION_TARGET;
+  const score = Math.round(((completed / total) * 0.5 + (revisions / revisionTotal) * 0.5) * 100);
+  return { score, completed, revisions, revisionTotal };
 }
 
 export function computeUserStats(userId: string, topics: Topic[], progress: TopicProgress[]) {

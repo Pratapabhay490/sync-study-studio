@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
-import { computeUserStats, useData } from "@/lib/data-context";
+import { computeReadiness, computeUserStats, useData } from "@/lib/data-context";
+import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 import { UserAvatar } from "@/components/user-avatar";
 import { ProgressRing } from "@/components/progress-ring";
 import {
@@ -8,6 +10,7 @@ import {
   ArrowRight,
   CalendarClock,
   Pencil,
+  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/scroll-reveal";
@@ -77,6 +80,13 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
+function readinessLabel(score: number) {
+  if (score >= 85) return "exam ready";
+  if (score >= 60) return "on track";
+  if (score >= 30) return "building up";
+  return "just getting started";
+}
+
 const QUOTES = [
   "Small steps, every day. That's how you cross MBBS.",
   "Consistency beats intensity. Open one topic now.",
@@ -105,6 +115,21 @@ function Dashboard() {
     [other, topics, progress],
   );
 
+  const myReadiness = useMemo(
+    () =>
+      user
+        ? computeReadiness(user.id, topics, progress)
+        : { score: 0, completed: 0, revisions: 0, revisionTotal: 0 },
+    [user, topics, progress],
+  );
+  const partnerReadiness = useMemo(
+    () =>
+      other
+        ? computeReadiness(other.id, topics, progress)
+        : { score: 0, completed: 0, revisions: 0, revisionTotal: 0 },
+    [other, topics, progress],
+  );
+
   const totalTopics = topics.length;
   const totalCompleted = useMemo(
     () => new Set(progress.filter((p) => p.completed).map((p) => p.topic_id)).size,
@@ -113,14 +138,39 @@ function Dashboard() {
   const overallPct = totalTopics ? Math.round((totalCompleted / totalTopics) * 100) : 0;
   const pending = totalTopics - totalCompleted;
 
-  // streak: count consecutive days from today where user has any completion
+  // Days where I took part in a focus session — these also count as studying.
+  const [focusDays, setFocusDays] = useState<string[]>([]);
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("focus_sessions")
+        .select("started_at,host_id,partner_id,joined_by_partner")
+        .or(`host_id.eq.${user.id},partner_id.eq.${user.id}`)
+        .order("started_at", { ascending: false })
+        .limit(200);
+      if (cancelled || !data) return;
+      setFocusDays(
+        data
+          .filter((s) => s.host_id === user.id || s.joined_by_partner)
+          .map((s) => startOfDay(parseISO(s.started_at)).toISOString()),
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  // streak: consecutive days with a completed topic OR a focus session
   const myStreak = useMemo(() => {
     if (!user) return 0;
-    const days = new Set(
-      progress
+    const days = new Set([
+      ...progress
         .filter((p) => p.user_id === user.id && p.completed && p.completed_at)
         .map((p) => startOfDay(parseISO(p.completed_at!)).toISOString()),
-    );
+      ...focusDays,
+    ]);
     let streak = 0;
     let day = startOfDay(new Date());
     while (days.has(day.toISOString())) {
@@ -128,7 +178,7 @@ function Dashboard() {
       day = subDays(day, 1);
     }
     return streak;
-  }, [user, progress]);
+  }, [user, progress, focusDays]);
 
   const completedToday = useMemo(
     () =>
@@ -221,6 +271,37 @@ function Dashboard() {
                 </div>
               </div>
             </ProgressRing>
+
+            {/* Exam readiness */}
+            <div className="clay mt-5 w-full max-w-[240px] p-4">
+              <div className="flex items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                  Exam readiness
+                </span>
+                <span className="font-display text-xl font-bold tabular-nums">
+                  {myReadiness.score}%
+                </span>
+              </div>
+              <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-muted shadow-clay-inset">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-aurora"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${myReadiness.score}%` }}
+                  transition={{ duration: 0.9, ease: "easeOut" }}
+                />
+              </div>
+              <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
+                {myStats.completed}/{myStats.total} topics done ·{" "}
+                {myReadiness.revisions}/{myReadiness.revisionTotal} revisions ·{" "}
+                {readinessLabel(myReadiness.score)}
+              </p>
+              {other && (
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {other.name.split(" ")[0]}: {partnerReadiness.score}%
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Right: clay student anchored to the bottom edge, overlapping the card */}
