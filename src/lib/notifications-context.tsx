@@ -17,6 +17,7 @@ export interface AppNotification {
 
 interface Ctx {
   notifications: AppNotification[];
+  history: AppNotification[];
   unread: number;
   permission: NotificationPermission | "unsupported";
   pushEnabled: boolean;
@@ -25,11 +26,15 @@ interface Ctx {
   markAllRead: () => void;
   markRead: (id: string) => void;
   clearAll: () => void;
+  clearHistory: () => void;
   sendTestPush: () => Promise<void>;
 }
 
 const NotificationsContext = createContext<Ctx | undefined>(undefined);
 const STORAGE_KEY = "lbis_notifications_v2";
+const HISTORY_KEY = "lbis_notification_history_v1";
+const HISTORY_LIMIT = 5;
+
 
 function playChime() {
   try {
