@@ -427,16 +427,17 @@ function SubjectDetail() {
                           const pr = progress.find(
                             (x) => x.topic_id === t.id && x.user_id === p.id,
                           );
-                          if (!pr?.revisions) return null;
+                          const rev = pr?.revisions ?? 0;
                           return (
                             <span
                               key={p.id}
                               className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground shadow-clay-sm"
                             >
-                              {p.name.split(" ")[0]} · {pr.revisions}/5 ★
+                              {p.name.split(" ")[0]} · {rev}/5 ★
                             </span>
                           );
                         })}
+
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
                       {profiles.map((p) => {
