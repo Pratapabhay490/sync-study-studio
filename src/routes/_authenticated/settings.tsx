@@ -340,8 +340,6 @@ function SettingsPage() {
         </div>
       </div>
 
-      <StorageUsageCard />
-
       <div className="clay rounded-3xl border-0 p-6">
 
         <h3 className="mb-4 font-display text-lg font-semibold">Account</h3>
