@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Profile } from "@/lib/data-context";
+import { resolveAvatar } from "@/lib/avatar-presets";
 
 export function UserAvatar({ profile, size = 40, ring }: { profile?: Profile | null; size?: number; ring?: boolean }) {
   const initials =
