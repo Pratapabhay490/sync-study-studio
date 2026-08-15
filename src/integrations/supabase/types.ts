@@ -858,6 +858,8 @@ export type Database = {
           completed_at: string | null
           created_at: string
           id: string
+          last_revised_at: string | null
+          revisions: number
           topic_id: string
           updated_at: string
           user_id: string
@@ -867,6 +869,8 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           id?: string
+          last_revised_at?: string | null
+          revisions?: number
           topic_id: string
           updated_at?: string
           user_id: string
@@ -876,6 +880,8 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           id?: string
+          last_revised_at?: string | null
+          revisions?: number
           topic_id?: string
           updated_at?: string
           user_id?: string
