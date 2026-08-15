@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { REVISION_TARGET } from "@/lib/data-context";
@@ -36,13 +35,10 @@ export function RevisionStars({ value, onChange, readOnly, size = "md", classNam
       {Array.from({ length: REVISION_TARGET }).map((_, i) => {
         const on = i < filled;
         return (
-          <motion.button
+          <button
             key={i}
             type="button"
             disabled={readOnly}
-            whileTap={readOnly ? undefined : { scale: 0.82 }}
-            animate={on ? { scale: [1, 1.18, 1] } : { scale: 1 }}
-            transition={{ duration: 0.28 }}
             aria-label={`Mark ${i + 1} revision${i ? "s" : ""}`}
             onClick={(e) => {
               if (readOnly) return;
@@ -63,12 +59,12 @@ export function RevisionStars({ value, onChange, readOnly, size = "md", classNam
               box,
               readOnly ? "cursor-default" : "hover:scale-110 active:scale-95",
               on
-                ? "bg-gradient-aurora text-white shadow-clay-sm"
+                ? "star-pop bg-gradient-aurora text-white shadow-clay-sm"
                 : "shadow-clay-inset bg-muted text-muted-foreground/50",
             )}
           >
             <Star className={dim} fill={on ? "currentColor" : "none"} strokeWidth={2.2} />
-          </motion.button>
+          </button>
         );
       })}
     </div>

@@ -83,18 +83,39 @@ function SubjectDetail() {
 
   const Icon = getSubjectIcon(subject?.icon);
 
+  const progressByKey = useMemo(() => {
+    const m = new Map<string, (typeof progress)[number]>();
+    progress.forEach((p) => m.set(`${p.topic_id}:${p.user_id}`, p));
+    return m;
+  }, [progress]);
+
+  const anyDoneTopicIds = useMemo(() => {
+    const set = new Set<string>();
+    progress.forEach((p) => {
+      if (p.completed) set.add(p.topic_id);
+    });
+    return set;
+  }, [progress]);
+
+  const partnerProfiles = useMemo(
+    () => profiles.filter((p) => p.id !== user?.id),
+    [profiles, user?.id],
+  );
+
   const visible = sTopics
     .filter((t) => t.topic_name.toLowerCase().includes(q.toLowerCase()))
     .filter((t) => {
-      const anyDone = progress.some((p) => p.topic_id === t.id && p.completed);
+      const anyDone = anyDoneTopicIds.has(t.id);
       if (filter === "completed") return anyDone;
       if (filter === "pending") return !anyDone;
       return true;
     });
 
+  const sTopicIds = useMemo(() => new Set(sTopics.map((t) => t.id)), [sTopics]);
+
   const stats = profiles.map((p) => {
     const done = progress.filter(
-      (pr) => pr.user_id === p.id && pr.completed && sTopics.some((t) => t.id === pr.topic_id),
+      (pr) => pr.user_id === p.id && pr.completed && sTopicIds.has(pr.topic_id),
     ).length;
     return {
       profile: p,
@@ -363,14 +384,12 @@ function SubjectDetail() {
         ) : (
           <ul className="divide-y divide-border/60">
             {visible.map((t) => {
-              const myProgress = progress.find(
-                (p) => p.topic_id === t.id && p.user_id === user?.id,
-              );
+              const myProgress = progressByKey.get(`${t.id}:${user?.id}`);
               const myDone = !!myProgress?.completed;
               return (
                 <li
                   key={t.id}
-                  className="group flex items-center gap-4 px-5 py-4 transition hover:bg-accent/20"
+                  className="cv-row group flex items-center gap-4 px-5 py-4 transition hover:bg-accent/20"
                 >
                   {/* Big clay tick in front */}
                   <button
@@ -421,12 +440,9 @@ function SubjectDetail() {
                       <span className="text-[11px] text-muted-foreground">
                         {(myProgress?.revisions ?? 0)}/5 revisions
                       </span>
-                      {profiles
-                        .filter((p) => p.id !== user?.id)
+                      {partnerProfiles
                         .map((p) => {
-                          const pr = progress.find(
-                            (x) => x.topic_id === t.id && x.user_id === p.id,
-                          );
+                          const pr = progressByKey.get(`${t.id}:${p.id}`);
                           const rev = pr?.revisions ?? 0;
                           return (
                             <span
@@ -441,7 +457,7 @@ function SubjectDetail() {
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
                       {profiles.map((p) => {
-                        const pr = progress.find((x) => x.topic_id === t.id && x.user_id === p.id);
+                        const pr = progressByKey.get(`${t.id}:${p.id}`);
                         const done = !!pr?.completed;
                         return (
                           <span

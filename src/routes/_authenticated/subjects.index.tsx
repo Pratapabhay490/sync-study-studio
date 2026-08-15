@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useData } from "@/lib/data-context";
 import { getSubjectClayIcon } from "@/lib/subject-icons";
 import { Button } from "@/components/ui/button";
@@ -51,6 +51,28 @@ function SubjectsPage() {
   const [busy, setBusy] = useState(false);
 
   const filtered = subjects.filter((s) => s.name.toLowerCase().includes(q.toLowerCase()));
+
+  // Pre-index topics + progress once instead of scanning every array per card.
+  const topicsBySubject = useMemo(() => {
+    const m = new Map<string, string[]>();
+    topics.forEach((t) => {
+      const list = m.get(t.subject_id);
+      if (list) list.push(t.id);
+      else m.set(t.subject_id, [t.id]);
+    });
+    return m;
+  }, [topics]);
+
+  const doneByUserTopic = useMemo(() => {
+    const set = new Set<string>();
+    const any = new Set<string>();
+    progress.forEach((p) => {
+      if (!p.completed) return;
+      set.add(`${p.topic_id}:${p.user_id}`);
+      any.add(p.topic_id);
+    });
+    return { set, any };
+  }, [progress]);
 
   if (loading) return <ClayLoader label="Preparing your subjects" />;
 
@@ -151,13 +173,13 @@ function SubjectsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((s) => {
-            const sTopics = topics.filter((t) => t.subject_id === s.id);
-            const total = sTopics.length;
+            const sTopicIds = topicsBySubject.get(s.id) ?? [];
+            const total = sTopicIds.length;
             const clayIconSrc = getSubjectClayIcon(s.icon);
             const pctFor = (uid?: string) => {
               if (!uid || total === 0) return 0;
-              const done = progress.filter(
-                (p) => p.user_id === uid && p.completed && sTopics.some((t) => t.id === p.topic_id),
+              const done = sTopicIds.filter((tid) =>
+                doneByUserTopic.set.has(`${tid}:${uid}`),
               ).length;
               return Math.round((done / total) * 100);
             };
@@ -165,15 +187,12 @@ function SubjectsPage() {
             const u2 = profiles[1]?.id;
             const combinedPct = total
               ? Math.round(
-                  (sTopics.filter((t) => progress.some((p) => p.topic_id === t.id && p.completed))
-                    .length /
-                    total) *
-                    100,
+                  (sTopicIds.filter((tid) => doneByUserTopic.any.has(tid)).length / total) * 100,
                 )
               : 0;
 
             return (
-              <div key={s.id} className="group relative">
+              <div key={s.id} className="cv-card group relative">
                 <Link
                   to="/subjects/$id"
                   params={{ id: s.id }}
