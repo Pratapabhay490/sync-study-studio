@@ -22,7 +22,6 @@ import clayPartners from "@/assets/clay-icon-partners.png";
 import clayBell from "@/assets/clay-bell.png";
 import clayProgress from "@/assets/clay-icon-progress.png";
 import { AVATAR_PRESETS, presetIdOf, presetValue } from "@/lib/avatar-presets";
-import { StorageUsageCard } from "@/components/storage-usage-card";
 
 
 export const Route = createFileRoute("/_authenticated/settings")({
