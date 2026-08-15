@@ -177,6 +177,8 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   const push = useCallback((n: AppNotification, opts?: { silent?: boolean }) => {
     setNotifications((prev) => (prev.some((x) => x.id === n.id) ? prev : [n, ...prev].slice(0, 120)));
+    setHistory((prev) => (prev.some((x) => x.id === n.id) ? prev : [n, ...prev].slice(0, HISTORY_LIMIT)));
+
     if (opts?.silent) return;
     playChime();
     toast(n.title, { description: n.body });
