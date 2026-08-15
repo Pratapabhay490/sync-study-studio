@@ -153,6 +153,50 @@ export function DataProvider({ children }: { children: ReactNode }) {
     [user, progress],
   );
 
+  const setTopicRevisions = useCallback(
+    async (topicId: string, revisions: number) => {
+      if (!user) return;
+      const next = Math.max(0, Math.min(REVISION_TARGET, Math.round(revisions)));
+      const existing = progress.find((p) => p.topic_id === topicId && p.user_id === user.id);
+      const last_revised_at = next > 0 ? new Date().toISOString() : null;
+      setProgress((prev) => {
+        if (existing)
+          return prev.map((p) =>
+            p.id === existing.id ? { ...p, revisions: next, last_revised_at } : p,
+          );
+        return [
+          ...prev,
+          {
+            id: `tmp-rev-${topicId}`,
+            topic_id: topicId,
+            user_id: user.id,
+            completed: false,
+            completed_at: null,
+            updated_at: new Date().toISOString(),
+            revisions: next,
+            last_revised_at,
+          },
+        ];
+      });
+      if (existing) {
+        await supabase
+          .from("topic_progress")
+          .update({ revisions: next, last_revised_at })
+          .eq("id", existing.id);
+      } else {
+        await supabase.from("topic_progress").insert({
+          topic_id: topicId,
+          user_id: user.id,
+          completed: false,
+          completed_at: null,
+          revisions: next,
+          last_revised_at,
+        });
+      }
+    },
+    [user, progress],
+  );
+
   const addTopic = useCallback(
     async (subjectId: string, topicName: string, description?: string) => {
       if (!user) return;
