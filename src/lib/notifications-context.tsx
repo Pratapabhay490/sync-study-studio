@@ -57,6 +57,7 @@ function playChime() {
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [history, setHistory] = useState<AppNotification[]>([]);
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">(
     typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported",
   );
@@ -74,6 +75,9 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         setNotifications(parsed);
         parsed.forEach((n) => seen.current.add(n.id));
       }
+      const rawHistory = localStorage.getItem(HISTORY_KEY);
+      if (rawHistory) setHistory((JSON.parse(rawHistory) as AppNotification[]).slice(0, HISTORY_LIMIT));
+      else if (raw) setHistory((JSON.parse(raw) as AppNotification[]).slice(0, HISTORY_LIMIT));
     } catch { /* ignore */ }
     setTimeout(() => { mounted.current = true; }, 1500);
   }, []);
@@ -82,6 +86,12 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     if (typeof window === "undefined") return;
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications.slice(0, 120))); } catch { /* ignore */ }
   }, [notifications]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, HISTORY_LIMIT))); } catch { /* ignore */ }
+  }, [history]);
+
 
   // Register service worker once
   useEffect(() => {
