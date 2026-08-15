@@ -371,6 +371,28 @@ export function useData() {
   return ctx;
 }
 
+/**
+ * Exam readiness: each topic is worth 1 point, split 50% for completing it and
+ * 50% for finishing all 5 revisions. Returns a 0-100 score.
+ */
+export function computeReadiness(userId: string, topics: Topic[], progress: TopicProgress[]) {
+  const total = topics.length;
+  if (!total) return { score: 0, completed: 0, revisions: 0, revisionTotal: 0 };
+  const mine = new Map(
+    progress.filter((p) => p.user_id === userId).map((p) => [p.topic_id, p] as const),
+  );
+  let completed = 0;
+  let revisions = 0;
+  for (const t of topics) {
+    const p = mine.get(t.id);
+    if (p?.completed) completed += 1;
+    revisions += Math.min(REVISION_TARGET, Math.max(0, p?.revisions ?? 0));
+  }
+  const revisionTotal = total * REVISION_TARGET;
+  const score = Math.round(((completed / total) * 0.5 + (revisions / revisionTotal) * 0.5) * 100);
+  return { score, completed, revisions, revisionTotal };
+}
+
 export function computeUserStats(userId: string, topics: Topic[], progress: TopicProgress[]) {
   const total = topics.length;
   const completed = progress.filter((p) => p.user_id === userId && p.completed).length;
