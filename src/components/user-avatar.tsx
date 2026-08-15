@@ -19,7 +19,9 @@ export function UserAvatar({ profile, size = 40, ring }: { profile?: Profile | n
       style={{ width: size, height: size }}
       className={ring ? "ring-2 ring-background ring-offset-2 ring-offset-background" : ""}
     >
-      {profile?.avatar_url ? <AvatarImage src={profile.avatar_url} alt={profile.name} /> : null}
+      {resolveAvatar(profile?.avatar_url) ? (
+        <AvatarImage src={resolveAvatar(profile?.avatar_url)} alt={profile?.name ?? ""} />
+      ) : null}
       <AvatarFallback className={`${bg} text-white font-semibold`}>{initials}</AvatarFallback>
     </Avatar>
   );
