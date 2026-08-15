@@ -292,9 +292,9 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const unread = notifications.filter((n) => !n.read).length;
 
   const value = useMemo<Ctx>(() => ({
-    notifications, unread, permission, pushEnabled,
-    enablePush, disablePush, markAllRead, markRead, clearAll, sendTestPush,
-  }), [notifications, unread, permission, pushEnabled, enablePush, disablePush, markAllRead, markRead, clearAll, sendTestPush]);
+    notifications, history, unread, permission, pushEnabled,
+    enablePush, disablePush, markAllRead, markRead, clearAll, clearHistory, sendTestPush,
+  }), [notifications, history, unread, permission, pushEnabled, enablePush, disablePush, markAllRead, markRead, clearAll, clearHistory, sendTestPush]);
 
   return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;
 }
