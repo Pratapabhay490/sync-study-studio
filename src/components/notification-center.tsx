@@ -1,13 +1,17 @@
-import { Bell, BellRing, Check, Trash2 } from "lucide-react";
+import { Bell, BellRing, Check, History, Trash2 } from "lucide-react";
 import { useNotifications } from "@/lib/notifications-context";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
+import { useState } from "react";
 
 export function NotificationCenter() {
-  const { notifications, unread, pushEnabled, enablePush, disablePush, sendTestPush, markAllRead, markRead, clearAll } = useNotifications();
+  const { notifications, history, unread, pushEnabled, enablePush, disablePush, sendTestPush, markAllRead, markRead, clearAll, clearHistory } = useNotifications();
   const navigate = useNavigate();
+  const [tab, setTab] = useState<"inbox" | "history">("inbox");
+  const list = tab === "inbox" ? notifications : history;
+
 
   return (
     <Popover>
