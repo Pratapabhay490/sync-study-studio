@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, isSameDay, startOfDay, subDays } from "date-fns";
 import { Clock3, Timer } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
-import clayOwl from "@/assets/clay-owl-timer.png";
+import clayGirl from "@/assets/clay-girl-doctor.png";
 
 type FocusRow = {
   id: string;
@@ -137,7 +137,7 @@ export function StudyHoursCard({ me, partner }: { me: Person; partner: Person })
           </p>
         </div>
         <img
-          src={clayOwl}
+          src={clayGirl}
           alt=""
           aria-hidden
           width={768}

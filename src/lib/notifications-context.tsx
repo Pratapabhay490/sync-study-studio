@@ -17,6 +17,7 @@ export interface AppNotification {
 
 interface Ctx {
   notifications: AppNotification[];
+  history: AppNotification[];
   unread: number;
   permission: NotificationPermission | "unsupported";
   pushEnabled: boolean;
@@ -25,11 +26,15 @@ interface Ctx {
   markAllRead: () => void;
   markRead: (id: string) => void;
   clearAll: () => void;
+  clearHistory: () => void;
   sendTestPush: () => Promise<void>;
 }
 
 const NotificationsContext = createContext<Ctx | undefined>(undefined);
 const STORAGE_KEY = "lbis_notifications_v2";
+const HISTORY_KEY = "lbis_notification_history_v1";
+const HISTORY_LIMIT = 5;
+
 
 function playChime() {
   try {
@@ -52,6 +57,7 @@ function playChime() {
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [history, setHistory] = useState<AppNotification[]>([]);
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">(
     typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported",
   );
@@ -69,6 +75,9 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         setNotifications(parsed);
         parsed.forEach((n) => seen.current.add(n.id));
       }
+      const rawHistory = localStorage.getItem(HISTORY_KEY);
+      if (rawHistory) setHistory((JSON.parse(rawHistory) as AppNotification[]).slice(0, HISTORY_LIMIT));
+      else if (raw) setHistory((JSON.parse(raw) as AppNotification[]).slice(0, HISTORY_LIMIT));
     } catch { /* ignore */ }
     setTimeout(() => { mounted.current = true; }, 1500);
   }, []);
@@ -77,6 +86,12 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     if (typeof window === "undefined") return;
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications.slice(0, 120))); } catch { /* ignore */ }
   }, [notifications]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, HISTORY_LIMIT))); } catch { /* ignore */ }
+  }, [history]);
+
 
   // Register service worker once
   useEffect(() => {
@@ -162,6 +177,8 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   const push = useCallback((n: AppNotification, opts?: { silent?: boolean }) => {
     setNotifications((prev) => (prev.some((x) => x.id === n.id) ? prev : [n, ...prev].slice(0, 120)));
+    setHistory((prev) => (prev.some((x) => x.id === n.id) ? prev : [n, ...prev].slice(0, HISTORY_LIMIT)));
+
     if (opts?.silent) return;
     playChime();
     toast(n.title, { description: n.body });
@@ -256,6 +273,8 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const markAllRead = useCallback(() => setNotifications((prev) => prev.map((n) => ({ ...n, read: true }))), []);
   const markRead = useCallback((id: string) => setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n))), []);
   const clearAll = useCallback(() => setNotifications([]), []);
+  const clearHistory = useCallback(() => setHistory([]), []);
+
 
   const sendTestPush = useCallback(async () => {
     if (!user) return;
@@ -273,9 +292,9 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const unread = notifications.filter((n) => !n.read).length;
 
   const value = useMemo<Ctx>(() => ({
-    notifications, unread, permission, pushEnabled,
-    enablePush, disablePush, markAllRead, markRead, clearAll, sendTestPush,
-  }), [notifications, unread, permission, pushEnabled, enablePush, disablePush, markAllRead, markRead, clearAll, sendTestPush]);
+    notifications, history, unread, permission, pushEnabled,
+    enablePush, disablePush, markAllRead, markRead, clearAll, clearHistory, sendTestPush,
+  }), [notifications, history, unread, permission, pushEnabled, enablePush, disablePush, markAllRead, markRead, clearAll, clearHistory, sendTestPush]);
 
   return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;
 }
