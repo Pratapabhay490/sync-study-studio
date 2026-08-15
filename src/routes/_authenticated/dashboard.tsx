@@ -221,6 +221,37 @@ function Dashboard() {
                 </div>
               </div>
             </ProgressRing>
+
+            {/* Exam readiness */}
+            <div className="clay mt-5 w-full max-w-[240px] p-4">
+              <div className="flex items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                  Exam readiness
+                </span>
+                <span className="font-display text-xl font-bold tabular-nums">
+                  {myReadiness.score}%
+                </span>
+              </div>
+              <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-muted shadow-clay-inset">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-aurora"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${myReadiness.score}%` }}
+                  transition={{ duration: 0.9, ease: "easeOut" }}
+                />
+              </div>
+              <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
+                {myStats.completed}/{myStats.total} topics done ·{" "}
+                {myReadiness.revisions}/{myReadiness.revisionTotal} revisions ·{" "}
+                {readinessLabel(myReadiness.score)}
+              </p>
+              {other && (
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {other.name.split(" ")[0]}: {partnerReadiness.score}%
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Right: clay student anchored to the bottom edge, overlapping the card */}
