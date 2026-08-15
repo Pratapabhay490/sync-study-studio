@@ -22,6 +22,8 @@ import clayPartners from "@/assets/clay-icon-partners.png";
 import clayBell from "@/assets/clay-bell.png";
 import clayProgress from "@/assets/clay-icon-progress.png";
 import { AVATAR_PRESETS, presetIdOf, presetValue } from "@/lib/avatar-presets";
+import { StorageUsageCard } from "@/components/storage-usage-card";
+
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Let's be in sync" }] }),
@@ -339,7 +341,10 @@ function SettingsPage() {
         </div>
       </div>
 
+      <StorageUsageCard />
+
       <div className="clay rounded-3xl border-0 p-6">
+
         <h3 className="mb-4 font-display text-lg font-semibold">Account</h3>
         <Button variant="outline" onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> Sign out</Button>
       </div>

@@ -1110,7 +1110,9 @@ export type Database = {
         Returns: boolean
       }
       claim_weekly_challenge: { Args: { p_id: string }; Returns: boolean }
+      cleanup_old_records: { Args: never; Returns: Json }
       close_finished_focus_sessions: { Args: never; Returns: number }
+      db_usage_report: { Args: never; Returns: Json }
       end_focus_session: { Args: { p_session_id: string }; Returns: undefined }
       enqueue_quiz_invite: {
         Args: {
