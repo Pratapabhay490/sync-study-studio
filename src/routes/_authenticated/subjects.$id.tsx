@@ -33,6 +33,7 @@ import { ProgressRing } from "@/components/progress-ring";
 import { cn } from "@/lib/utils";
 import { celebrate } from "@/lib/celebrate";
 import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
+import { RevisionStars } from "@/components/revision-stars";
 
 export const Route = createFileRoute("/_authenticated/subjects/$id")({
   head: () => ({ meta: [{ title: "Subject — Let's be in sync" }] }),
@@ -54,6 +55,7 @@ function SubjectDetail() {
     updateTopic,
     deleteTopic,
     toggleTopic,
+    setTopicRevisions,
     updateSubject,
     deleteSubject,
   } = useData();
