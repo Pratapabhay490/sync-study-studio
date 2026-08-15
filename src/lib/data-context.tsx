@@ -53,6 +53,7 @@ interface DataContextValue {
   progress: TopicProgress[];
   refresh: () => Promise<void>;
   toggleTopic: (topicId: string, completed: boolean) => Promise<void>;
+  setTopicRevisions: (topicId: string, revisions: number) => Promise<void>;
   addTopic: (subjectId: string, topicName: string, description?: string) => Promise<void>;
   bulkAddTopics: (subjectId: string, topicNames: string[]) => Promise<void>;
   updateTopic: (
