@@ -273,6 +273,8 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const markAllRead = useCallback(() => setNotifications((prev) => prev.map((n) => ({ ...n, read: true }))), []);
   const markRead = useCallback((id: string) => setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n))), []);
   const clearAll = useCallback(() => setNotifications([]), []);
+  const clearHistory = useCallback(() => setHistory([]), []);
+
 
   const sendTestPush = useCallback(async () => {
     if (!user) return;
