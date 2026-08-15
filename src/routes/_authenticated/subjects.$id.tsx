@@ -410,6 +410,32 @@ function SubjectDetail() {
                     {t.description && (
                       <div className="truncate text-xs text-muted-foreground">{t.description}</div>
                     )}
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <RevisionStars
+                        value={myProgress?.revisions ?? 0}
+                        onChange={(next) => setTopicRevisions(t.id, next)}
+                        size="sm"
+                      />
+                      <span className="text-[11px] text-muted-foreground">
+                        {(myProgress?.revisions ?? 0)}/5 revisions
+                      </span>
+                      {profiles
+                        .filter((p) => p.id !== user?.id)
+                        .map((p) => {
+                          const pr = progress.find(
+                            (x) => x.topic_id === t.id && x.user_id === p.id,
+                          );
+                          if (!pr?.revisions) return null;
+                          return (
+                            <span
+                              key={p.id}
+                              className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground shadow-clay-sm"
+                            >
+                              {p.name.split(" ")[0]} · {pr.revisions}/5 ★
+                            </span>
+                          );
+                        })}
+                    </div>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
                       {profiles.map((p) => {
                         const pr = progress.find((x) => x.topic_id === t.id && x.user_id === p.id);
