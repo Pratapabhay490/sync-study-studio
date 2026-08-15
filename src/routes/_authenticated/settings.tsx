@@ -21,19 +21,7 @@ import claySettings from "@/assets/clay-settings-mascot.png";
 import clayPartners from "@/assets/clay-icon-partners.png";
 import clayBell from "@/assets/clay-bell.png";
 import clayProgress from "@/assets/clay-icon-progress.png";
-import avatarFox from "@/assets/avatars/avatar-fox.png";
-import avatarPanda from "@/assets/avatars/avatar-panda.png";
-import avatarAstronaut from "@/assets/avatars/avatar-astronaut.png";
-import avatarCat from "@/assets/avatars/avatar-cat.png";
-import avatarOwl from "@/assets/avatars/avatar-owl.png";
-
-const AVATAR_PRESETS = [
-  { id: "fox", src: avatarFox, label: "Fox" },
-  { id: "panda", src: avatarPanda, label: "Panda" },
-  { id: "astronaut", src: avatarAstronaut, label: "Astronaut" },
-  { id: "cat", src: avatarCat, label: "Cat" },
-  { id: "owl", src: avatarOwl, label: "Owl" },
-];
+import { AVATAR_PRESETS, presetIdOf, presetValue } from "@/lib/avatar-presets";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Let's be in sync" }] }),
@@ -172,12 +160,12 @@ function SettingsPage() {
           </div>
           <div className="flex flex-wrap gap-3">
             {AVATAR_PRESETS.map((a) => {
-              const selected = avatar === a.src;
+              const selected = presetIdOf(avatar) === a.id;
               return (
                 <button
                   key={a.id}
                   type="button"
-                  onClick={() => setAvatar(a.src)}
+                  onClick={() => setAvatar(presetValue(a.id))}
                   aria-label={`Choose ${a.label} avatar`}
                   className={`group relative h-20 w-20 rounded-2xl p-1 transition-all ${
                     selected
