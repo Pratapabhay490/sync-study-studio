@@ -39,7 +39,11 @@ export interface TopicProgress {
   completed: boolean;
   completed_at: string | null;
   updated_at: string;
+  revisions?: number;
+  last_revised_at?: string | null;
 }
+
+export const REVISION_TARGET = 5;
 
 interface DataContextValue {
   loading: boolean;
