@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
-import { computeUserStats, useData } from "@/lib/data-context";
+import { computeReadiness, computeUserStats, useData } from "@/lib/data-context";
+import { motion } from "framer-motion";
 import { UserAvatar } from "@/components/user-avatar";
 import { ProgressRing } from "@/components/progress-ring";
 import {
@@ -8,6 +9,7 @@ import {
   ArrowRight,
   CalendarClock,
   Pencil,
+  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/scroll-reveal";
@@ -77,6 +79,13 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
+function readinessLabel(score: number) {
+  if (score >= 85) return "exam ready";
+  if (score >= 60) return "on track";
+  if (score >= 30) return "building up";
+  return "just getting started";
+}
+
 const QUOTES = [
   "Small steps, every day. That's how you cross MBBS.",
   "Consistency beats intensity. Open one topic now.",
@@ -102,6 +111,21 @@ function Dashboard() {
   const otherStats = useMemo(
     () =>
       other ? computeUserStats(other.id, topics, progress) : { total: 0, completed: 0, pct: 0 },
+    [other, topics, progress],
+  );
+
+  const myReadiness = useMemo(
+    () =>
+      user
+        ? computeReadiness(user.id, topics, progress)
+        : { score: 0, completed: 0, revisions: 0, revisionTotal: 0 },
+    [user, topics, progress],
+  );
+  const partnerReadiness = useMemo(
+    () =>
+      other
+        ? computeReadiness(other.id, topics, progress)
+        : { score: 0, completed: 0, revisions: 0, revisionTotal: 0 },
     [other, topics, progress],
   );
 
