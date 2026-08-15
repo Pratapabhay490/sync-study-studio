@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { computeReadiness, computeUserStats, useData } from "@/lib/data-context";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 import { UserAvatar } from "@/components/user-avatar";
 import { ProgressRing } from "@/components/progress-ring";
 import {
@@ -137,14 +138,39 @@ function Dashboard() {
   const overallPct = totalTopics ? Math.round((totalCompleted / totalTopics) * 100) : 0;
   const pending = totalTopics - totalCompleted;
 
-  // streak: count consecutive days from today where user has any completion
+  // Days where I took part in a focus session — these also count as studying.
+  const [focusDays, setFocusDays] = useState<string[]>([]);
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("focus_sessions")
+        .select("started_at,host_id,partner_id,joined_by_partner")
+        .or(`host_id.eq.${user.id},partner_id.eq.${user.id}`)
+        .order("started_at", { ascending: false })
+        .limit(200);
+      if (cancelled || !data) return;
+      setFocusDays(
+        data
+          .filter((s) => s.host_id === user.id || s.joined_by_partner)
+          .map((s) => startOfDay(parseISO(s.started_at)).toISOString()),
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  // streak: consecutive days with a completed topic OR a focus session
   const myStreak = useMemo(() => {
     if (!user) return 0;
-    const days = new Set(
-      progress
+    const days = new Set([
+      ...progress
         .filter((p) => p.user_id === user.id && p.completed && p.completed_at)
         .map((p) => startOfDay(parseISO(p.completed_at!)).toISOString()),
-    );
+      ...focusDays,
+    ]);
     let streak = 0;
     let day = startOfDay(new Date());
     while (days.has(day.toISOString())) {
@@ -152,7 +178,7 @@ function Dashboard() {
       day = subDays(day, 1);
     }
     return streak;
-  }, [user, progress]);
+  }, [user, progress, focusDays]);
 
   const completedToday = useMemo(
     () =>
