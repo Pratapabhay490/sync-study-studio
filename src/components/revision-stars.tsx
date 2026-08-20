@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import syncLogo from "@/assets/sync-logo.jpeg";
 import { cn } from "@/lib/utils";
 import { REVISION_TARGET } from "@/lib/data-context";
 import { celebrate } from "@/lib/celebrate";
