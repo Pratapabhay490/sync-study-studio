@@ -147,11 +147,15 @@ function JourneyPage() {
                             <div className="truncate text-xs text-muted-foreground">{meta.description}</div>
                           </div>
                         </div>
+                      ) : it.type === "badge" ? (
+                        <div className="truncate text-sm font-bold">
+                          {profile?.name?.split(" ")[0]} unlocked a badge
+                        </div>
                       ) : (
                         <div>
                           <div className="truncate text-sm font-semibold">
                             {profile?.name?.split(" ")[0]} — {prettyKind(it.row.kind)}{" "}
-                            <span className="text-primary">+{it.row.amount} XP</span>
+                            <span className="text-primary">+{it.row.amount ?? 0} XP</span>
                           </div>
                         </div>
                       )}
@@ -170,7 +174,8 @@ function JourneyPage() {
   );
 }
 
-function prettyKind(k: string) {
+function prettyKind(k?: string | null) {
+  if (!k) return "earned XP";
   switch (k) {
     case "topic_complete": return "finished a topic";
     case "subject_complete": return "finished a whole subject 🏆";
