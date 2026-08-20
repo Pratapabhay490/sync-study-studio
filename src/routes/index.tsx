@@ -10,6 +10,7 @@ import clayPartners from "@/assets/clay-icon-partners.png";
 import clayBrain from "@/assets/clay-analytics-mascot.png";
 import clayBell from "@/assets/clay-bell.png";
 import Carousel, { type CarouselItem } from "@/components/Carousel";
+import { useAutoReveal } from "@/lib/use-auto-reveal";
 
 const ONBOARDING_ITEMS: CarouselItem[] = [
   {
@@ -45,6 +46,7 @@ export const Route = createFileRoute("/")({
 function Landing() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  useAutoReveal("/");
   useEffect(() => {
     if (!loading && user) navigate({ to: "/dashboard" });
   }, [user, loading, navigate]);

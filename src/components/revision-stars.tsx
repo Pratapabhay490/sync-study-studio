@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import syncLogo from "@/assets/sync-logo.jpeg";
 import { cn } from "@/lib/utils";
 import { REVISION_TARGET } from "@/lib/data-context";
 import { celebrate } from "@/lib/celebrate";
@@ -63,7 +63,12 @@ export function RevisionStars({ value, onChange, readOnly, size = "md", classNam
                 : "shadow-clay-inset bg-muted text-muted-foreground/50",
             )}
           >
-            <Star className={dim} fill={on ? "currentColor" : "none"} strokeWidth={2.2} />
+            <img
+              src={syncLogo}
+              alt=""
+              aria-hidden
+              className={cn(dim, "rounded-[5px] object-cover transition-all", on ? "opacity-100" : "opacity-40 grayscale")}
+            />
           </button>
         );
       })}

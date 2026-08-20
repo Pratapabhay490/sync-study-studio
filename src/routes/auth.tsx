@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Sparkles, Loader2, Mail, Lock, User } from "lucide-react";
+import { Loader2, Mail, Lock, User } from "lucide-react";
+import syncLogo from "@/assets/sync-logo.jpeg";
 import clayAuthHero from "@/assets/clay-auth-hero.png";
 import { toast } from "sonner";
 
@@ -73,9 +74,7 @@ function AuthPage() {
 
       <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
         <Link to="/" className="mb-8 flex items-center justify-center gap-2">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-primary text-white shadow-clay-sm">
-            <Sparkles className="h-6 w-6" />
-          </div>
+          <img src={syncLogo} alt="SyncStudy" className="logo-breathe h-12 w-12 rounded-2xl object-cover shadow-clay-sm" />
           <span className="font-display text-xl font-bold tracking-tight">Let's be in sync</span>
         </Link>
 
