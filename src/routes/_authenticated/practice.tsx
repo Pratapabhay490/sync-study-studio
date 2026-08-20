@@ -1,10 +1,7 @@
+import { SyncMark } from "@/components/sync-mark";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  Brain, Sparkles, Play, Upload, FileText, Trash2, Check, X as XIcon,
-  Bookmark, BookmarkCheck, Clock, Trophy, Zap, ChevronRight, Loader2, Users,
-  AlertCircle, RefreshCw, BookOpen, BarChart3, Pause, Bell,
-} from "lucide-react";
+import { Brain, Play, Upload, FileText, Trash2, Check, X as XIcon, Bookmark, BookmarkCheck, Clock, Trophy, Zap, ChevronRight, Loader2, Users, AlertCircle, RefreshCw, BookOpen, BarChart3, Pause, Bell,  } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useData } from "@/lib/data-context";
 import { Button } from "@/components/ui/button";
@@ -538,7 +535,7 @@ function Lobby({
             <Field label="Question source">
               <div className="flex gap-2">
                 <ModeChip active={source === "ai"} onClick={() => setSource("ai")}>
-                  <Sparkles className="mr-1 inline h-3.5 w-3.5" /> AI knowledge
+                  <SyncMark className="mr-1 inline h-3.5 w-3.5" /> AI knowledge
                 </ModeChip>
                 <ModeChip active={source === "rag"} onClick={() => setSource("rag")} disabled={!docs.length}>
                   <FileText className="mr-1 inline h-3.5 w-3.5" /> From my notes {!docs.length && "(none)"}
@@ -1302,7 +1299,7 @@ function ActiveSession({
           {submitted && (
             <div className="space-y-3 rounded-2xl bg-foreground/[0.03] p-4">
               <div className="flex items-center gap-2 font-semibold">
-                <Sparkles className="h-4 w-4 text-primary" /> AI Explanation
+                <SyncMark className="h-4 w-4 text-primary" /> AI Explanation
               </div>
               {q.explanation && <p className="text-sm leading-relaxed">{q.explanation}</p>}
               {q.pearls && (
@@ -1626,7 +1623,7 @@ function ReviewAnswers({ sessionId, onBack }: { sessionId: string; onBack: () =>
                 {(it.q.explanation || it.q.pearls) && (
                   <div className="space-y-2 rounded-2xl bg-foreground/[0.03] p-4">
                     <div className="flex items-center gap-2 text-sm font-semibold">
-                      <Sparkles className="h-4 w-4 text-primary" /> Explanation
+                      <SyncMark className="h-4 w-4 text-primary" /> Explanation
                     </div>
                     {it.q.explanation && <p className="text-sm leading-relaxed">{it.q.explanation}</p>}
                     {it.q.pearls && (

@@ -1,3 +1,4 @@
+import { SyncMark } from "@/components/sync-mark";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState, useEffect } from "react";
@@ -9,7 +10,7 @@ import {
   CartesianGrid, Legend, RadialBarChart, RadialBar, PolarAngleAxis,
 } from "recharts";
 import { parseISO, startOfDay, subDays, format, isToday, isThisWeek } from "date-fns";
-import { Sparkles, RefreshCcw, Flame, Trophy, Target, Brain, TrendingUp, AlertTriangle, Lightbulb } from "lucide-react";
+import { RefreshCcw, Flame, Trophy, Target, Brain, TrendingUp, AlertTriangle, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import clayBrain from "@/assets/clay-analytics-mascot.png";
 
@@ -156,7 +157,7 @@ function AnalyticsPage() {
         />
         <div className="relative flex items-start gap-4 md:pr-48 lg:pr-60">
           <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-primary text-white shadow-clay-sm">
-            <Sparkles className="h-6 w-6" />
+            <SyncMark className="h-6 w-6" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">AI study coach</div>
@@ -294,7 +295,7 @@ function AnalyticsPage() {
   );
 }
 
-function KPI({ icon: Icon, label, value, sub, grad }: { icon: typeof Sparkles; label: string; value: string | number; sub?: string; grad: string }) {
+function KPI({ icon: Icon, label, value, sub, grad }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string | number; sub?: string; grad: string }) {
   return (
     <div className="clay relative overflow-hidden rounded-3xl border-0 p-5">
       <div className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full ${grad} opacity-25 blur-2xl`} />
