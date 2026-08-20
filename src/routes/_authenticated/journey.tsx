@@ -170,7 +170,8 @@ function JourneyPage() {
   );
 }
 
-function prettyKind(k: string) {
+function prettyKind(k?: string | null) {
+  if (!k) return "earned XP";
   switch (k) {
     case "topic_complete": return "finished a topic";
     case "subject_complete": return "finished a whole subject 🏆";
