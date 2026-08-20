@@ -295,7 +295,7 @@ function AnalyticsPage() {
   );
 }
 
-function KPI({ icon: Icon, label, value, sub, grad }: { icon: typeof SyncMark; label: string; value: string | number; sub?: string; grad: string }) {
+function KPI({ icon: Icon, label, value, sub, grad }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string | number; sub?: string; grad: string }) {
   return (
     <div className="clay relative overflow-hidden rounded-3xl border-0 p-5">
       <div className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full ${grad} opacity-25 blur-2xl`} />
