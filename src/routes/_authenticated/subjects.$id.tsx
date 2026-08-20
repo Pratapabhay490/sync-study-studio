@@ -33,6 +33,7 @@ import { ProgressRing } from "@/components/progress-ring";
 import { cn } from "@/lib/utils";
 import { celebrate } from "@/lib/celebrate";
 import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
+import syncLogo from "@/assets/sync-logo.jpeg";
 import { RevisionStars } from "@/components/revision-stars";
 
 export const Route = createFileRoute("/_authenticated/subjects/$id")({
