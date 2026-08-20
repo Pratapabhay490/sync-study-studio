@@ -33,7 +33,6 @@ import { ProgressRing } from "@/components/progress-ring";
 import { cn } from "@/lib/utils";
 import { celebrate } from "@/lib/celebrate";
 import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
-import syncLogo from "@/assets/sync-logo.jpeg";
 import { RevisionStars } from "@/components/revision-stars";
 
 export const Route = createFileRoute("/_authenticated/subjects/$id")({
@@ -450,8 +449,7 @@ function SubjectDetail() {
                               key={p.id}
                               className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground shadow-clay-sm"
                             >
-                              {p.name.split(" ")[0]} · {rev}/5
-                              <img src={syncLogo} alt="" aria-hidden className="h-3 w-3 rounded-[4px] object-cover" />
+                              {p.name.split(" ")[0]} · {rev}/5 ★
                             </span>
                           );
                         })}

@@ -1,6 +1,6 @@
+import { SyncMark } from "@/components/sync-mark";
 import { motion } from "framer-motion";
 import { levelProgress, levelTitle, useCountUp } from "@/lib/xp";
-import { Sparkles } from "lucide-react";
 
 export function XpBar({
   xp,
@@ -36,7 +36,7 @@ export function XpBar({
       </div>
       {!compact && (
         <div className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground">
-          <Sparkles className="h-3 w-3" /> Every topic, quiz & session adds XP
+          <SyncMark className="h-3 w-3" /> Every topic, quiz & session adds XP
         </div>
       )}
     </div>

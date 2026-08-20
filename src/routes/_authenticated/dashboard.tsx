@@ -1,3 +1,4 @@
+import { SyncMark } from "@/components/sync-mark";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { computeReadiness, computeUserStats, useData } from "@/lib/data-context";
@@ -5,14 +6,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { UserAvatar } from "@/components/user-avatar";
 import { ProgressRing } from "@/components/progress-ring";
-import {
-  Activity,
-  ArrowRight,
-  CalendarClock,
-  Pencil,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { Activity, ArrowRight, CalendarClock, Pencil, ShieldCheck,  } from "lucide-react";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -219,7 +213,7 @@ function Dashboard() {
           {/* Left: copy + CTAs */}
           <div className="pb-8 md:pb-10">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs text-muted-foreground">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <SyncMark className="h-3.5 w-3.5 text-primary" />
               {quote}
             </div>
             <h1 className="mt-4 font-display text-3xl font-bold tracking-tight md:text-5xl">
@@ -249,16 +243,16 @@ function Dashboard() {
 
           {/* Center: progress ring with floating sparkles */}
           <div className="relative mx-auto pb-8 md:pb-10">
-            <Sparkles
+            <SyncMark
               className="sparkle-twinkle pointer-events-none absolute -left-6 -top-2 h-5 w-5 text-primary/80"
               aria-hidden
             />
-            <Sparkles
+            <SyncMark
               className="sparkle-twinkle pointer-events-none absolute -right-4 top-6 h-4 w-4 text-primary/60"
               style={{ animationDelay: "0.8s" }}
               aria-hidden
             />
-            <Sparkles
+            <SyncMark
               className="sparkle-twinkle pointer-events-none absolute -bottom-2 left-4 h-4 w-4 text-primary/70"
               style={{ animationDelay: "1.6s" }}
               aria-hidden

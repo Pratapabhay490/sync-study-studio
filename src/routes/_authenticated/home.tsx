@@ -1,3 +1,4 @@
+import { SyncMark } from "@/components/sync-mark";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { computeUserStats, useData } from "@/lib/data-context";
@@ -24,7 +25,7 @@ import { BadgeShelf } from "@/components/badge-shelf";
 import { PartnerMascot } from "@/components/partner-mascot";
 import { differenceInCalendarDays, formatDistanceToNow, isToday, parseISO, startOfDay, subDays } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Sparkles, Flame, Users, Heart, BookOpen, Trophy } from "lucide-react";
+import { ArrowRight, Flame, Users, Heart, BookOpen, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/home")({
@@ -215,7 +216,7 @@ function PartnerHome() {
         <div className="pointer-events-none absolute -left-24 bottom-0 h-64 w-64 rounded-full bg-gradient-primary opacity-20 blur-3xl" />
         <div className="relative flex flex-col gap-6">
           <div className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-background/60 px-3 py-1 text-xs text-muted-foreground">
-            <Sparkles className="h-3.5 w-3.5 text-primary" /> You two, together
+            <SyncMark className="h-3.5 w-3.5 text-primary" /> You two, together
           </div>
           <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-center">
             <PartnerBadge profile={me} status={presence[me?.id ?? ""]} label="You" />

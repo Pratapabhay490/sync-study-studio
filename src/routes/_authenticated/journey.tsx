@@ -1,3 +1,4 @@
+import { SyncMark } from "@/components/sync-mark";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +7,7 @@ import { useData } from "@/lib/data-context";
 import { UserAvatar } from "@/components/user-avatar";
 import { useBadgeCatalog, tierClass } from "@/lib/badges";
 import { formatDistanceToNow, parseISO } from "date-fns";
-import { Sparkles, Trophy, Zap, Flame, Users, Filter } from "lucide-react";
+import { Trophy, Zap, Flame, Users, Filter } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/journey")({
   head: () => ({
@@ -121,7 +122,7 @@ function JourneyPage() {
                     {it.type === "badge" ? (
                       <Trophy className="h-3 w-3" />
                     ) : it.row.kind === "topic_complete" ? (
-                      <Sparkles className="h-3 w-3" />
+                      <SyncMark className="h-3 w-3" />
                     ) : it.row.kind === "focus_session" ? (
                       <Users className="h-3 w-3" />
                     ) : it.row.kind === "subject_complete" ? (
