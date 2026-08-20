@@ -67,10 +67,16 @@ function DailyBoardPage() {
       .channel(`daily-tasks-${date}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "daily_tasks" },
+        {
+          event: "*",
+          schema: "public",
+          table: "daily_tasks",
+          filter: `task_date=eq.${date}`,
+        },
         () => load(),
       )
       .subscribe();
+
     return () => {
       supabase.removeChannel(channel);
     };
