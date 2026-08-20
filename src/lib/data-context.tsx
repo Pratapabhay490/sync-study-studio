@@ -139,16 +139,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
           },
         ];
       });
-      if (existing) {
-        await supabase
-          .from("topic_progress")
-          .update({ completed, completed_at })
-          .eq("id", existing.id);
-      } else {
-        await supabase
-          .from("topic_progress")
-          .insert({ topic_id: topicId, user_id: user.id, completed, completed_at });
-      }
+      // Single round-trip upsert backed by the unique (topic_id, user_id) index.
+      await supabase
+        .from("topic_progress")
+        .upsert(
+          { topic_id: topicId, user_id: user.id, completed, completed_at },
+          { onConflict: "topic_id,user_id" },
+        );
+
     },
     [user, progress],
   );
@@ -184,15 +182,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
           .update({ revisions: next, last_revised_at })
           .eq("id", existing.id);
       } else {
-        await supabase.from("topic_progress").insert({
-          topic_id: topicId,
-          user_id: user.id,
-          completed: false,
-          completed_at: null,
-          revisions: next,
-          last_revised_at,
-        });
+        // Upsert keyed on the unique (topic_id, user_id) index so a concurrent
+        // toggle can't create a duplicate row.
+        await supabase.from("topic_progress").upsert(
+          {
+            topic_id: topicId,
+            user_id: user.id,
+            completed: false,
+            completed_at: null,
+            revisions: next,
+            last_revised_at,
+          },
+          { onConflict: "topic_id,user_id" },
+        );
       }
+
     },
     [user, progress],
   );
