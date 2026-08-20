@@ -21,30 +21,48 @@ export function WeeklyChallengeCard({ partnerId }: { partnerId?: string | null }
   useEffect(() => {
     if (!partnerId) return;
     let live = true;
-    const ensure = async () => {
-      const { data: id, error } = await supabase.rpc("ensure_weekly_challenge");
-      if (error || !id) return;
+    let sub: ReturnType<typeof supabase.channel> | null = null;
+
+    const fetchRow = async (id: string) => {
       const { data } = await supabase
         .from("weekly_challenges")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
       if (live && data) setCh(data as Challenge);
     };
-    ensure();
-    const sub = supabase
-      .channel("weekly-ch")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "weekly_challenges" },
-        () => ensure(),
-      )
-      .subscribe();
+
+    (async () => {
+      const { data: id, error } = await supabase.rpc("ensure_weekly_challenge");
+      if (error || !id || !live) return;
+      await fetchRow(id as string);
+      if (!live) return;
+      // Subscribe to just this one row instead of the whole table, and re-read
+      // the row directly rather than re-running ensure() (which writes and
+      // would retrigger this same subscription).
+      sub = supabase
+        .channel(`weekly-ch:${id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "weekly_challenges",
+            filter: `id=eq.${id}`,
+          },
+          (payload) => {
+            if (live && payload.new) setCh(payload.new as Challenge);
+          },
+        )
+        .subscribe();
+    })();
+
     return () => {
       live = false;
-      supabase.removeChannel(sub);
+      if (sub) supabase.removeChannel(sub);
     };
   }, [partnerId]);
+
 
   if (!partnerId) return null;
   if (!ch) return null;

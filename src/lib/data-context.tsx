@@ -139,16 +139,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
           },
         ];
       });
-      if (existing) {
-        await supabase
-          .from("topic_progress")
-          .update({ completed, completed_at })
-          .eq("id", existing.id);
-      } else {
-        await supabase
-          .from("topic_progress")
-          .insert({ topic_id: topicId, user_id: user.id, completed, completed_at });
-      }
+      // Single round-trip upsert backed by the unique (topic_id, user_id) index.
+      await supabase
+        .from("topic_progress")
+        .upsert(
+          { topic_id: topicId, user_id: user.id, completed, completed_at },
+          { onConflict: "topic_id,user_id" },
+        );
+
     },
     [user, progress],
   );
