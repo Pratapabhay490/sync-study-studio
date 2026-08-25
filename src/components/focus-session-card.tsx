@@ -341,7 +341,7 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
               notification to join.
             </p>
             <div className="flex flex-wrap gap-2">
-              {[25, 50, 90].map((d) => (
+              {[6, 29, 45, 60, 90].map((d) => (
                 <button
                   key={d}
                   type="button"
