@@ -71,11 +71,46 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
 
   const iAmParticipant =
     session && user && (session.host_id === user.id || session.partner_id === user.id);
+  const meActive = !!user && members.some((m) => m.user_id === user.id && !m.left_at);
   const iCanJoin =
     session &&
     user &&
-    session.host_id !== user.id &&
-    (!session.partner_id || session.partner_id === user.id);
+    !meActive &&
+    (session.host_id === user.id || !session.partner_id || session.partner_id === user.id);
+
+  const loadMembers = useCallback(async () => {
+    if (!session) {
+      setMembers([]);
+      return;
+    }
+    const { data } = await supabase
+      .from("focus_participants")
+      .select("*")
+      .eq("session_id", session.id)
+      .order("joined_at", { ascending: true });
+    setMembers((data ?? []) as unknown as Participant[]);
+  }, [session?.id]);
+
+  useEffect(() => {
+    loadMembers();
+    if (!session) return;
+    const ch = supabase
+      .channel(`focus-members:${session.id}:${Math.random().toString(36).slice(2)}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "focus_participants",
+          filter: `session_id=eq.${session.id}`,
+        },
+        () => loadMembers(),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [session?.id, loadMembers]);
 
   const loadHistory = useCallback(async () => {
     if (!user) return;
@@ -120,7 +155,21 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
     const { error } = await supabase.rpc("join_focus_session", { p_session_id: session.id });
     setBusy(false);
     if (error) toast.error(error.message);
-    else toast.success("Joined the focus session 🎯");
+    else {
+      toast.success("Joined the focus session 🎯");
+      loadMembers();
+    }
+  }
+  async function leave() {
+    if (!session) return;
+    setBusy(true);
+    const { error } = await supabase.rpc("leave_focus_session", { p_session_id: session.id });
+    setBusy(false);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("You left the session — only your time counts 👋");
+      loadMembers();
+    }
   }
   async function end() {
     if (!session) return;
@@ -129,6 +178,7 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
     setBusy(false);
     if (error) toast.error(error.message);
   }
+
 
   const nameFor = (id: string | null) =>
     !id ? null : id === user?.id ? "You" : (partnerName?.split(" ")[0] ?? "Partner");
