@@ -17,6 +17,14 @@ type FocusRow = {
   updated_at: string;
 };
 
+type ParticipantRow = {
+  id: string;
+  session_id: string;
+  user_id: string;
+  joined_at: string;
+  left_at: string | null;
+};
+
 export type Person = {
   id: string;
   name: string;
@@ -24,26 +32,21 @@ export type Person = {
   avatar_url: string | null;
 } | null | undefined;
 
-/** Minutes actually spent in a session — capped at the planned end, and cut
- *  short at the moment it was ended early. */
-function minutesFor(row: FocusRow, now: number) {
-  const start = new Date(row.started_at).getTime();
+/** Minutes a single person was actually inside a session — clamped to the
+ *  session window and cut short when they left early. */
+function minutesForParticipant(p: ParticipantRow, row: FocusRow, now: number) {
+  const start = Math.max(new Date(p.joined_at).getTime(), new Date(row.started_at).getTime());
   const planned = new Date(row.ends_at).getTime();
   const ended = row.state === "ended" || row.state === "done" || row.state === "cancelled";
-  const stop = ended
-    ? Math.min(planned, new Date(row.updated_at).getTime())
-    : Math.min(planned, now);
+  const leftAt = p.left_at ? new Date(p.left_at).getTime() : null;
+  const sessionStop = ended ? Math.min(planned, new Date(row.updated_at).getTime()) : Math.min(planned, now);
+  const stop = leftAt !== null ? Math.min(leftAt, planned) : sessionStop;
   return Math.max(0, (stop - start) / 60000);
-}
-
-function participants(row: FocusRow) {
-  const ids = [row.host_id];
-  if (row.partner_id && row.joined_by_partner) ids.push(row.partner_id);
-  return ids;
 }
 
 export function useStudyHours(userIds: string[]) {
   const [rows, setRows] = useState<FocusRow[]>([]);
+  const [parts, setParts] = useState<ParticipantRow[]>([]);
   const key = userIds.filter(Boolean).join(",");
 
   useEffect(() => {
@@ -56,12 +59,26 @@ export function useStudyHours(userIds: string[]) {
         .select("*")
         .gte("started_at", since)
         .order("started_at", { ascending: false });
-      if (live && data) setRows(data as unknown as FocusRow[]);
+      if (!live) return;
+      const sessions = (data ?? []) as unknown as FocusRow[];
+      setRows(sessions);
+      if (sessions.length) {
+        const { data: pd } = await supabase
+          .from("focus_participants")
+          .select("*")
+          .in("session_id", sessions.map((s) => s.id));
+        if (live) setParts((pd ?? []) as unknown as ParticipantRow[]);
+      } else if (live) {
+        setParts([]);
+      }
     };
     load();
     const ch = supabase
       .channel(`focus-hours:${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "focus_sessions" }, () =>
+        load(),
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "focus_participants" }, () =>
         load(),
       )
       .subscribe();
@@ -81,22 +98,24 @@ export function useStudyHours(userIds: string[]) {
       perUser[id] = { daily: days.map(() => 0), week: 0, today: 0 };
     }
     const weekStart = subDays(startOfDay(new Date()), 6).getTime();
-    for (const row of rows) {
-      const mins = minutesFor(row, now);
+    const byId = new Map(rows.map((r) => [r.id, r]));
+    for (const p of parts) {
+      const row = byId.get(p.session_id);
+      if (!row) continue;
+      const bucket = perUser[p.user_id];
+      if (!bucket) continue;
+      const mins = minutesForParticipant(p, row, now);
       if (mins <= 0) continue;
       const started = new Date(row.started_at);
-      for (const id of participants(row)) {
-        const bucket = perUser[id];
-        if (!bucket) continue;
-        const idx = days.findIndex((d) => isSameDay(d, started));
-        if (idx >= 0) bucket.daily[idx] += mins;
-        if (started.getTime() >= weekStart) bucket.week += mins;
-        if (isSameDay(started, new Date())) bucket.today += mins;
-      }
+      const idx = days.findIndex((d) => isSameDay(d, started));
+      if (idx >= 0) bucket.daily[idx] += mins;
+      if (started.getTime() >= weekStart) bucket.week += mins;
+      if (isSameDay(started, new Date())) bucket.today += mins;
     }
     return { days, perUser };
-  }, [rows, key]);
+  }, [rows, parts, key]);
 }
+
 
 function fmt(mins: number) {
   const m = Math.round(mins);
