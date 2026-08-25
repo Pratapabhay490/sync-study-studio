@@ -3,7 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
-import { History, Play, Square, Timer, Users } from "lucide-react";
+import { History, LogOut, Play, Square, Timer, Users } from "lucide-react";
+
 
 interface Props {
   session: any | null;
