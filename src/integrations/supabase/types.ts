@@ -125,6 +125,38 @@ export type Database = {
         }
         Relationships: []
       }
+      focus_participants: {
+        Row: {
+          id: string
+          joined_at: string
+          left_at: string | null
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          left_at?: string | null
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          left_at?: string | null
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "focus_participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "focus_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       focus_sessions: {
         Row: {
           created_at: string
@@ -1140,6 +1172,10 @@ export type Database = {
       is_partner_of: { Args: { _a: string; _b: string }; Returns: boolean }
       join_focus_session: { Args: { p_session_id: string }; Returns: undefined }
       join_quiz_session: { Args: { p_session_id: string }; Returns: undefined }
+      leave_focus_session: {
+        Args: { p_session_id: string }
+        Returns: undefined
+      }
       list_visible_profiles: {
         Args: never
         Returns: {
