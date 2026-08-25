@@ -19,6 +19,14 @@ function fmtDuration(min: number) {
   return m ? `${h}h ${m}m` : `${h}h`;
 }
 
+type Participant = {
+  id: string;
+  session_id: string;
+  user_id: string;
+  joined_at: string;
+  left_at: string | null;
+};
+
 export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
   const { user } = useAuth();
   const [busy, setBusy] = useState(false);
@@ -26,6 +34,8 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
   const [custom, setCustom] = useState("");
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<any[] | null>(null);
+  const [members, setMembers] = useState<Participant[]>([]);
+
 
   // Clock-accurate tick: re-reads the wall clock each frame-ish, and realigns
   // to the next whole second so it never drifts behind the real time.
