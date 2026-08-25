@@ -258,6 +258,48 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
                 transition={{ duration: 0.6, ease: "easeOut" }}
               />
             </div>
+
+            <div className="rounded-2xl border border-border/60 bg-muted/40 p-3">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <Users className="h-3.5 w-3.5 text-primary" />
+                In this session
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {members.length === 0 ? (
+                  <span className="text-xs text-muted-foreground">Waiting for someone to join…</span>
+                ) : (
+                  members.map((m) => {
+                    const active = !m.left_at;
+                    return (
+                      <motion.span
+                        key={m.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold shadow-clay-sm ${
+                          active
+                            ? "bg-emerald-500/15 text-emerald-500"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${
+                            active ? "animate-pulse bg-emerald-500" : "bg-muted-foreground/50"
+                          }`}
+                        />
+                        {nameFor(m.user_id)}
+                        <span className="font-normal opacity-70">
+                          {active
+                            ? `since ${new Date(m.joined_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                            : `left ${new Date(m.left_at!).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+                        </span>
+                      </motion.span>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
             <div className="flex flex-wrap justify-center gap-2">
               {iCanJoin && (
                 <button
@@ -266,7 +308,17 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
                   disabled={busy}
                   className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-4 py-2 text-sm font-semibold text-white shadow-clay-sm"
                 >
-                  <Users className="h-4 w-4" /> Join session
+                  <Users className="h-4 w-4" /> {members.some((m) => m.user_id === user?.id) ? "Rejoin session" : "Join session"}
+                </button>
+              )}
+              {iAmParticipant && meActive && (
+                <button
+                  type="button"
+                  onClick={leave}
+                  disabled={busy}
+                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 disabled:opacity-50"
+                >
+                  <LogOut className="h-4 w-4" /> Leave session
                 </button>
               )}
               {iAmParticipant && (
@@ -274,12 +326,13 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
                   type="button"
                   onClick={end}
                   disabled={busy}
-                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold"
+                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 disabled:opacity-50"
                 >
                   <Square className="h-4 w-4" /> End session
                 </button>
               )}
             </div>
+
           </>
         ) : (
           <>
