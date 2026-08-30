@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { UserAvatar } from "@/components/user-avatar";
 import { ProgressRing } from "@/components/progress-ring";
-import { Activity, ArrowRight, CalendarClock, Pencil, ShieldCheck,  } from "lucide-react";
+import { Activity, ArrowRight, CalendarClock, Pencil, RefreshCw, ShieldCheck } from "lucide-react";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
