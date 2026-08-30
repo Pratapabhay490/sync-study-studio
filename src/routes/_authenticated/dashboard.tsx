@@ -438,7 +438,7 @@ function Dashboard() {
                       : "border-border bg-background/60 text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <RefreshCw className={`h-3 w-3 ${synced ? "animate-spin-slow" : ""}`} />
+                  <RefreshCw className={`h-3 w-3 ${synced ? "text-primary" : ""}`} />
                   Sync
                   <span
                     className={`ml-0.5 flex h-3.5 w-6 items-center rounded-full p-0.5 transition ${
