@@ -423,7 +423,38 @@ function Dashboard() {
                 <Pencil className="h-3 w-3" />
                 {editingCountdown ? "Close" : "Edit"}
               </button>
+              {other && (
+                <button
+                  type="button"
+                  onClick={() => setSync(!synced)}
+                  title={
+                    synced
+                      ? "Synced with your partner — same countdown for both"
+                      : "Turn on to share one countdown with your partner"
+                  }
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+                    synced
+                      ? "border-primary/40 bg-primary/10 text-primary"
+                      : "border-border bg-background/60 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <RefreshCw className={`h-3 w-3 ${synced ? "animate-spin-slow" : ""}`} />
+                  Sync
+                  <span
+                    className={`ml-0.5 flex h-3.5 w-6 items-center rounded-full p-0.5 transition ${
+                      synced ? "bg-primary/70" : "bg-muted-foreground/30"
+                    }`}
+                  >
+                    <span
+                      className={`h-2.5 w-2.5 rounded-full bg-white shadow transition-transform ${
+                        synced ? "translate-x-2.5" : ""
+                      }`}
+                    />
+                  </span>
+                </button>
+              )}
             </div>
+
             <h2 className="mt-3 font-display text-2xl font-bold tracking-tight md:text-3xl">
               {countdown.total > 0 ? (
                 <>
