@@ -171,13 +171,18 @@ const QUOTES = [
 function Dashboard() {
   const { user } = useAuth();
   const { profiles, subjects, topics, progress, loading } = useData();
-  const { target, save: saveTarget } = useCustomTarget(user?.id);
+  const me = profiles.find((p) => p.id === user?.id);
+  const other = profiles.find((p) => p.id !== user?.id);
+  const {
+    target,
+    save: saveTarget,
+    synced,
+    setSync,
+  } = useCustomTarget(user?.id, other?.id);
   const targetDate = useMemo(() => new Date(target.date), [target.date]);
   const countdown = useCountdown(targetDate);
   const [editingCountdown, setEditingCountdown] = useState(false);
 
-  const me = profiles.find((p) => p.id === user?.id);
-  const other = profiles.find((p) => p.id !== user?.id);
 
   const myStats = useMemo(
     () => (user ? computeUserStats(user.id, topics, progress) : { total: 0, completed: 0, pct: 0 }),
