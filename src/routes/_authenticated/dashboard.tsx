@@ -31,29 +31,109 @@ const DEFAULT_TARGET = {
   date: "2026-08-30T09:00:00+05:30",
 };
 
-function useCustomTarget(userId?: string) {
+function useCustomTarget(userId?: string, partnerId?: string) {
   const storageKey = userId ? `sync:countdown:${userId}` : null;
-  const [target, setTarget] = useState(DEFAULT_TARGET);
+  const [local, setLocal] = useState(DEFAULT_TARGET);
+  const [synced, setSynced] = useState(false);
+  const [remote, setRemote] = useState<{ label: string; date: string } | null>(null);
+
+  // local fallback (per-device, unsynced)
   useEffect(() => {
     if (!storageKey) return;
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed?.label && parsed?.date) setTarget(parsed);
+        if (parsed?.label && parsed?.date) setLocal(parsed);
       }
     } catch {}
   }, [storageKey]);
-  const save = (next: { label: string; date: string }) => {
-    setTarget(next);
+
+  const loadRemote = useCallback(async () => {
+    if (!userId) return;
+    const ids = [userId, partnerId].filter(Boolean) as string[];
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, countdown_label, countdown_date, countdown_sync, countdown_updated_at")
+      .in("id", ids);
+    const rows = (data ?? []) as any[];
+    const mine = rows.find((r) => r.id === userId);
+    setSynced(!!mine?.countdown_sync);
+    if (mine?.countdown_sync) {
+      const shared = rows
+        .filter((r) => r.countdown_sync && r.countdown_date)
+        .sort(
+          (a, b) =>
+            new Date(b.countdown_updated_at ?? 0).getTime() -
+            new Date(a.countdown_updated_at ?? 0).getTime(),
+        )[0];
+      setRemote(
+        shared
+          ? { label: shared.countdown_label || DEFAULT_TARGET.label, date: shared.countdown_date }
+          : null,
+      );
+    } else if (mine?.countdown_date) {
+      setRemote({ label: mine.countdown_label || DEFAULT_TARGET.label, date: mine.countdown_date });
+    } else {
+      setRemote(null);
+    }
+  }, [userId, partnerId]);
+
+  useEffect(() => {
+    loadRemote();
+    if (!userId) return;
+    const ch = supabase
+      .channel(`countdown:${userId}:${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, () =>
+        loadRemote(),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [userId, loadRemote]);
+
+  const target = remote ?? local;
+
+  const save = async (next: { label: string; date: string }) => {
+    setRemote(next);
+    setLocal(next);
     if (storageKey) {
       try {
         localStorage.setItem(storageKey, JSON.stringify(next));
       } catch {}
     }
+    if (userId) {
+      await supabase
+        .from("profiles")
+        .update({
+          countdown_label: next.label,
+          countdown_date: next.date,
+          countdown_updated_at: new Date().toISOString(),
+        } as any)
+        .eq("id", userId);
+      loadRemote();
+    }
   };
-  return { target, save };
+
+  const setSync = async (on: boolean) => {
+    setSynced(on);
+    if (!userId) return;
+    await supabase
+      .from("profiles")
+      .update({
+        countdown_sync: on,
+        countdown_label: target.label,
+        countdown_date: target.date,
+        countdown_updated_at: new Date().toISOString(),
+      } as any)
+      .eq("id", userId);
+    loadRemote();
+  };
+
+  return { target, save, synced, setSync };
 }
+
 
 function useCountdown(target: Date) {
   const [now, setNow] = useState(() => new Date());
