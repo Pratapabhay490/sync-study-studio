@@ -6,9 +6,9 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { UserAvatar } from "@/components/user-avatar";
 import { ProgressRing } from "@/components/progress-ring";
-import { Activity, ArrowRight, CalendarClock, Pencil, ShieldCheck,  } from "lucide-react";
+import { Activity, ArrowRight, CalendarClock, Pencil, RefreshCw, ShieldCheck } from "lucide-react";
 import { ScrollReveal } from "@/components/scroll-reveal";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   differenceInSeconds,
   formatDistanceToNow,
@@ -31,29 +31,109 @@ const DEFAULT_TARGET = {
   date: "2026-08-30T09:00:00+05:30",
 };
 
-function useCustomTarget(userId?: string) {
+function useCustomTarget(userId?: string, partnerId?: string) {
   const storageKey = userId ? `sync:countdown:${userId}` : null;
-  const [target, setTarget] = useState(DEFAULT_TARGET);
+  const [local, setLocal] = useState(DEFAULT_TARGET);
+  const [synced, setSynced] = useState(false);
+  const [remote, setRemote] = useState<{ label: string; date: string } | null>(null);
+
+  // local fallback (per-device, unsynced)
   useEffect(() => {
     if (!storageKey) return;
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed?.label && parsed?.date) setTarget(parsed);
+        if (parsed?.label && parsed?.date) setLocal(parsed);
       }
     } catch {}
   }, [storageKey]);
-  const save = (next: { label: string; date: string }) => {
-    setTarget(next);
+
+  const loadRemote = useCallback(async () => {
+    if (!userId) return;
+    const ids = [userId, partnerId].filter(Boolean) as string[];
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, countdown_label, countdown_date, countdown_sync, countdown_updated_at")
+      .in("id", ids);
+    const rows = (data ?? []) as any[];
+    const mine = rows.find((r) => r.id === userId);
+    setSynced(!!mine?.countdown_sync);
+    if (mine?.countdown_sync) {
+      const shared = rows
+        .filter((r) => r.countdown_sync && r.countdown_date)
+        .sort(
+          (a, b) =>
+            new Date(b.countdown_updated_at ?? 0).getTime() -
+            new Date(a.countdown_updated_at ?? 0).getTime(),
+        )[0];
+      setRemote(
+        shared
+          ? { label: shared.countdown_label || DEFAULT_TARGET.label, date: shared.countdown_date }
+          : null,
+      );
+    } else if (mine?.countdown_date) {
+      setRemote({ label: mine.countdown_label || DEFAULT_TARGET.label, date: mine.countdown_date });
+    } else {
+      setRemote(null);
+    }
+  }, [userId, partnerId]);
+
+  useEffect(() => {
+    loadRemote();
+    if (!userId) return;
+    const ch = supabase
+      .channel(`countdown:${userId}:${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, () =>
+        loadRemote(),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [userId, loadRemote]);
+
+  const target = remote ?? local;
+
+  const save = async (next: { label: string; date: string }) => {
+    setRemote(next);
+    setLocal(next);
     if (storageKey) {
       try {
         localStorage.setItem(storageKey, JSON.stringify(next));
       } catch {}
     }
+    if (userId) {
+      await supabase
+        .from("profiles")
+        .update({
+          countdown_label: next.label,
+          countdown_date: next.date,
+          countdown_updated_at: new Date().toISOString(),
+        } as any)
+        .eq("id", userId);
+      loadRemote();
+    }
   };
-  return { target, save };
+
+  const setSync = async (on: boolean) => {
+    setSynced(on);
+    if (!userId) return;
+    await supabase
+      .from("profiles")
+      .update({
+        countdown_sync: on,
+        countdown_label: target.label,
+        countdown_date: target.date,
+        countdown_updated_at: new Date().toISOString(),
+      } as any)
+      .eq("id", userId);
+    loadRemote();
+  };
+
+  return { target, save, synced, setSync };
 }
+
 
 function useCountdown(target: Date) {
   const [now, setNow] = useState(() => new Date());
@@ -91,13 +171,18 @@ const QUOTES = [
 function Dashboard() {
   const { user } = useAuth();
   const { profiles, subjects, topics, progress, loading } = useData();
-  const { target, save: saveTarget } = useCustomTarget(user?.id);
+  const me = profiles.find((p) => p.id === user?.id);
+  const other = profiles.find((p) => p.id !== user?.id);
+  const {
+    target,
+    save: saveTarget,
+    synced,
+    setSync,
+  } = useCustomTarget(user?.id, other?.id);
   const targetDate = useMemo(() => new Date(target.date), [target.date]);
   const countdown = useCountdown(targetDate);
   const [editingCountdown, setEditingCountdown] = useState(false);
 
-  const me = profiles.find((p) => p.id === user?.id);
-  const other = profiles.find((p) => p.id !== user?.id);
 
   const myStats = useMemo(
     () => (user ? computeUserStats(user.id, topics, progress) : { total: 0, completed: 0, pct: 0 }),
@@ -338,7 +423,38 @@ function Dashboard() {
                 <Pencil className="h-3 w-3" />
                 {editingCountdown ? "Close" : "Edit"}
               </button>
+              {other && (
+                <button
+                  type="button"
+                  onClick={() => setSync(!synced)}
+                  title={
+                    synced
+                      ? "Synced with your partner — same countdown for both"
+                      : "Turn on to share one countdown with your partner"
+                  }
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+                    synced
+                      ? "border-primary/40 bg-primary/10 text-primary"
+                      : "border-border bg-background/60 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <RefreshCw className={`h-3 w-3 ${synced ? "text-primary" : ""}`} />
+                  Sync
+                  <span
+                    className={`ml-0.5 flex h-3.5 w-6 items-center rounded-full p-0.5 transition ${
+                      synced ? "bg-primary/70" : "bg-muted-foreground/30"
+                    }`}
+                  >
+                    <span
+                      className={`h-2.5 w-2.5 rounded-full bg-white shadow transition-transform ${
+                        synced ? "translate-x-2.5" : ""
+                      }`}
+                    />
+                  </span>
+                </button>
+              )}
             </div>
+
             <h2 className="mt-3 font-display text-2xl font-bold tracking-tight md:text-3xl">
               {countdown.total > 0 ? (
                 <>

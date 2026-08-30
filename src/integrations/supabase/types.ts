@@ -289,6 +289,10 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          countdown_date: string | null
+          countdown_label: string | null
+          countdown_sync: boolean
+          countdown_updated_at: string | null
           created_at: string
           email: string
           id: string
@@ -297,6 +301,10 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          countdown_date?: string | null
+          countdown_label?: string | null
+          countdown_sync?: boolean
+          countdown_updated_at?: string | null
           created_at?: string
           email: string
           id: string
@@ -305,6 +313,10 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          countdown_date?: string | null
+          countdown_label?: string | null
+          countdown_sync?: boolean
+          countdown_updated_at?: string | null
           created_at?: string
           email?: string
           id?: string
