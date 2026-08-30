@@ -52,7 +52,11 @@ Deno.serve(async (req) => {
   }
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
-  const { data: users } = await supabase.from("profiles").select("id, name");
+  const { data: users } = await supabase
+    .from("profiles")
+    .select("id, name, countdown_label, countdown_date, countdown_sync, countdown_updated_at");
+  const { data: pairs } = await supabase.from("study_partners").select("user_id, partner_id");
+  const byId = new Map((users ?? []).map((u: any) => [u.id, u]));
   const start = new Date();
   start.setHours(0, 0, 0, 0);
 
@@ -65,8 +69,28 @@ Deno.serve(async (req) => {
       .eq("completed", true)
       .gte("completed_at", start.toISOString());
     const done = count ?? 0;
-    const d = daysToExam();
-    const pool = done === 0 ? LOW(d) : done < 4 ? MID(d) : HIGH(d);
+
+    // Resolve this user's own countdown; if they enabled sync, use the most
+    // recently updated countdown shared with their partner.
+    let src: any = u;
+    if (u.countdown_sync) {
+      const partnerIds = (pairs ?? [])
+        .filter((p: any) => p.user_id === u.id || p.partner_id === u.id)
+        .map((p: any) => (p.user_id === u.id ? p.partner_id : p.user_id));
+      const candidates = [u, ...partnerIds.map((id: string) => byId.get(id))]
+        .filter((c: any) => c && c.countdown_sync && c.countdown_date)
+        .sort(
+          (a: any, b: any) =>
+            new Date(b.countdown_updated_at ?? 0).getTime() -
+            new Date(a.countdown_updated_at ?? 0).getTime(),
+        );
+      if (candidates.length) src = candidates[0];
+    }
+    const examDate = src?.countdown_date ?? DEFAULT_EXAM_DATE;
+    const examLabel = src?.countdown_label || DEFAULT_LABEL;
+
+    const d = daysTo(examDate);
+    const pool = done === 0 ? LOW(d, examLabel) : done < 4 ? MID(d, examLabel) : HIGH(d, examLabel);
     const m = pick(pool);
     const { error } = await supabase.from("notification_queue").insert({
       user_id: u.id,
@@ -74,10 +98,11 @@ Deno.serve(async (req) => {
       title: m.t,
       body: m.b,
       url: "/dashboard",
-      data: { done_today: done },
+      data: { done_today: done, exam_label: examLabel, days_left: d },
     });
     if (!error) queued++;
   }
+
 
   return new Response(JSON.stringify({ queued }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
