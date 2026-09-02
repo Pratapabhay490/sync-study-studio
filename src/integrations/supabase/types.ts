@@ -1205,6 +1205,11 @@ export type Database = {
         Args: { p_partner_id: string }
         Returns: undefined
       }
+      set_countdown: {
+        Args: { p_date: string; p_label: string }
+        Returns: undefined
+      }
+      set_countdown_sync: { Args: { p_on: boolean }; Returns: undefined }
       start_focus_session: { Args: { p_duration_min: number }; Returns: string }
       start_quiz_session: {
         Args: { p_question_ids: string[]; p_session_id: string }
