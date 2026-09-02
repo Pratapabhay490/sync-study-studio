@@ -126,20 +126,6 @@ function useCustomTarget(userId?: string, partnerId?: string) {
   };
 
 
-  const setSync = async (on: boolean) => {
-    setSynced(on);
-    if (!userId) return;
-    await supabase
-      .from("profiles")
-      .update({
-        countdown_sync: on,
-        countdown_label: target.label,
-        countdown_date: target.date,
-        countdown_updated_at: new Date().toISOString(),
-      } as any)
-      .eq("id", userId);
-    loadRemote();
-  };
 
   return { target, save, synced, setSync };
 }
