@@ -61,7 +61,7 @@ function useCustomTarget(userId?: string, partnerId?: string) {
     setSynced(!!mine?.countdown_sync);
     if (mine?.countdown_sync) {
       const shared = rows
-        .filter((r) => r.countdown_sync && r.countdown_date)
+        .filter((r) => r.countdown_date)
         .sort(
           (a, b) =>
             new Date(b.countdown_updated_at ?? 0).getTime() -
@@ -104,17 +104,27 @@ function useCustomTarget(userId?: string, partnerId?: string) {
       } catch {}
     }
     if (userId) {
-      await supabase
-        .from("profiles")
-        .update({
-          countdown_label: next.label,
-          countdown_date: next.date,
-          countdown_updated_at: new Date().toISOString(),
-        } as any)
-        .eq("id", userId);
+      // RPC keeps the partner in sync when the Sync toggle is on
+      await (supabase.rpc as any)("set_countdown", {
+        p_label: next.label,
+        p_date: new Date(next.date).toISOString(),
+      });
       loadRemote();
     }
   };
+
+  const setSync = async (on: boolean) => {
+    setSynced(on);
+    if (!userId) return;
+    // make sure my current countdown is stored before propagating it
+    await (supabase.rpc as any)("set_countdown", {
+      p_label: target.label,
+      p_date: new Date(target.date).toISOString(),
+    });
+    await (supabase.rpc as any)("set_countdown_sync", { p_on: on });
+    loadRemote();
+  };
+
 
   const setSync = async (on: boolean) => {
     setSynced(on);
