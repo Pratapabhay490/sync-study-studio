@@ -104,20 +104,20 @@ export function DailyTaskBoard({
   }, [currentUserId, profiles]);
 
   return (
-    <section className="clay overflow-hidden p-5 md:p-6">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-primary text-primary-foreground shadow-clay-sm">
+    <section className="clay min-w-0 overflow-hidden p-3.5 sm:p-5 md:p-6">
+      <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:mb-5 sm:gap-3">
+        <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-primary text-primary-foreground shadow-clay-sm sm:h-11 sm:w-11 sm:rounded-2xl">
             <ListChecks className="h-5 w-5" />
           </div>
-          <div>
-            <h2 className="font-display text-lg font-bold">Today’s task board</h2>
-            <p className="text-xs text-muted-foreground">Plan it, tick it, cheer each other on.</p>
+          <div className="min-w-0">
+            <h2 className="truncate font-display text-base font-bold sm:text-lg">Today’s task board</h2>
+            <p className="hidden text-xs text-muted-foreground min-[390px]:block">Plan it, tick it, cheer each other on.</p>
           </div>
         </div>
         {showFullBoardLink && (
-          <Link to="/daily-board" className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
-            Open full board <ChevronRight className="h-3.5 w-3.5" />
+          <Link to="/daily-board" aria-label="Open full task board" className="inline-flex shrink-0 items-center gap-0.5 text-xs font-semibold text-primary sm:gap-1">
+            <span className="hidden min-[390px]:inline">Open full board</span><span className="min-[390px]:hidden">Open</span> <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         )}
       </div>
@@ -211,8 +211,8 @@ function TaskColumn({
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-background/40 p-4">
-      <div className="flex items-center justify-between gap-3">
+    <div className="min-w-0 rounded-2xl border border-border bg-background/40 p-3 sm:p-4">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <UserAvatar profile={owner as never} size={42} />
           <div className="min-w-0">
@@ -226,7 +226,7 @@ function TaskColumn({
       </div>
 
       {isMe && (
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
           <Input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
@@ -248,7 +248,7 @@ function TaskColumn({
             {isMe ? "Your next small win starts here." : "Nothing planned yet."}
           </li>
         ) : tasks.map((task) => (
-          <li key={task.id} className={cn("group flex min-h-12 items-center gap-3 rounded-xl border border-border bg-card/70 p-2.5 transition", task.done && "bg-success/10")}>
+          <li key={task.id} className={cn("group grid min-h-12 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-border bg-card/70 p-2 sm:gap-3 sm:p-2.5", task.done && "bg-success/10")}>
             <Button
               type="button"
               size="icon"

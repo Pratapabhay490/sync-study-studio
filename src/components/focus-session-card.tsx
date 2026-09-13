@@ -184,17 +184,17 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
     !id ? null : id === user?.id ? "You" : (partnerName?.split(" ")[0] ?? "Partner");
 
   return (
-    <div className="clay group relative overflow-hidden p-6">
+    <div className="clay group relative min-w-0 overflow-hidden p-4 sm:p-6">
       <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-gradient-primary opacity-15 blur-3xl" />
       <div className="relative flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 font-display text-lg font-bold">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:gap-4">
+          <div className="flex min-w-0 items-center gap-2 font-display text-base font-bold sm:text-lg">
             <Timer className="h-5 w-5 text-primary" />
             Study together
           </div>
           {session && (
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
+              className={`inline-flex max-w-[44vw] items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-semibold sm:max-w-none sm:px-3 sm:text-xs ${
                 session.state === "studying"
                   ? "bg-emerald-500/15 text-emerald-500"
                   : session.state === "break"
@@ -207,7 +207,7 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
                   session.state === "studying" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
                 }`}
               />
-              {session.state === "studying" ? "Studying together" : session.state === "break" ? "Break" : "Ended"}
+              <span className="truncate">{session.state === "studying" ? "Studying together" : session.state === "break" ? "Break" : "Ended"}</span>
             </span>
           )}
         </div>
@@ -226,7 +226,7 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
                 initial={{ scale: 0.97, opacity: 0.75 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 340, damping: 20 }}
-                className="relative font-display text-6xl font-bold tracking-tight tabular-nums"
+                className="relative font-display text-5xl font-bold tracking-tight tabular-nums sm:text-6xl"
               >
                 {hrs > 0 && `${hrs}:`}
                 {hrs > 0 ? String(mins).padStart(2, "0") : mins}:{String(secs).padStart(2, "0")}
@@ -276,7 +276,7 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
                         layout
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold shadow-clay-sm ${
+                       className={`grid max-w-full grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold shadow-clay-sm ${
                           active
                             ? "bg-emerald-500/15 text-emerald-500"
                             : "bg-muted text-muted-foreground"
@@ -288,7 +288,7 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
                           }`}
                         />
                         {nameFor(m.user_id)}
-                        <span className="font-normal opacity-70">
+                        <span className="min-w-0 truncate font-normal opacity-70">
                           {active
                             ? `since ${new Date(m.joined_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
                             : `left ${new Date(m.left_at!).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
@@ -300,7 +300,7 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center">
               {iCanJoin && (
                 <button
                   type="button"
@@ -340,21 +340,21 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
               Kick off a focus block and {partnerName?.split(" ")[0] ?? "your partner"} gets a push
               notification to join.
             </p>
-            <div className="flex flex-wrap gap-2">
+             <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
               {[6, 29, 45, 60, 90].map((d) => (
                 <button
                   key={d}
                   type="button"
                   onClick={() => start(d)}
                   disabled={busy || !partnerId}
-                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-4 py-2 text-sm font-semibold text-white shadow-clay-sm transition hover:-translate-y-0.5 disabled:opacity-50"
+                  className="inline-flex min-w-0 items-center justify-center gap-1.5 rounded-xl bg-gradient-primary px-2.5 py-2 text-xs font-semibold text-white shadow-clay-sm transition hover:-translate-y-0.5 disabled:opacity-50 sm:gap-2 sm:px-4 sm:text-sm"
                 >
                   <Play className="h-4 w-4" /> {d} min
                 </button>
               ))}
             </div>
             <form
-              className="flex flex-wrap items-center gap-2"
+              className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:flex-wrap"
               onSubmit={(e) => {
                 e.preventDefault();
                 start(Number(custom));
@@ -368,7 +368,7 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
                 value={custom}
                 onChange={(e) => setCustom(e.target.value)}
                 placeholder="Custom minutes"
-                className="w-40 rounded-xl border border-border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+                className="min-w-0 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40 sm:w-40"
               />
               <button
                 type="submit"
@@ -377,7 +377,7 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
               >
                 <Play className="h-4 w-4" /> Start
               </button>
-              <span className="text-xs text-muted-foreground">1–480 min</span>
+               <span className="col-span-2 text-xs text-muted-foreground sm:col-span-1">1–480 min</span>
             </form>
             {!partnerId && (
               <p className="text-xs text-muted-foreground">
@@ -406,7 +406,7 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
                 history.map((h) => (
                   <div
                     key={h.id}
-                    className="flex items-center justify-between gap-3 rounded-xl bg-muted/50 px-3 py-2"
+                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl bg-muted/50 px-3 py-2 sm:gap-3"
                   >
                     <div className="min-w-0">
                       <div className="text-sm font-semibold">{fmtDuration(h.duration_min)}</div>
