@@ -116,6 +116,13 @@ function useCustomTarget(userId?: string, partnerId?: string) {
   const setSync = async (on: boolean) => {
     setSynced(on);
     if (!userId) return;
+    // If my countdown only lives on this device, store it first so it can be shared.
+    if (on && !remote) {
+      await (supabase.rpc as any)("set_countdown", {
+        p_label: local.label,
+        p_date: new Date(local.date).toISOString(),
+      });
+    }
     // The RPC keeps an already-set partner countdown instead of overwriting it,
     // and turning sync off switches it off for both partners.
     await (supabase.rpc as any)("set_countdown_sync", { p_on: on });
