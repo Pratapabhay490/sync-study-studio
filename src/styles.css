@@ -518,6 +518,10 @@
   content-visibility: auto;
   contain-intrinsic-size: auto 288px;
 }
+.cv-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 560px;
+}
 
 /* Star fill pop (CSS replacement for per-star motion components) */
 @keyframes star-pop {

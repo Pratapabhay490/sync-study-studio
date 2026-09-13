@@ -71,12 +71,12 @@ export function ScrollReveal({
     opacity: visible ? 1 : 0,
     transform: visible ? "none" : initialTransform(direction, distance),
     transition: `opacity ${duration}ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms, transform ${duration}ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
-    willChange: "opacity, transform",
+    willChange: visible ? "auto" : "opacity, transform",
   };
 
   const Component = Tag as any;
   return (
-    <Component ref={ref as any} className={className} style={style}>
+    <Component ref={ref as any} className={className} style={style} data-scroll-reveal="true">
       {children}
     </Component>
   );
