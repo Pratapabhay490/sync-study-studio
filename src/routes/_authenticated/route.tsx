@@ -4,7 +4,7 @@ import { useData } from "@/lib/data-context";
 import { UserAvatar } from "@/components/user-avatar";
 import { Button } from "@/components/ui/button";
 import {
-  Activity, BarChart3, BookOpen, Brain, Home, LayoutDashboard, ListChecks, LogOut, Map, Menu, Moon, Settings, Sun, Trophy, X,
+  Activity, BarChart3, BookOpen, Brain, Home, LayoutDashboard, LogOut, Map, Menu, Moon, Settings, Sun, Trophy, X,
 } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "@/lib/theme-provider";
@@ -31,7 +31,6 @@ const nav = [
   { to: "/home", label: "Overview", icon: LayoutDashboard },
   { to: "/journey", label: "Journey", icon: Map },
   { to: "/subjects", label: "Subjects", icon: BookOpen },
-  { to: "/daily-board", label: "Daily Board", icon: ListChecks },
   { to: "/practice", label: "AI Practice", icon: Brain },
   { to: "/practice-stats", label: "Quiz Stats", icon: Trophy },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },

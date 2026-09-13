@@ -23,6 +23,7 @@ import { WeeklyChallengeCard } from "@/components/weekly-challenge-card";
 import { StudyTree } from "@/components/study-tree";
 import { BadgeShelf } from "@/components/badge-shelf";
 import { PartnerMascot } from "@/components/partner-mascot";
+import { DailyTaskBoard, todayISO } from "@/components/daily-task-board";
 import { differenceInCalendarDays, formatDistanceToNow, isToday, parseISO, startOfDay, subDays } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Flame, Users, Heart, BookOpen, Trophy } from "lucide-react";
@@ -315,6 +316,12 @@ function PartnerHome() {
           </div>
         </ScrollReveal>
       </div>
+
+      {user && (
+        <ScrollReveal direction="up">
+          <DailyTaskBoard currentUserId={user.id} profiles={profiles} date={todayISO()} showFullBoardLink />
+        </ScrollReveal>
+      )}
 
       {/* Focus session + Reactions */}
       <div className="grid gap-6 md:grid-cols-[1.3fr_1fr]">
