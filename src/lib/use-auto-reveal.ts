@@ -51,8 +51,7 @@ export function useAutoReveal(pathname: string) {
 
       const targets = Array.from(nodes).filter((el) => {
         if (el.dataset.revealApplied === "1") return false;
-        // Skip nodes managed by <ScrollReveal /> (they set inline opacity/transition)
-        if (el.style.transition && el.style.opacity !== "") return false;
+        if (el.dataset.scrollReveal === "true" || el.closest("[data-scroll-reveal='true']")) return false;
         const pos = getComputedStyle(el).position;
         if (pos === "fixed" || pos === "sticky") return false;
         if (el.offsetHeight === 0) return false;
@@ -71,7 +70,7 @@ export function useAutoReveal(pathname: string) {
         targets.forEach((el) => el.classList.add("reveal-in"));
         return;
       }
-      targets.forEach((el) => io!.observe(el));
+      targets.forEach((el) => io?.observe(el));
 
       // Safety: reveal anything still hidden shortly after (short pages, no scroll)
       timeouts.push(

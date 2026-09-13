@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useData } from "@/lib/data-context";
 import { DailyTaskBoard, todayISO } from "@/components/daily-task-board";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, ListChecks } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/daily-board")({
   head: () => ({

@@ -282,6 +282,23 @@ function Dashboard() {
     [progress],
   );
 
+  const dashboardLookups = useMemo(() => {
+    const topicsBySubject = new Map<string, typeof topics>();
+    const topicById = new Map(topics.map((topic) => [topic.id, topic]));
+    const subjectById = new Map(subjects.map((subject) => [subject.id, subject]));
+    const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
+    const completedByTopic = new Map<string, number>();
+    topics.forEach((topic) => {
+      const current = topicsBySubject.get(topic.subject_id);
+      if (current) current.push(topic);
+      else topicsBySubject.set(topic.subject_id, [topic]);
+    });
+    progress.forEach((item) => {
+      if (item.completed) completedByTopic.set(item.topic_id, (completedByTopic.get(item.topic_id) ?? 0) + 1);
+    });
+    return { topicsBySubject, topicById, subjectById, profileById, completedByTopic };
+  }, [profiles, progress, subjects, topics]);
+
   const quote = QUOTES[new Date().getDate() % QUOTES.length];
 
   if (loading) {
@@ -542,7 +559,7 @@ function Dashboard() {
       </ScrollReveal>
 
       {/* Subjects + activity */}
-      <ScrollReveal as="section" className="grid gap-4 lg:grid-cols-3" direction="up" delay={100}>
+      <ScrollReveal as="section" className="cv-section grid gap-4 lg:grid-cols-3" direction="up" delay={100}>
         <div className="rounded-2xl border border-border bg-card p-6 shadow-card lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-display text-lg font-semibold">Subjects at a glance</h3>
@@ -552,10 +569,11 @@ function Dashboard() {
           </div>
           <div className="space-y-3">
             {subjects.slice(0, 6).map((s) => {
-              const sTopics = topics.filter((t) => t.subject_id === s.id);
-              const sComp = progress.filter(
-                (p) => p.completed && sTopics.some((t) => t.id === p.topic_id),
-              ).length;
+              const sTopics = dashboardLookups.topicsBySubject.get(s.id) ?? [];
+              const sComp = sTopics.reduce(
+                (count, topic) => count + (dashboardLookups.completedByTopic.get(topic.id) ?? 0),
+                0,
+              );
               const total = sTopics.length * Math.max(profiles.length, 1);
               const pct = total ? Math.round((sComp / total) * 100) : 0;
               return (
@@ -595,9 +613,9 @@ function Dashboard() {
           ) : (
             <ul className="space-y-3">
               {recent.map((p) => {
-                const topic = topics.find((t) => t.id === p.topic_id);
-                const subject = subjects.find((s) => s.id === topic?.subject_id);
-                const who = profiles.find((u) => u.id === p.user_id);
+                const topic = dashboardLookups.topicById.get(p.topic_id);
+                const subject = topic ? dashboardLookups.subjectById.get(topic.subject_id) : undefined;
+                const who = dashboardLookups.profileById.get(p.user_id);
                 return (
                   <li key={p.id} className="flex items-start gap-3">
                     <UserAvatar profile={who} size={28} />

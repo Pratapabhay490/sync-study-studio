@@ -100,24 +100,60 @@ export function DataProvider({ children }: { children: ReactNode }) {
     refreshTimer.current = setTimeout(refresh, 150);
   }, [refresh]);
 
+  const refreshProfiles = useCallback(async () => {
+    const { data } = await supabase.rpc("list_visible_profiles");
+    if (data) setProfiles(data as unknown as Profile[]);
+  }, []);
+
   useEffect(() => {
     if (!user) return;
     refresh();
     const channel = supabase
       .channel("study-sync")
-      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, debouncedRefresh)
-      .on("postgres_changes", { event: "*", schema: "public", table: "subjects" }, debouncedRefresh)
-      .on("postgres_changes", { event: "*", schema: "public", table: "topics" }, debouncedRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, refreshProfiles)
+      .on("postgres_changes", { event: "*", schema: "public", table: "subjects" }, (payload) => {
+        const next = payload.new as Subject;
+        const previous = payload.old as Partial<Subject>;
+        setSubjects((rows) => {
+          if (payload.eventType === "DELETE") return rows.filter((row) => row.id !== previous.id);
+          if (!next?.id) return rows;
+          const merged = rows.some((row) => row.id === next.id)
+            ? rows.map((row) => row.id === next.id ? next : row)
+            : [...rows, next];
+          return merged.sort((a, b) => a.name.localeCompare(b.name));
+        });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "topics" }, (payload) => {
+        const next = payload.new as Topic;
+        const previous = payload.old as Partial<Topic>;
+        setTopics((rows) => {
+          if (payload.eventType === "DELETE") return rows.filter((row) => row.id !== previous.id);
+          if (!next?.id) return rows;
+          return rows.some((row) => row.id === next.id)
+            ? rows.map((row) => row.id === next.id ? next : row)
+            : [...rows, next];
+        });
+      })
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "topic_progress" },
-        debouncedRefresh,
+        (payload) => {
+          const next = payload.new as TopicProgress;
+          const previous = payload.old as Partial<TopicProgress>;
+          setProgress((rows) => {
+            if (payload.eventType === "DELETE") return rows.filter((row) => row.id !== previous.id);
+            if (!next?.id) return rows;
+            return rows.some((row) => row.id === next.id)
+              ? rows.map((row) => row.id === next.id ? next : row)
+              : [...rows, next];
+          });
+        },
       )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, refresh, debouncedRefresh]);
+  }, [user, refresh, refreshProfiles]);
 
   const toggleTopic = useCallback(
     async (topicId: string, completed: boolean) => {
