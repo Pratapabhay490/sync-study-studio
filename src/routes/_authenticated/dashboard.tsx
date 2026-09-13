@@ -307,7 +307,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 sm:space-y-8">
       {/* Hero */}
       <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 pb-0 shadow-card md:p-10 md:pb-0">
         <div className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-gradient-aurora opacity-25 blur-3xl" />
@@ -418,20 +418,22 @@ function Dashboard() {
 
 
       {/* Countdown */}
-      <ScrollReveal as="section" className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-card md:p-8" direction="up">
+      <ScrollReveal as="section" className="relative overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-card sm:p-6 md:p-8" direction="up">
         <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-gradient-primary opacity-15 blur-3xl" />
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-gradient-aurora opacity-20 blur-3xl" />
         <div className="relative grid gap-6 lg:grid-cols-[1fr_240px_auto] lg:items-center">
           <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground">
-                <CalendarClock className="h-3.5 w-3.5 text-primary" />
-                {target.label} ·{" "}
-                {targetDate.toLocaleDateString(undefined, {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2">
+              <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-background/60 px-2.5 py-1.5 text-xs font-medium text-muted-foreground sm:rounded-full sm:px-3 sm:py-1">
+                <CalendarClock className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <span className="min-w-0 truncate">
+                  {target.label} ·{" "}
+                  {targetDate.toLocaleDateString(undefined, {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
               </div>
               <button
                 type="button"
@@ -450,14 +452,14 @@ function Dashboard() {
                       ? "Synced with your partner — same countdown for both"
                       : "Turn on to share one countdown with your partner"
                   }
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+                  className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium transition sm:gap-1.5 sm:px-2.5 ${
                     synced
                       ? "border-primary/40 bg-primary/10 text-primary"
                       : "border-border bg-background/60 text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <RefreshCw className={`h-3 w-3 ${synced ? "text-primary" : ""}`} />
-                  Sync
+                  <span className="hidden min-[370px]:inline">Sync</span>
                   <span
                     className={`ml-0.5 flex h-3.5 w-6 items-center rounded-full p-0.5 transition ${
                       synced ? "bg-primary/70" : "bg-muted-foreground/30"
@@ -502,7 +504,7 @@ function Dashboard() {
             )}
           </div>
           <div aria-hidden className="hidden" />
-          <div className="grid grid-cols-4 gap-2 sm:gap-3">
+            <div className="grid min-w-0 grid-cols-4 gap-1.5 sm:gap-3">
             <CountdownCell label="Days" value={countdown.days} />
             <CountdownCell label="Hours" value={countdown.hours} />
             <CountdownCell label="Mins" value={countdown.minutes} />
@@ -760,7 +762,7 @@ function CountdownEditor({
   };
 
   return (
-    <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-border bg-background/60 p-4 sm:flex-row sm:items-end">
+    <div className="mt-4 flex min-w-0 flex-col gap-3 rounded-2xl border border-border bg-background/60 p-3 sm:flex-row sm:items-end sm:p-4">
       <div className="flex-1">
         <label className="text-[10px] uppercase tracking-wider text-muted-foreground">
           Event name
@@ -783,7 +785,7 @@ function CountdownEditor({
           className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
         />
       </div>
-      <div className="flex gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex">
         <button
           type="button"
           onClick={handleSave}
@@ -805,8 +807,8 @@ function CountdownEditor({
 
 function CountdownCell({ label, value }: { label: string; value: number }) {
   return (
-    <div className="min-w-[64px] rounded-2xl border border-border bg-background/70 px-3 py-3 text-center shadow-card backdrop-blur sm:min-w-[80px] sm:px-4 sm:py-4">
-      <div className="font-display text-2xl font-bold tabular-nums sm:text-4xl">
+    <div className="min-w-0 rounded-xl border border-border bg-background/70 px-1 py-2.5 text-center shadow-card backdrop-blur sm:min-w-[80px] sm:rounded-2xl sm:px-4 sm:py-4">
+      <div className="font-display text-xl font-bold tabular-nums min-[370px]:text-2xl sm:text-4xl">
         {String(value).padStart(2, "0")}
       </div>
       <div className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground sm:text-xs">

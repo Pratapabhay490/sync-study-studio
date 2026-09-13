@@ -206,21 +206,21 @@ function PartnerHome() {
     : null;
 
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-5 sm:space-y-6 md:space-y-8">
       <CheckinModal />
       <PartnerMascot sharedStreak={sharedStreak} combinedXp={combinedWeeklyXp} />
 
       {/* Partner header */}
-      <ScrollReveal as="section" className="clay relative overflow-hidden p-6 md:p-8" direction="up">
+      <ScrollReveal as="section" className="clay relative overflow-hidden p-4 sm:p-6 md:p-8" direction="up">
         <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-gradient-aurora opacity-25 blur-3xl" />
         <div className="pointer-events-none absolute -left-24 bottom-0 h-64 w-64 rounded-full bg-gradient-primary opacity-20 blur-3xl" />
         <div className="relative flex flex-col gap-6">
           <div className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-background/60 px-3 py-1 text-xs text-muted-foreground">
             <SyncMark className="h-3.5 w-3.5 text-primary" /> You two, together
           </div>
-          <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-center">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 sm:flex sm:gap-6">
             <PartnerBadge profile={me} status={presence[me?.id ?? ""]} label="You" />
-            <div className="text-2xl">💫</div>
+            <div className="shrink-0 text-xl sm:text-2xl">💫</div>
             <PartnerBadge profile={other} status={presence[other?.id ?? ""]} label="Your partner" fallback="Add a study partner in Settings" />
           </div>
 
@@ -269,8 +269,8 @@ function PartnerHome() {
 
       {/* Today's shared goal + dual rings */}
       <div className="grid gap-6 md:grid-cols-2">
-        <ScrollReveal className="clay p-6" direction="up">
-          <div className="flex items-center justify-between gap-4">
+        <ScrollReveal className="clay p-4 sm:p-6" direction="up">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
             <h2 className="font-display text-lg font-bold">Today, together</h2>
             <span className="text-xs text-muted-foreground">{new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short" })}</span>
           </div>
@@ -289,11 +289,11 @@ function PartnerHome() {
           </div>
         </ScrollReveal>
 
-        <ScrollReveal className="clay p-6" direction="up" delay={80}>
+        <ScrollReveal className="clay p-4 sm:p-6" direction="up" delay={80}>
           <h2 className="font-display text-lg font-bold">Progress side by side</h2>
-          <div className="mt-4 flex items-center justify-around gap-4">
+          <div className="mt-4 grid grid-cols-2 items-start gap-2 sm:flex sm:justify-around sm:gap-4">
             <div className="text-center">
-              <ProgressRing value={myStats.pct} size={130} stroke={12} gradientId="ring-me" gradientFrom="var(--abhay)" gradientTo="var(--abhay-light, var(--abhay))">
+              <ProgressRing value={myStats.pct} size={112} stroke={10} gradientId="ring-me" gradientFrom="var(--abhay)" gradientTo="var(--abhay-light, var(--abhay))">
                 <div>
                   <div className="font-display text-2xl font-bold">{myStats.pct}%</div>
                   <div className="text-[10px] uppercase tracking-wider text-muted-foreground">You</div>
@@ -303,7 +303,7 @@ function PartnerHome() {
               <div className="text-[11px] text-muted-foreground">{myStats.completed}/{myStats.total} topics</div>
             </div>
             <div className="text-center">
-              <ProgressRing value={otherStats.pct} size={130} stroke={12} gradientId="ring-them" gradientFrom="var(--aishwarya)" gradientTo="var(--aishwarya-light, var(--aishwarya))">
+              <ProgressRing value={otherStats.pct} size={112} stroke={10} gradientId="ring-them" gradientFrom="var(--aishwarya)" gradientTo="var(--aishwarya-light, var(--aishwarya))">
                 <div>
                   <div className="font-display text-2xl font-bold">{otherStats.pct}%</div>
                   <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Them</div>
