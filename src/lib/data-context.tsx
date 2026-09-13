@@ -4,7 +4,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -79,7 +78,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [progress, setProgress] = useState<TopicProgress[]>([]);
   const [loading, setLoading] = useState(true);
-  const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const refresh = useCallback(async () => {
     const [p, s, t, pr] = await Promise.all([
@@ -94,11 +92,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (pr.data) setProgress(pr.data as TopicProgress[]);
     setLoading(false);
   }, []);
-
-  const debouncedRefresh = useCallback(() => {
-    if (refreshTimer.current) clearTimeout(refreshTimer.current);
-    refreshTimer.current = setTimeout(refresh, 150);
-  }, [refresh]);
 
   const refreshProfiles = useCallback(async () => {
     const { data } = await supabase.rpc("list_visible_profiles");

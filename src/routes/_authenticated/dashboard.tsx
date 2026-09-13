@@ -20,6 +20,7 @@ import {
 import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
 import { PokeButton } from "@/components/poke-button";
 import { StudyHoursCard } from "@/components/study-hours-card";
+import { DailyTaskBoard, todayISO } from "@/components/daily-task-board";
 
 import clayTopics from "@/assets/clay-icon-topics.png";
 import clayCompleted from "@/assets/clay-icon-completed.png";
@@ -557,6 +558,12 @@ function Dashboard() {
           poke={other ? <PokeButton toUserId={other.id} toName={other.name} /> : null}
         />
       </ScrollReveal>
+
+      {user && (
+        <ScrollReveal direction="up" delay={90}>
+          <DailyTaskBoard currentUserId={user.id} profiles={profiles} date={todayISO()} showFullBoardLink />
+        </ScrollReveal>
+      )}
 
       {/* Subjects + activity */}
       <ScrollReveal as="section" className="cv-section grid gap-4 lg:grid-cols-3" direction="up" delay={100}>
