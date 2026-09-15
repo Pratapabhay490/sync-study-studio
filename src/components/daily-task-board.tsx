@@ -55,6 +55,10 @@ export function DailyTaskBoard({
 }) {
   const [tasks, setTasks] = useState<DailyTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const { hasPartnerUpdate, notifyPartnerChange, seenRefCallback } = useBoardSeen(
+    currentUserId,
+    "daily",
+  );
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
