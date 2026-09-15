@@ -74,7 +74,7 @@ function SubjectsPage() {
     return { set, any };
   }, [progress]);
 
-  if (loading) return <ClayLoader label="Preparing your subjects" />;
+  if (loading) return <SubjectsSkeleton />;
 
   async function handleAdd() {
     if (!newName.trim()) return;
