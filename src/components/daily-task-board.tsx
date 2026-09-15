@@ -94,6 +94,7 @@ export function DailyTaskBoard({
               ? rows.map((task) => (task.id === next.id ? next : task))
               : [...rows, next].sort((a, b) => a.created_at.localeCompare(b.created_at));
           });
+          if (next.user_id !== currentUserId) notifyPartnerChange();
         },
       )
       .subscribe();
@@ -101,7 +102,7 @@ export function DailyTaskBoard({
       active = false;
       supabase.removeChannel(channel);
     };
-  }, [currentUserId, date, load]);
+  }, [currentUserId, date, load, notifyPartnerChange]);
 
   const orderedProfiles = useMemo(() => {
     const mine = profiles.find((profile) => profile.id === currentUserId);
