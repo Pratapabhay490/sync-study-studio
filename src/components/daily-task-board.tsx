@@ -118,7 +118,10 @@ export function DailyTaskBoard({
             <ListChecks className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <h2 className="truncate font-display text-base font-bold sm:text-lg">Today’s task board</h2>
+            <h2 className="flex items-center gap-2 truncate font-display text-base font-bold sm:text-lg">
+              Today’s task board
+              {hasPartnerUpdate && <span className={BOARD_HINT_CLASS} aria-label="Partner made changes" />}
+            </h2>
             <p className="hidden text-xs text-muted-foreground min-[390px]:block">Plan it, tick it, cheer each other on.</p>
           </div>
         </div>
