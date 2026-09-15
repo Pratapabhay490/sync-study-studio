@@ -1,16 +1,33 @@
 // Drains notification_queue and sends Web Push to every subscription of each recipient.
 // Triggered by pg_cron every minute, and also callable on-demand.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
-import webpush from "https://esm.sh/web-push@3.6.7";
 import { corsHeaders } from "../_shared/cors.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const VAPID_PUBLIC = Deno.env.get("VAPID_PUBLIC_KEY")!;
-const VAPID_PRIVATE = Deno.env.get("VAPID_PRIVATE_KEY")!;
+const VAPID_PUBLIC = Deno.env.get("VAPID_PUBLIC_KEY") ?? "";
+const VAPID_PRIVATE = Deno.env.get("VAPID_PRIVATE_KEY") ?? "";
 const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT") ?? "mailto:contact@sync-study.app";
 
-webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
+// Load web-push lazily so a missing/invalid key or a CDN hiccup can never
+// crash the isolate at boot (which surfaced as 503/520 with no logs).
+let webpushPromise: Promise<any> | null = null;
+async function getWebPush() {
+  if (!VAPID_PUBLIC || !VAPID_PRIVATE) throw new Error("VAPID keys not configured");
+  if (!webpushPromise) {
+    webpushPromise = import("https://esm.sh/web-push@3.6.7")
+      .then((m) => {
+        const wp = (m as any).default ?? m;
+        wp.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
+        return wp;
+      })
+      .catch((e) => {
+        webpushPromise = null;
+        throw e;
+      });
+  }
+  return await webpushPromise;
+}
 
 const CRON_SECRET = Deno.env.get("CRON_SECRET");
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
