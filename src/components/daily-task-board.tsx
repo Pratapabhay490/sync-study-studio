@@ -252,7 +252,10 @@ function TaskColumn({
 
       <ul className="mt-4 space-y-2">
         {loading && tasks.length === 0 ? (
-          <li className="h-12 animate-pulse rounded-xl bg-muted/60" />
+          <>
+            <li><Skeleton className="h-12 rounded-xl" /></li>
+            <li><Skeleton className="h-12 rounded-xl" /></li>
+          </>
         ) : tasks.length === 0 ? (
           <li className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
             {isMe ? "Your next small win starts here." : "Nothing planned yet."}
