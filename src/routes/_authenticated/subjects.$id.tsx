@@ -171,7 +171,7 @@ function SubjectDetail() {
     navigate({ to: "/subjects" });
   }
 
-  if (loading) return <ClayLoader label="Opening topic list" />;
+  if (loading) return <TopicListSkeleton />;
 
   if (!subject) {
     return (
