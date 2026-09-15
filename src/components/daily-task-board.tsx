@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProgressRing } from "@/components/progress-ring";
 import { UserAvatar } from "@/components/user-avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { BOARD_HINT_CLASS, useBoardSeen } from "@/lib/board-updates";
 import { celebrate } from "@/lib/celebrate";
 import { cn } from "@/lib/utils";
 import { supabase as supabaseTyped } from "@/integrations/supabase/client";
