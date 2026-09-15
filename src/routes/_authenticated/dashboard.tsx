@@ -17,10 +17,12 @@ import {
   startOfDay,
   subDays,
 } from "date-fns";
-import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
+import { ClayVisual } from "@/components/clay-visuals";
+import { DashboardSkeleton } from "@/components/skeletons";
 import { PokeButton } from "@/components/poke-button";
 import { StudyHoursCard } from "@/components/study-hours-card";
 import { DailyTaskBoard, todayISO } from "@/components/daily-task-board";
+import { WeeklyTaskBoard } from "@/components/weekly-task-board";
 
 import clayTopics from "@/assets/clay-icon-topics.png";
 import clayCompleted from "@/assets/clay-icon-completed.png";
