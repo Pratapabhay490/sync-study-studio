@@ -102,6 +102,8 @@ Deno.serve(async (req) => {
       data: item.data ?? {},
     });
 
+    let itemSent = 0;
+    let itemFailed = 0;
     for (const s of subs ?? []) {
       try {
         await webpush.sendNotification(
@@ -109,17 +111,25 @@ Deno.serve(async (req) => {
           payload,
         );
         sent++;
+        itemSent++;
       } catch (e: any) {
         failed++;
+        itemFailed++;
         const code = e?.statusCode;
         if (code === 404 || code === 410) deadEndpoints.push(s.endpoint);
       }
     }
 
-    await supabase
-      .from("notification_queue")
-      .update({ processed: true, processed_at: new Date().toISOString() })
-      .eq("id", item.id);
+    // Keep the row unprocessed for a retry when every delivery failed, unless
+    // it is already older than 30 minutes (then give up to avoid a hot loop).
+    const ageMs = Date.now() - new Date(item.created_at).getTime();
+    const giveUp = ageMs > 30 * 60 * 1000;
+    if (itemSent > 0 || itemFailed === 0 || giveUp) {
+      await supabase
+        .from("notification_queue")
+        .update({ processed: true, processed_at: new Date().toISOString() })
+        .eq("id", item.id);
+    }
   }
 
   if (deadEndpoints.length) {
