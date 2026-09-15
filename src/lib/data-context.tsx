@@ -136,9 +136,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
           setProgress((rows) => {
             if (payload.eventType === "DELETE") return rows.filter((row) => row.id !== previous.id);
             if (!next?.id) return rows;
-            return rows.some((row) => row.id === next.id)
-              ? rows.map((row) => row.id === next.id ? next : row)
-              : [...rows, next];
+            // Drop any row (including optimistic tmp- placeholders) for the same
+            // (topic_id, user_id) pair so a topic never counts twice.
+            const cleaned = rows.filter(
+              (row) =>
+                row.id !== next.id &&
+                !(row.topic_id === next.topic_id && row.user_id === next.user_id),
+            );
+            return [...cleaned, next];
           });
         },
       )
@@ -148,36 +153,44 @@ export function DataProvider({ children }: { children: ReactNode }) {
     };
   }, [user, refresh, refreshProfiles]);
 
+  // Replace (or insert) the single row for a (topic_id, user_id) pair, so
+  // optimistic placeholders can never coexist with the real server row.
+  const putProgressRow = useCallback((row: TopicProgress) => {
+    setProgress((prev) => [
+      ...prev.filter(
+        (p) => !(p.topic_id === row.topic_id && p.user_id === row.user_id) && p.id !== row.id,
+      ),
+      row,
+    ]);
+  }, []);
+
   const toggleTopic = useCallback(
     async (topicId: string, completed: boolean) => {
       if (!user) return;
       const existing = progress.find((p) => p.topic_id === topicId && p.user_id === user.id);
       const completed_at = completed ? new Date().toISOString() : null;
-      setProgress((prev) => {
-        if (existing)
-          return prev.map((p) => (p.id === existing.id ? { ...p, completed, completed_at } : p));
-        return [
-          ...prev,
-          {
-            id: `tmp-${topicId}`,
-            topic_id: topicId,
-            user_id: user.id,
-            completed,
-            completed_at,
-            updated_at: new Date().toISOString(),
-          },
-        ];
+      putProgressRow({
+        id: existing?.id ?? `tmp-${topicId}`,
+        topic_id: topicId,
+        user_id: user.id,
+        completed,
+        completed_at,
+        updated_at: new Date().toISOString(),
+        revisions: existing?.revisions ?? 0,
+        last_revised_at: existing?.last_revised_at ?? null,
       });
       // Single round-trip upsert backed by the unique (topic_id, user_id) index.
-      await supabase
+      const { data } = await supabase
         .from("topic_progress")
         .upsert(
           { topic_id: topicId, user_id: user.id, completed, completed_at },
           { onConflict: "topic_id,user_id" },
-        );
-
+        )
+        .select("*")
+        .maybeSingle();
+      if (data) putProgressRow(data as TopicProgress);
     },
-    [user, progress],
+    [user, progress, putProgressRow],
   );
 
   const setTopicRevisions = useCallback(
@@ -186,48 +199,36 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const next = Math.max(0, Math.min(REVISION_TARGET, Math.round(revisions)));
       const existing = progress.find((p) => p.topic_id === topicId && p.user_id === user.id);
       const last_revised_at = next > 0 ? new Date().toISOString() : null;
-      setProgress((prev) => {
-        if (existing)
-          return prev.map((p) =>
-            p.id === existing.id ? { ...p, revisions: next, last_revised_at } : p,
-          );
-        return [
-          ...prev,
-          {
-            id: `tmp-rev-${topicId}`,
-            topic_id: topicId,
-            user_id: user.id,
-            completed: false,
-            completed_at: null,
-            updated_at: new Date().toISOString(),
-            revisions: next,
-            last_revised_at,
-          },
-        ];
+      putProgressRow({
+        id: existing?.id ?? `tmp-rev-${topicId}`,
+        topic_id: topicId,
+        user_id: user.id,
+        completed: existing?.completed ?? false,
+        completed_at: existing?.completed_at ?? null,
+        updated_at: new Date().toISOString(),
+        revisions: next,
+        last_revised_at,
       });
-      if (existing) {
-        await supabase
-          .from("topic_progress")
-          .update({ revisions: next, last_revised_at })
-          .eq("id", existing.id);
-      } else {
-        // Upsert keyed on the unique (topic_id, user_id) index so a concurrent
-        // toggle can't create a duplicate row.
-        await supabase.from("topic_progress").upsert(
+      // Always upsert on the unique (topic_id, user_id) index — an optimistic
+      // placeholder id must never be used as an UPDATE key.
+      const { data } = await supabase
+        .from("topic_progress")
+        .upsert(
           {
             topic_id: topicId,
             user_id: user.id,
-            completed: false,
-            completed_at: null,
+            completed: existing?.completed ?? false,
+            completed_at: existing?.completed_at ?? null,
             revisions: next,
             last_revised_at,
           },
           { onConflict: "topic_id,user_id" },
-        );
-      }
-
+        )
+        .select("*")
+        .maybeSingle();
+      if (data) putProgressRow(data as TopicProgress);
     },
-    [user, progress],
+    [user, progress, putProgressRow],
   );
 
   const addTopic = useCallback(
