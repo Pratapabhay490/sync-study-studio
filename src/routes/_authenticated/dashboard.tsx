@@ -569,6 +569,12 @@ function Dashboard() {
         </ScrollReveal>
       )}
 
+      {user && (
+        <ScrollReveal direction="up" delay={95}>
+          <WeeklyTaskBoard currentUserId={user.id} profiles={profiles} />
+        </ScrollReveal>
+      )}
+
       {/* Subjects + activity */}
       <ScrollReveal as="section" className="cv-section grid gap-4 lg:grid-cols-3" direction="up" delay={100}>
         <div className="rounded-2xl border border-border bg-card p-6 shadow-card lg:col-span-2">
