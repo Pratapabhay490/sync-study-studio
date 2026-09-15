@@ -32,7 +32,8 @@ import { formatDistanceToNow, parseISO } from "date-fns";
 import { ProgressRing } from "@/components/progress-ring";
 import { cn } from "@/lib/utils";
 import { celebrate } from "@/lib/celebrate";
-import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
+import { ClayVisual } from "@/components/clay-visuals";
+import { TopicListSkeleton } from "@/components/skeletons";
 import { RevisionStars } from "@/components/revision-stars";
 
 export const Route = createFileRoute("/_authenticated/subjects/$id")({
