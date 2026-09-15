@@ -17,10 +17,12 @@ import {
   startOfDay,
   subDays,
 } from "date-fns";
-import { ClayLoader, ClayVisual } from "@/components/clay-visuals";
+import { ClayVisual } from "@/components/clay-visuals";
+import { DashboardSkeleton } from "@/components/skeletons";
 import { PokeButton } from "@/components/poke-button";
 import { StudyHoursCard } from "@/components/study-hours-card";
 import { DailyTaskBoard, todayISO } from "@/components/daily-task-board";
+import { WeeklyTaskBoard } from "@/components/weekly-task-board";
 
 import clayTopics from "@/assets/clay-icon-topics.png";
 import clayCompleted from "@/assets/clay-icon-completed.png";
@@ -303,7 +305,7 @@ function Dashboard() {
   const quote = QUOTES[new Date().getDate() % QUOTES.length];
 
   if (loading) {
-    return <ClayLoader label="Building your clay dashboard" />;
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -567,6 +569,12 @@ function Dashboard() {
         </ScrollReveal>
       )}
 
+      {user && (
+        <ScrollReveal direction="up" delay={95}>
+          <WeeklyTaskBoard currentUserId={user.id} profiles={profiles} />
+        </ScrollReveal>
+      )}
+
       {/* Subjects + activity */}
       <ScrollReveal as="section" className="cv-section grid gap-4 lg:grid-cols-3" direction="up" delay={100}>
         <div className="rounded-2xl border border-border bg-card p-6 shadow-card lg:col-span-2">
@@ -827,19 +835,3 @@ function Tile({ label, value }: { label: string; value: number }) {
   );
 }
 
-function DashboardSkeleton() {
-  return (
-    <div className="space-y-6">
-      <div className="h-48 animate-pulse rounded-3xl bg-card" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-24 animate-pulse rounded-2xl bg-card" />
-        ))}
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="h-48 animate-pulse rounded-2xl bg-card" />
-        <div className="h-48 animate-pulse rounded-2xl bg-card" />
-      </div>
-    </div>
-  );
-}

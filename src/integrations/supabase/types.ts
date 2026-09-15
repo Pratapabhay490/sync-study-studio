@@ -44,6 +44,24 @@ export type Database = {
         }
         Relationships: []
       }
+      board_seen: {
+        Row: {
+          board: string
+          last_seen_at: string
+          user_id: string
+        }
+        Insert: {
+          board: string
+          last_seen_at?: string
+          user_id: string
+        }
+        Update: {
+          board?: string
+          last_seen_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_checkins: {
         Row: {
           created_at: string
@@ -1129,6 +1147,74 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_task_completions: {
+        Row: {
+          completed_at: string
+          id: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_task_completions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_tasks: {
+        Row: {
+          carry_count: number
+          created_at: string
+          created_by: string
+          id: string
+          pair_key: string
+          title: string
+          updated_at: string
+          user_a: string
+          user_b: string
+          week_start: string
+        }
+        Insert: {
+          carry_count?: number
+          created_at?: string
+          created_by: string
+          id?: string
+          pair_key: string
+          title: string
+          updated_at?: string
+          user_a: string
+          user_b: string
+          week_start: string
+        }
+        Update: {
+          carry_count?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          pair_key?: string
+          title?: string
+          updated_at?: string
+          user_a?: string
+          user_b?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       user_xp_totals: {
@@ -1168,6 +1254,7 @@ export type Database = {
         Returns: number
       }
       ensure_weekly_challenge: { Args: never; Returns: string }
+      ensure_weekly_tasks: { Args: never; Returns: string }
       find_profile_by_email: {
         Args: { p_email: string }
         Returns: {

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProgressRing } from "@/components/progress-ring";
 import { UserAvatar } from "@/components/user-avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { BOARD_HINT_CLASS, useBoardSeen } from "@/lib/board-updates";
 import { celebrate } from "@/lib/celebrate";
 import { cn } from "@/lib/utils";
 import { supabase as supabaseTyped } from "@/integrations/supabase/client";
@@ -53,6 +55,10 @@ export function DailyTaskBoard({
 }) {
   const [tasks, setTasks] = useState<DailyTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const { hasPartnerUpdate, notifyPartnerChange, seenRefCallback } = useBoardSeen(
+    currentUserId,
+    "daily",
+  );
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
@@ -88,6 +94,7 @@ export function DailyTaskBoard({
               ? rows.map((task) => (task.id === next.id ? next : task))
               : [...rows, next].sort((a, b) => a.created_at.localeCompare(b.created_at));
           });
+          if (next.user_id !== currentUserId) notifyPartnerChange();
         },
       )
       .subscribe();
@@ -95,7 +102,7 @@ export function DailyTaskBoard({
       active = false;
       supabase.removeChannel(channel);
     };
-  }, [currentUserId, date, load]);
+  }, [currentUserId, date, load, notifyPartnerChange]);
 
   const orderedProfiles = useMemo(() => {
     const mine = profiles.find((profile) => profile.id === currentUserId);
@@ -104,14 +111,17 @@ export function DailyTaskBoard({
   }, [currentUserId, profiles]);
 
   return (
-    <section className="clay min-w-0 overflow-hidden p-3.5 sm:p-5 md:p-6">
+    <section ref={seenRefCallback} className="clay min-w-0 overflow-hidden p-3.5 sm:p-5 md:p-6">
       <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:mb-5 sm:gap-3">
         <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-primary text-primary-foreground shadow-clay-sm sm:h-11 sm:w-11 sm:rounded-2xl">
             <ListChecks className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <h2 className="truncate font-display text-base font-bold sm:text-lg">Today’s task board</h2>
+            <h2 className="flex items-center gap-2 truncate font-display text-base font-bold sm:text-lg">
+              Today’s task board
+              {hasPartnerUpdate && <span className={BOARD_HINT_CLASS} aria-label="Partner made changes" />}
+            </h2>
             <p className="hidden text-xs text-muted-foreground min-[390px]:block">Plan it, tick it, cheer each other on.</p>
           </div>
         </div>
@@ -242,7 +252,10 @@ function TaskColumn({
 
       <ul className="mt-4 space-y-2">
         {loading && tasks.length === 0 ? (
-          <li className="h-12 animate-pulse rounded-xl bg-muted/60" />
+          <>
+            <li><Skeleton className="h-12 rounded-xl" /></li>
+            <li><Skeleton className="h-12 rounded-xl" /></li>
+          </>
         ) : tasks.length === 0 ? (
           <li className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
             {isMe ? "Your next small win starts here." : "Nothing planned yet."}
