@@ -111,7 +111,7 @@ export function DailyTaskBoard({
   }, [currentUserId, profiles]);
 
   return (
-    <section className="clay min-w-0 overflow-hidden p-3.5 sm:p-5 md:p-6">
+    <section ref={seenRefCallback} className="clay min-w-0 overflow-hidden p-3.5 sm:p-5 md:p-6">
       <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:mb-5 sm:gap-3">
         <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-primary text-primary-foreground shadow-clay-sm sm:h-11 sm:w-11 sm:rounded-2xl">
