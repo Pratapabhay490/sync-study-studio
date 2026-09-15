@@ -56,6 +56,18 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
+  let webpush: any;
+  try {
+    webpush = await getWebPush();
+  } catch (e) {
+    console.error("web-push init failed", e);
+    return new Response(JSON.stringify({ error: "push not configured" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+
   // Pull up to 100 unprocessed
   const { data: items, error } = await supabase
     .from("notification_queue")
