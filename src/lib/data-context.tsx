@@ -136,9 +136,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
           setProgress((rows) => {
             if (payload.eventType === "DELETE") return rows.filter((row) => row.id !== previous.id);
             if (!next?.id) return rows;
-            return rows.some((row) => row.id === next.id)
-              ? rows.map((row) => row.id === next.id ? next : row)
-              : [...rows, next];
+            // Drop any row (including optimistic tmp- placeholders) for the same
+            // (topic_id, user_id) pair so a topic never counts twice.
+            const cleaned = rows.filter(
+              (row) =>
+                row.id !== next.id &&
+                !(row.topic_id === next.topic_id && row.user_id === next.user_id),
+            );
+            return [...cleaned, next];
           });
         },
       )
