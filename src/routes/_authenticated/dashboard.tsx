@@ -305,7 +305,7 @@ function Dashboard() {
   const quote = QUOTES[new Date().getDate() % QUOTES.length];
 
   if (loading) {
-    return <ClayLoader label="Building your clay dashboard" />;
+    return <DashboardSkeleton />;
   }
 
   return (
