@@ -223,6 +223,8 @@ Deno.serve(async (req) => {
   }
   const userId = userData.user.id;
 
+  if (!(await allowRequest(sb, "mcq_generate", 40))) return tooManyRequests(corsHeaders);
+
   try {
     const body = await req.json().catch(() => ({}));
     const subject = String(body?.subject ?? "").slice(0, 80);
