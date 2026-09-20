@@ -2,13 +2,13 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { ArrowRight, CheckCircle2, Zap, LineChart, Bell, Brain, UserPlus, BellRing, Users } from "lucide-react";
-import syncLogo from "@/assets/sync-logo.jpeg";
-import clayHero from "@/assets/clay-landing-hero.png";
-import clayStreak from "@/assets/clay-icon-streak.png";
-import clayProgress from "@/assets/clay-icon-progress.png";
-import clayPartners from "@/assets/clay-icon-partners.png";
-import clayBrain from "@/assets/clay-analytics-mascot.png";
-import clayBell from "@/assets/clay-bell.png";
+import syncLogo from "@/assets/sync-logo.webp";
+import clayHero from "@/assets/clay-landing-hero.webp";
+import clayStreak from "@/assets/clay-icon-streak.webp";
+import clayProgress from "@/assets/clay-icon-progress.webp";
+import clayPartners from "@/assets/clay-icon-partners.webp";
+import clayBrain from "@/assets/clay-analytics-mascot.webp";
+import clayBell from "@/assets/clay-bell.webp";
 import Carousel, { type CarouselItem } from "@/components/Carousel";
 import { useAutoReveal } from "@/lib/use-auto-reveal";
 
@@ -62,7 +62,7 @@ function Landing() {
 
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2">
-          <img src={syncLogo} alt="in sync" className="logo-breathe h-10 w-10 rounded-2xl object-cover shadow-clay-sm" />
+          <img src={syncLogo} alt="in sync" className="logo-breathe h-10 w-10 rounded-2xl object-cover shadow-clay-sm" loading="eager" decoding="async" />
           <span className="font-display text-lg font-semibold tracking-tight">Let's be in sync</span>
         </div>
         <Link
@@ -120,18 +120,17 @@ function Landing() {
               alt="Two medical students studying together with laptops and books"
               width={1280}
               height={1024}
-              className="relative w-full max-w-[560px] mx-auto animate-float-slow drop-shadow-[0_30px_50px_rgba(15,23,42,0.25)]"
-            />
+              className="relative w-full max-w-[560px] mx-auto animate-float-slow drop-shadow-[0_30px_50px_rgba(15,23,42,0.25)]" loading="eager" fetchPriority="high" decoding="async" />
             {/* floating mini-cards */}
             <div className="clay absolute -left-2 top-10 hidden rounded-2xl border-0 px-3 py-2 shadow-clay-sm md:flex items-center gap-2 animate-float-slow">
-              <img src={clayStreak} alt="" width={32} height={32} className="h-8 w-8" />
+              <img src={clayStreak} alt="" width={32} height={32} className="h-8 w-8" loading="lazy" decoding="async" />
               <div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Streak</div>
                 <div className="text-sm font-bold">12 days 🔥</div>
               </div>
             </div>
             <div className="clay absolute -right-2 bottom-12 hidden rounded-2xl border-0 px-3 py-2 shadow-clay-sm md:flex items-center gap-2 animate-float-slow">
-              <img src={clayProgress} alt="" width={32} height={32} className="h-8 w-8" />
+              <img src={clayProgress} alt="" width={32} height={32} className="h-8 w-8" loading="lazy" decoding="async" />
               <div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">This week</div>
                 <div className="text-sm font-bold">+47 topics</div>
@@ -162,7 +161,7 @@ function Landing() {
                 className="clay group rounded-3xl border-0 p-6 transition hover:-translate-y-1"
               >
                 <div className="grid h-16 w-16 place-items-center rounded-2xl bg-background/40">
-                  <img src={f.icon} alt="" width={64} height={64} className="h-14 w-14 transition group-hover:rotate-[-6deg]" />
+                  <img src={f.icon} alt="" width={64} height={64} className="h-14 w-14 transition group-hover:rotate-[-6deg]" loading="lazy" decoding="async" />
                 </div>
                 <h3 className="mt-5 font-display text-lg font-semibold">{f.title}</h3>
                 <p className="mt-1.5 text-sm text-muted-foreground">{f.body}</p>

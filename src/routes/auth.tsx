@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Loader2, Mail, Lock, User } from "lucide-react";
-import syncLogo from "@/assets/sync-logo.jpeg";
-import clayAuthHero from "@/assets/clay-auth-hero.png";
+import syncLogo from "@/assets/sync-logo.webp";
+import clayAuthHero from "@/assets/clay-auth-hero.webp";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -74,7 +74,7 @@ function AuthPage() {
 
       <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
         <Link to="/" className="mb-8 flex items-center justify-center gap-2">
-          <img src={syncLogo} alt="SyncStudy" className="logo-breathe h-12 w-12 rounded-2xl object-cover shadow-clay-sm" />
+          <img src={syncLogo} alt="SyncStudy" className="logo-breathe h-12 w-12 rounded-2xl object-cover shadow-clay-sm" loading="eager" decoding="async" />
           <span className="font-display text-xl font-bold tracking-tight">Let's be in sync</span>
         </Link>
 
@@ -85,8 +85,7 @@ function AuthPage() {
               alt="Two clay-style medical students studying together"
               width={1024}
               height={1024}
-              className="h-40 w-40 animate-float-slow drop-shadow-xl"
-            />
+              className="h-40 w-40 animate-float-slow drop-shadow-xl" loading="eager" fetchPriority="high" decoding="async" />
           </div>
           <div className="text-center">
             <h1 className="font-display text-3xl font-bold tracking-tight">Welcome back</h1>

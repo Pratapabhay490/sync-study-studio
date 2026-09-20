@@ -4,25 +4,25 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import clayActivity from "@/assets/clay-subject-activity.png";
-import clayBaby from "@/assets/clay-subject-baby.png";
-import clayBookOpen from "@/assets/clay-subject-bookopen.png";
-import clayBone from "@/assets/clay-subject-bone.png";
-import clayBrain from "@/assets/clay-subject-brain.png";
-import clayBug from "@/assets/clay-subject-bug.png";
-import clayEar from "@/assets/clay-subject-ear.png";
-import clayEye from "@/assets/clay-subject-eye.png";
-import clayFlask from "@/assets/clay-subject-flaskconical.png";
-import clayHand from "@/assets/clay-subject-hand.png";
-import clayHeart from "@/assets/clay-subject-heart.png";
-import clayMicroscope from "@/assets/clay-subject-microscope.png";
-import clayPill from "@/assets/clay-subject-pill.png";
-import clayScanLine from "@/assets/clay-subject-scanline.png";
-import clayScale from "@/assets/clay-subject-scale.png";
-import clayScissors from "@/assets/clay-subject-scissors.png";
-import clayStethoscope from "@/assets/clay-subject-stethoscope.png";
-import claySyringe from "@/assets/clay-subject-syringe.png";
-import clayUsers from "@/assets/clay-subject-users.png";
+import clayActivity from "@/assets/clay-subject-activity.webp";
+import clayBaby from "@/assets/clay-subject-baby.webp";
+import clayBookOpen from "@/assets/clay-subject-bookopen.webp";
+import clayBone from "@/assets/clay-subject-bone.webp";
+import clayBrain from "@/assets/clay-subject-brain.webp";
+import clayBug from "@/assets/clay-subject-bug.webp";
+import clayEar from "@/assets/clay-subject-ear.webp";
+import clayEye from "@/assets/clay-subject-eye.webp";
+import clayFlask from "@/assets/clay-subject-flaskconical.webp";
+import clayHand from "@/assets/clay-subject-hand.webp";
+import clayHeart from "@/assets/clay-subject-heart.webp";
+import clayMicroscope from "@/assets/clay-subject-microscope.webp";
+import clayPill from "@/assets/clay-subject-pill.webp";
+import clayScanLine from "@/assets/clay-subject-scanline.webp";
+import clayScale from "@/assets/clay-subject-scale.webp";
+import clayScissors from "@/assets/clay-subject-scissors.webp";
+import clayStethoscope from "@/assets/clay-subject-stethoscope.webp";
+import claySyringe from "@/assets/clay-subject-syringe.webp";
+import clayUsers from "@/assets/clay-subject-users.webp";
 
 const map: Record<string, LucideIcon> = {
   Activity, Baby, BookOpen, Bone, Brain, Bug, Ear, Eye, FlaskConical, Hand, Heart,

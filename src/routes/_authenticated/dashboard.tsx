@@ -24,10 +24,10 @@ import { StudyHoursCard } from "@/components/study-hours-card";
 import { DailyTaskBoard, todayISO } from "@/components/daily-task-board";
 import { WeeklyTaskBoard } from "@/components/weekly-task-board";
 
-import clayTopics from "@/assets/clay-icon-topics.png";
-import clayCompleted from "@/assets/clay-icon-completed.png";
-import clayProgress from "@/assets/clay-icon-progress.png";
-import clayStreak from "@/assets/clay-icon-streak.png";
+import clayTopics from "@/assets/clay-icon-topics.webp";
+import clayCompleted from "@/assets/clay-icon-completed.webp";
+import clayProgress from "@/assets/clay-icon-progress.webp";
+import clayStreak from "@/assets/clay-icon-streak.webp";
 
 const DEFAULT_TARGET = {
   label: "NEET PG 2026",
@@ -690,8 +690,7 @@ function StatTile({
           width={512}
           height={512}
           loading="lazy"
-          className="h-14 w-14 shrink-0 -translate-y-1 drop-shadow-md transition group-hover:scale-110 group-hover:rotate-[-4deg]"
-        />
+          className="h-14 w-14 shrink-0 -translate-y-1 drop-shadow-md transition group-hover:scale-110 group-hover:rotate-[-4deg]" decoding="async" />
       </div>
     </div>
   );

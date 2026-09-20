@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, type PanInfo, useMotionValue, useTransform, type MotionValue } from 'motion/react';
-import { FiCircle, FiCode, FiFileText, FiLayers, FiLayout } from 'react-icons/fi';
+import { Circle, Code, FileText, Layers, Layout } from 'lucide-react';
 import './Carousel.css';
 
 export interface CarouselItem {
@@ -21,11 +21,11 @@ export interface CarouselProps {
 }
 
 const DEFAULT_ITEMS: CarouselItem[] = [
-  { title: 'Text Animations', description: 'Cool text animations for your projects.', id: 1, icon: <FiFileText className="carousel-icon" /> },
-  { title: 'Animations', description: 'Smooth animations for your projects.', id: 2, icon: <FiCircle className="carousel-icon" /> },
-  { title: 'Components', description: 'Reusable components for your projects.', id: 3, icon: <FiLayers className="carousel-icon" /> },
-  { title: 'Backgrounds', description: 'Beautiful backgrounds and patterns for your projects.', id: 4, icon: <FiLayout className="carousel-icon" /> },
-  { title: 'Common UI', description: 'Common UI components are coming soon!', id: 5, icon: <FiCode className="carousel-icon" /> },
+  { title: 'Text Animations', description: 'Cool text animations for your projects.', id: 1, icon: <FileText className="carousel-icon" /> },
+  { title: 'Animations', description: 'Smooth animations for your projects.', id: 2, icon: <Circle className="carousel-icon" /> },
+  { title: 'Components', description: 'Reusable components for your projects.', id: 3, icon: <Layers className="carousel-icon" /> },
+  { title: 'Backgrounds', description: 'Beautiful backgrounds and patterns for your projects.', id: 4, icon: <Layout className="carousel-icon" /> },
+  { title: 'Common UI', description: 'Common UI components are coming soon!', id: 5, icon: <Code className="carousel-icon" /> },
 ];
 
 const DRAG_BUFFER = 0;

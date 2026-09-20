@@ -12,7 +12,7 @@ import {
 import { parseISO, startOfDay, subDays, format, isToday, isThisWeek } from "date-fns";
 import { RefreshCcw, Flame, Trophy, Target, Brain, TrendingUp, AlertTriangle, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import clayBrain from "@/assets/clay-analytics-mascot.png";
+import clayBrain from "@/assets/clay-analytics-mascot.webp";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
   head: () => ({ meta: [{ title: "Analytics — Let's be in sync" }] }),
@@ -153,8 +153,7 @@ function AnalyticsPage() {
           alt=""
           width={220}
           height={220}
-          className="pointer-events-none absolute -right-4 -bottom-6 hidden h-44 w-44 animate-float-slow drop-shadow-2xl md:block lg:h-56 lg:w-56"
-        />
+          className="pointer-events-none absolute -right-4 -bottom-6 hidden h-44 w-44 animate-float-slow drop-shadow-2xl md:block lg:h-56 lg:w-56" loading="lazy" decoding="async" />
         <div className="relative flex items-start gap-4 md:pr-48 lg:pr-60">
           <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-primary text-white shadow-clay-sm">
             <SyncMark className="h-6 w-6" />
