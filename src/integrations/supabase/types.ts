@@ -1335,6 +1335,17 @@ export type Database = {
         Args: { a: string; b: string }
         Returns: undefined
       }
+      list_partner_invites: {
+        Args: never
+        Returns: {
+          created_at: string
+          direction: string
+          id: string
+          other_email: string
+          other_id: string
+          other_name: string
+        }[]
+      }
       list_visible_profiles: {
         Args: never
         Returns: {
