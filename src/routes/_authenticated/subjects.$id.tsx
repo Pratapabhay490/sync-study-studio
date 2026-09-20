@@ -103,27 +103,37 @@ function SubjectDetail() {
     [profiles, user?.id],
   );
 
-  const visible = sTopics
-    .filter((t) => t.topic_name.toLowerCase().includes(q.toLowerCase()))
-    .filter((t) => {
+  // Keep typing responsive on long topic lists: filtering runs at low priority.
+  const deferredQ = useDeferredValue(q);
+
+  const visible = useMemo(() => {
+    const needle = deferredQ.trim().toLowerCase();
+    return sTopics.filter((t) => {
+      if (needle && !t.topic_name.toLowerCase().includes(needle)) return false;
       const anyDone = anyDoneTopicIds.has(t.id);
       if (filter === "completed") return anyDone;
       if (filter === "pending") return !anyDone;
       return true;
     });
+  }, [sTopics, deferredQ, filter, anyDoneTopicIds]);
 
   const sTopicIds = useMemo(() => new Set(sTopics.map((t) => t.id)), [sTopics]);
 
-  const stats = profiles.map((p) => {
-    const done = progress.filter(
-      (pr) => pr.user_id === p.id && pr.completed && sTopicIds.has(pr.topic_id),
-    ).length;
-    return {
-      profile: p,
-      done,
-      pct: sTopics.length ? Math.round((done / sTopics.length) * 100) : 0,
-    };
-  });
+  const stats = useMemo(() => {
+    const doneByUser = new Map<string, number>();
+    for (const pr of progress) {
+      if (pr.completed && sTopicIds.has(pr.topic_id))
+        doneByUser.set(pr.user_id, (doneByUser.get(pr.user_id) ?? 0) + 1);
+    }
+    return profiles.map((p) => {
+      const done = doneByUser.get(p.id) ?? 0;
+      return {
+        profile: p,
+        done,
+        pct: sTopics.length ? Math.round((done / sTopics.length) * 100) : 0,
+      };
+    });
+  }, [profiles, progress, sTopicIds, sTopics.length]);
 
   async function handleAddTopic() {
     if (!newName.trim()) return;
