@@ -53,12 +53,8 @@ function SettingsPage() {
 
   const loadInvites = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("partner_invites" as any)
-      .select("id, from_user, to_user, status, created_at")
-      .eq("status", "pending")
-      .order("created_at", { ascending: false });
-    setInvites((data as any as PartnerInvite[]) ?? []);
+    const { data } = await (supabase.rpc as any)("list_partner_invites");
+    setInvites((data as PartnerInvite[] | null) ?? []);
   }, [user]);
 
   useEffect(() => {
