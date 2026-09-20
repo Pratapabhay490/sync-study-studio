@@ -105,19 +105,22 @@ function SettingsPage() {
     const email = partnerEmail.trim();
     if (!email) return;
     setAddingPartner(true);
-    const { error } = await (supabase.rpc as any)("add_study_partner_by_email", { p_email: email });
+    const { error } = await (supabase.rpc as any)("send_partner_invite", { p_email: email });
     setAddingPartner(false);
     if (error) {
       const msg = error.message?.includes("user_not_found")
         ? "No account found with that email. Ask them to sign up first."
         : error.message?.includes("cannot_partner_self")
-        ? "You can't add yourself as a partner."
+        ? "You can't invite yourself."
+        : error.message?.includes("already_partners")
+        ? "You're already study partners."
         : error.message;
       toast.error(msg);
       return;
     }
-    toast.success(`Added ${email} as a study partner 🎉`);
+    toast.success(`Invite sent to ${email} — they just need to accept it 💌`);
     setPartnerEmail("");
+    loadInvites();
   }
 
   async function saveProfile() {
