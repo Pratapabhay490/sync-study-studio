@@ -46,7 +46,6 @@
     "@tanstack/react-start": "^1.168.56",
     "@tanstack/router-plugin": "^1.168.40",
     "@types/canvas-confetti": "^1.9.0",
-    "browserslist": "^4.29.0",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -55,7 +54,6 @@
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.40.0",
     "input-otp": "^1.4.2",
-    "js-yaml": "^5.4.2",
     "lucide-react": "^0.575.0",
     "mammoth": "^1.12.3",
     "motion": "^12.42.2",
@@ -94,5 +92,10 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^7.3.1"
+  },
+  "overrides": {
+    "browserslist": "^4.29.0",
+    "js-yaml": "^4.3.2",
+    "@xmldom/xmldom": "^0.9.8"
   }
 }
