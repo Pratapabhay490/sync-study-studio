@@ -48,6 +48,51 @@ function SettingsPage() {
   const [removePartner, setRemovePartner] = useState<{ id: string; name: string } | null>(null);
   const [partnerEmail, setPartnerEmail] = useState("");
   const [addingPartner, setAddingPartner] = useState(false);
+  const [invites, setInvites] = useState<PartnerInvite[]>([]);
+  const [busyInvite, setBusyInvite] = useState<string | null>(null);
+
+  const loadInvites = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("partner_invites" as any)
+      .select("id, from_user, to_user, status, created_at")
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+    setInvites((data as any as PartnerInvite[]) ?? []);
+  }, [user]);
+
+  useEffect(() => {
+    loadInvites();
+    if (!user) return;
+    const ch = supabase
+      .channel(`partner-invites-settings-${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "partner_invites" }, () => loadInvites())
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [user, loadInvites]);
+
+  const incoming = invites.filter((i) => i.to_user === user?.id);
+  const outgoing = invites.filter((i) => i.from_user === user?.id);
+
+  async function respondInvite(id: string, action: "accept" | "declined" | "cancelled") {
+    setBusyInvite(id);
+    const { error } =
+      action === "accept"
+        ? await (supabase.rpc as any)("accept_partner_invite", { p_id: id })
+        : await (supabase.rpc as any)("respond_partner_invite", { p_id: id, p_action: action });
+    setBusyInvite(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(
+      action === "accept" ? "You're study partners now 🎉" : action === "declined" ? "Invite declined" : "Invite cancelled",
+    );
+    loadInvites();
+    if (action === "accept") setTimeout(() => window.location.reload(), 900);
+  }
 
 
   async function handleRemovePartner() {
