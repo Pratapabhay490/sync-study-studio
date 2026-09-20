@@ -62,7 +62,7 @@ function Landing() {
 
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2">
-          <img src={syncLogo} alt="in sync" className="logo-breathe h-10 w-10 rounded-2xl object-cover shadow-clay-sm" loading="lazy" decoding="async" />
+          <img src={syncLogo} alt="in sync" className="logo-breathe h-10 w-10 rounded-2xl object-cover shadow-clay-sm" loading="eager" decoding="async" />
           <span className="font-display text-lg font-semibold tracking-tight">Let's be in sync</span>
         </div>
         <Link
@@ -120,7 +120,7 @@ function Landing() {
               alt="Two medical students studying together with laptops and books"
               width={1280}
               height={1024}
-              className="relative w-full max-w-[560px] mx-auto animate-float-slow drop-shadow-[0_30px_50px_rgba(15,23,42,0.25)]" loading="lazy" decoding="async" />
+              className="relative w-full max-w-[560px] mx-auto animate-float-slow drop-shadow-[0_30px_50px_rgba(15,23,42,0.25)]" loading="eager" fetchPriority="high" decoding="async" />
             {/* floating mini-cards */}
             <div className="clay absolute -left-2 top-10 hidden rounded-2xl border-0 px-3 py-2 shadow-clay-sm md:flex items-center gap-2 animate-float-slow">
               <img src={clayStreak} alt="" width={32} height={32} className="h-8 w-8" loading="lazy" decoding="async" />

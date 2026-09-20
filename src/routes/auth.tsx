@@ -74,7 +74,7 @@ function AuthPage() {
 
       <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
         <Link to="/" className="mb-8 flex items-center justify-center gap-2">
-          <img src={syncLogo} alt="SyncStudy" className="logo-breathe h-12 w-12 rounded-2xl object-cover shadow-clay-sm" loading="lazy" decoding="async" />
+          <img src={syncLogo} alt="SyncStudy" className="logo-breathe h-12 w-12 rounded-2xl object-cover shadow-clay-sm" loading="eager" decoding="async" />
           <span className="font-display text-xl font-bold tracking-tight">Let's be in sync</span>
         </Link>
 
@@ -85,7 +85,7 @@ function AuthPage() {
               alt="Two clay-style medical students studying together"
               width={1024}
               height={1024}
-              className="h-40 w-40 animate-float-slow drop-shadow-xl" loading="lazy" decoding="async" />
+              className="h-40 w-40 animate-float-slow drop-shadow-xl" loading="eager" fetchPriority="high" decoding="async" />
           </div>
           <div className="text-center">
             <h1 className="font-display text-3xl font-bold tracking-tight">Welcome back</h1>
