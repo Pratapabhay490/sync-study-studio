@@ -1,7 +1,7 @@
 import { BookOpen, HeartPulse, Sparkles, Stethoscope } from "lucide-react";
-import boyReading from "@/assets/clay-boy-reading.png";
-import girlDoctor from "@/assets/clay-girl-doctor.png";
-import medicalIcons from "@/assets/clay-medical-icons.png";
+import boyReading from "@/assets/clay-boy-reading.webp";
+import girlDoctor from "@/assets/clay-girl-doctor.webp";
+import medicalIcons from "@/assets/clay-medical-icons.webp";
 import { cn } from "@/lib/utils";
 
 type ClayVisualProps = {

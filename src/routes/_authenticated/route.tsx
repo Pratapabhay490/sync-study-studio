@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { NotificationCenter } from "@/components/notification-center";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAutoReveal } from "@/lib/use-auto-reveal";
-import syncLogo from "@/assets/sync-logo.jpeg";
+import syncLogo from "@/assets/sync-logo.webp";
 
 
 export const Route = createFileRoute("/_authenticated")({

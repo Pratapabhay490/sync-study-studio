@@ -1,4 +1,4 @@
-import syncMark from "@/assets/sync-mark.png";
+import syncMark from "@/assets/sync-mark.webp";
 import { cn } from "@/lib/utils";
 
 /** Subtle SyncStudy ring mark — used wherever we previously showed AI sparkles. */

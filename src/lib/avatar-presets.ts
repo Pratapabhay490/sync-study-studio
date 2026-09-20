@@ -1,8 +1,8 @@
-import avatarFox from "@/assets/avatars/avatar-fox.png";
-import avatarPanda from "@/assets/avatars/avatar-panda.png";
-import avatarAstronaut from "@/assets/avatars/avatar-astronaut.png";
-import avatarCat from "@/assets/avatars/avatar-cat.png";
-import avatarOwl from "@/assets/avatars/avatar-owl.png";
+import avatarFox from "@/assets/avatars/avatar-fox.webp";
+import avatarPanda from "@/assets/avatars/avatar-panda.webp";
+import avatarAstronaut from "@/assets/avatars/avatar-astronaut.webp";
+import avatarCat from "@/assets/avatars/avatar-cat.webp";
+import avatarOwl from "@/assets/avatars/avatar-owl.webp";
 
 export const AVATAR_PRESETS = [
   { id: "fox", src: avatarFox, label: "Fox" },

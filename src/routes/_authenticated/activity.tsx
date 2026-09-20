@@ -4,7 +4,7 @@ import { useData } from "@/lib/data-context";
 import { UserAvatar } from "@/components/user-avatar";
 import { formatDistanceToNow, parseISO, format } from "date-fns";
 import { getSubjectClayIcon } from "@/lib/subject-icons";
-import clayCompleted from "@/assets/clay-icon-completed.png";
+import clayCompleted from "@/assets/clay-icon-completed.webp";
 
 export const Route = createFileRoute("/_authenticated/activity")({
   head: () => ({ meta: [{ title: "Activity — Let's be in sync" }] }),

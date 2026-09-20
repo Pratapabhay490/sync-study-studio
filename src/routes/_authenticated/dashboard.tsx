@@ -24,10 +24,10 @@ import { StudyHoursCard } from "@/components/study-hours-card";
 import { DailyTaskBoard, todayISO } from "@/components/daily-task-board";
 import { WeeklyTaskBoard } from "@/components/weekly-task-board";
 
-import clayTopics from "@/assets/clay-icon-topics.png";
-import clayCompleted from "@/assets/clay-icon-completed.png";
-import clayProgress from "@/assets/clay-icon-progress.png";
-import clayStreak from "@/assets/clay-icon-streak.png";
+import clayTopics from "@/assets/clay-icon-topics.webp";
+import clayCompleted from "@/assets/clay-icon-completed.webp";
+import clayProgress from "@/assets/clay-icon-progress.webp";
+import clayStreak from "@/assets/clay-icon-streak.webp";
 
 const DEFAULT_TARGET = {
   label: "NEET PG 2026",

@@ -17,10 +17,10 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import claySettings from "@/assets/clay-settings-mascot.png";
-import clayPartners from "@/assets/clay-icon-partners.png";
-import clayBell from "@/assets/clay-bell.png";
-import clayProgress from "@/assets/clay-icon-progress.png";
+import claySettings from "@/assets/clay-settings-mascot.webp";
+import clayPartners from "@/assets/clay-icon-partners.webp";
+import clayBell from "@/assets/clay-bell.webp";
+import clayProgress from "@/assets/clay-icon-progress.webp";
 import { AVATAR_PRESETS, presetIdOf, presetValue } from "@/lib/avatar-presets";
 
 

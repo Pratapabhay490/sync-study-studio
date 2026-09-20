@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Loader2, Mail, Lock, User } from "lucide-react";
-import syncLogo from "@/assets/sync-logo.jpeg";
-import clayAuthHero from "@/assets/clay-auth-hero.png";
+import syncLogo from "@/assets/sync-logo.webp";
+import clayAuthHero from "@/assets/clay-auth-hero.webp";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
