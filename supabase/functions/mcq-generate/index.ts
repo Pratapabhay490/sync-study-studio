@@ -13,7 +13,8 @@
 // Auth: requires Supabase user JWT.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
-import { corsHeaders } from "../_shared/cors.ts";
+import { cors } from "../_shared/cors.ts";
+import { allowRequest, tooManyRequests } from "../_shared/ratelimit.ts";
 import { LOVABLE_AI_GATEWAY_URL, LOVABLE_GATEWAY_MODEL, logGeminiStartup } from "../_shared/gemini.ts";
 
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -175,6 +176,7 @@ async function callGemini(prompt: string, reqId: string, count: number): Promise
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = cors(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const reqId = req.headers.get("x-client-request-id")
@@ -220,6 +222,8 @@ Deno.serve(async (req) => {
     });
   }
   const userId = userData.user.id;
+
+  if (!(await allowRequest(sb, "mcq_generate", 40))) return tooManyRequests(corsHeaders);
 
   try {
     const body = await req.json().catch(() => ({}));

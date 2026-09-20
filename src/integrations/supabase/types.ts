@@ -779,6 +779,30 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          bucket: string
+          created_at: string
+          hits: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          bucket: string
+          created_at?: string
+          hits?: number
+          user_id: string
+          window_start: string
+        }
+        Update: {
+          bucket?: string
+          created_at?: string
+          hits?: number
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       reactions: {
         Row: {
           context: Json
@@ -1237,6 +1261,10 @@ export type Database = {
           p_ref_type?: string
           p_user: string
         }
+        Returns: boolean
+      }
+      check_rate_limit: {
+        Args: { p_bucket: string; p_limit: number; p_window_seconds: number }
         Returns: boolean
       }
       claim_weekly_challenge: { Args: { p_id: string }; Returns: boolean }
