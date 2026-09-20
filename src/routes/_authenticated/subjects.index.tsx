@@ -213,8 +213,7 @@ function SubjectsPage() {
                         width={64}
                         height={64}
                         loading="lazy"
-                        className="h-14 w-14 object-contain drop-shadow-md"
-                      />
+                        className="h-14 w-14 object-contain drop-shadow-md" decoding="async" />
                     </div>
                     <div className="pr-24 text-right">
                       <div className="font-display text-2xl font-bold">{combinedPct}%</div>

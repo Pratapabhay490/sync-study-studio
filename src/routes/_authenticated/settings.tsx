@@ -120,8 +120,7 @@ function SettingsPage() {
             alt=""
             width={140}
             height={140}
-            className="h-24 w-24 shrink-0 animate-float-slow drop-shadow-xl md:h-32 md:w-32"
-          />
+            className="h-24 w-24 shrink-0 animate-float-slow drop-shadow-xl md:h-32 md:w-32" loading="lazy" decoding="async" />
           <div>
             <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">Settings</h1>
             <p className="mt-1 text-sm text-muted-foreground">Tune your profile, partners, notifications, and data.</p>
@@ -180,8 +179,7 @@ function SettingsPage() {
                     loading="lazy"
                     width={512}
                     height={512}
-                    className="h-full w-full rounded-xl bg-background object-cover"
-                  />
+                    className="h-full w-full rounded-xl bg-background object-cover" decoding="async" />
                 </button>
               );
             })}
@@ -191,7 +189,7 @@ function SettingsPage() {
 
       <div className="clay rounded-3xl border-0 p-6">
         <div className="mb-4 flex items-start gap-3">
-          <img src={clayPartners} alt="" width={56} height={56} className="h-12 w-12 shrink-0 drop-shadow-md" />
+          <img src={clayPartners} alt="" width={56} height={56} className="h-12 w-12 shrink-0 drop-shadow-md" loading="lazy" decoding="async" />
           <div>
             <h3 className="font-display text-lg font-semibold">Study partners</h3>
             <p className="text-xs text-muted-foreground">Add a partner by their account email to share progress and analytics.</p>
@@ -250,7 +248,7 @@ function SettingsPage() {
 
       <div className="clay rounded-3xl border-0 p-6">
         <div className="mb-4 flex items-start gap-3">
-          <img src={clayBell} alt="" width={56} height={56} className="h-12 w-12 shrink-0 animate-float-slow drop-shadow-md" />
+          <img src={clayBell} alt="" width={56} height={56} className="h-12 w-12 shrink-0 animate-float-slow drop-shadow-md" loading="lazy" decoding="async" />
           <div>
             <h3 className="font-display text-lg font-semibold">Push notifications</h3>
             <p className="text-xs text-muted-foreground">
@@ -330,7 +328,7 @@ function SettingsPage() {
 
         <div className="clay rounded-3xl border-0 p-6">
           <div className="mb-4 flex items-start gap-3">
-            <img src={clayProgress} alt="" width={48} height={48} className="h-10 w-10 shrink-0 drop-shadow-md" />
+            <img src={clayProgress} alt="" width={48} height={48} className="h-10 w-10 shrink-0 drop-shadow-md" loading="lazy" decoding="async" />
             <h3 className="font-display text-lg font-semibold">Your data</h3>
           </div>
           <div className="flex flex-wrap gap-3">

@@ -29,14 +29,12 @@ export function ClayVisual({ variant = "boy", className, priority = false }: Cla
           src={boyReading}
           alt=""
           loading={priority ? "eager" : "lazy"}
-          className="clay-character absolute bottom-0 left-2 w-36 drop-shadow-2xl sm:w-44"
-        />
+          className="clay-character absolute bottom-0 left-2 w-36 drop-shadow-2xl sm:w-44" decoding="async" />
         <img
           src={girlDoctor}
           alt=""
           loading="lazy"
-          className="clay-character clay-character-delay absolute bottom-0 right-2 w-32 drop-shadow-2xl sm:w-40"
-        />
+          className="clay-character clay-character-delay absolute bottom-0 right-2 w-32 drop-shadow-2xl sm:w-40" decoding="async" />
       </div>
     );
   }
@@ -47,8 +45,7 @@ export function ClayVisual({ variant = "boy", className, priority = false }: Cla
         src={source}
         alt={alt}
         loading={priority ? "eager" : "lazy"}
-        className="clay-character relative z-10 mx-auto w-full max-w-[260px] drop-shadow-2xl"
-      />
+        className="clay-character relative z-10 mx-auto w-full max-w-[260px] drop-shadow-2xl" decoding="async" />
     </div>
   );
 }
@@ -73,8 +70,7 @@ export function ClayWalkingStrip({ className }: { className?: string }) {
           <img
             src={boyReading}
             alt=""
-            className="h-full w-full object-contain drop-shadow-xl"
-          />
+            className="h-full w-full object-contain drop-shadow-xl" loading="lazy" decoding="async" />
         </div>
       </div>
     </div>
@@ -98,8 +94,7 @@ export function ClayPeek({
       className={cn(
         "clay-peeker pointer-events-none absolute h-28 w-28 object-contain drop-shadow-2xl",
         className,
-      )}
-    />
+      )} loading="lazy" decoding="async" />
   );
 }
 

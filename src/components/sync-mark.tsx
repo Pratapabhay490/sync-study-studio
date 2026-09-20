@@ -15,7 +15,6 @@ export function SyncMark({
       alt=""
       aria-hidden
       style={style}
-      className={cn("inline-block h-4 w-4 object-contain opacity-80", className)}
-    />
+      className={cn("inline-block h-4 w-4 object-contain opacity-80", className)} loading="lazy" decoding="async" />
   );
 }

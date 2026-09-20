@@ -690,8 +690,7 @@ function StatTile({
           width={512}
           height={512}
           loading="lazy"
-          className="h-14 w-14 shrink-0 -translate-y-1 drop-shadow-md transition group-hover:scale-110 group-hover:rotate-[-4deg]"
-        />
+          className="h-14 w-14 shrink-0 -translate-y-1 drop-shadow-md transition group-hover:scale-110 group-hover:rotate-[-4deg]" decoding="async" />
       </div>
     </div>
   );

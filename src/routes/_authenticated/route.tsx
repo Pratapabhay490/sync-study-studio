@@ -60,7 +60,7 @@ function AuthenticatedLayout() {
       <div className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 md:hidden">
         <div className="clay flex w-full items-center justify-between px-4 py-2">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <img src={syncLogo} alt="in sync" className="logo-breathe h-9 w-9 rounded-xl object-cover shadow-clay-sm" />
+            <img src={syncLogo} alt="in sync" className="logo-breathe h-9 w-9 rounded-xl object-cover shadow-clay-sm" loading="lazy" decoding="async" />
             <span className="font-display font-bold">in sync</span>
           </Link>
           <div className="flex items-center gap-2">
@@ -85,7 +85,7 @@ function AuthenticatedLayout() {
         >
           <div className="clay flex h-full flex-col p-4">
             <Link to="/dashboard" className="mb-6 hidden items-center gap-2.5 px-2 md:flex">
-              <img src={syncLogo} alt="in sync" className="logo-breathe h-11 w-11 rounded-2xl object-cover shadow-clay-sm" />
+              <img src={syncLogo} alt="in sync" className="logo-breathe h-11 w-11 rounded-2xl object-cover shadow-clay-sm" loading="lazy" decoding="async" />
               <div>
                 <div className="font-display text-base font-bold leading-tight">Let's be</div>
                 <div className="font-display text-base font-bold leading-tight text-gradient">in sync</div>
