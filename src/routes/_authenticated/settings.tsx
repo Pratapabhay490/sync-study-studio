@@ -245,7 +245,7 @@ function SettingsPage() {
           <img src={clayPartners} alt="" width={56} height={56} className="h-12 w-12 shrink-0 drop-shadow-md" loading="lazy" decoding="async" />
           <div>
             <h3 className="font-display text-lg font-semibold">Study partners</h3>
-            <p className="text-xs text-muted-foreground">Add a partner by their account email to share progress and analytics.</p>
+            <p className="text-xs text-muted-foreground">Invite a partner by their account email — they have to accept before progress is shared.</p>
           </div>
         </div>
 
