@@ -2,7 +2,7 @@
 // POST { kind: "insights" | "weekly" | "compare", payload: object } -> { headline, summary, bullets, next_actions }
 // Requires a valid Supabase user JWT (Authorization: Bearer <token>).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
-import { corsHeaders } from "../_shared/cors.ts";
+import { cors } from "../_shared/cors.ts";
 import { LOVABLE_AI_GATEWAY_URL, LOVABLE_GATEWAY_MODEL, logGeminiStartup } from "../_shared/gemini.ts";
 
 logGeminiStartup("gemini-analyze");
@@ -71,6 +71,7 @@ async function callLovable(prompt: string) {
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = cors(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   // Require a valid Supabase user JWT
