@@ -256,6 +256,33 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_invites: {
+        Row: {
+          created_at: string
+          from_user: string
+          id: string
+          responded_at: string | null
+          status: string
+          to_user: string
+        }
+        Insert: {
+          created_at?: string
+          from_user: string
+          id?: string
+          responded_at?: string | null
+          status?: string
+          to_user: string
+        }
+        Update: {
+          created_at?: string
+          from_user?: string
+          id?: string
+          responded_at?: string | null
+          status?: string
+          to_user?: string
+        }
+        Relationships: []
+      }
       pokes: {
         Row: {
           created_at: string
@@ -1251,6 +1278,7 @@ export type Database = {
       }
     }
     Functions: {
+      accept_partner_invite: { Args: { p_id: string }; Returns: undefined }
       add_study_partner_by_email: { Args: { p_email: string }; Returns: string }
       award_xp: {
         Args: {
@@ -1303,6 +1331,21 @@ export type Database = {
         Args: { p_session_id: string }
         Returns: undefined
       }
+      link_study_partners: {
+        Args: { a: string; b: string }
+        Returns: undefined
+      }
+      list_partner_invites: {
+        Args: never
+        Returns: {
+          created_at: string
+          direction: string
+          id: string
+          other_email: string
+          other_id: string
+          other_name: string
+        }[]
+      }
       list_visible_profiles: {
         Args: never
         Returns: {
@@ -1320,6 +1363,11 @@ export type Database = {
         Args: { p_partner_id: string }
         Returns: undefined
       }
+      respond_partner_invite: {
+        Args: { p_action: string; p_id: string }
+        Returns: undefined
+      }
+      send_partner_invite: { Args: { p_email: string }; Returns: string }
       set_countdown: {
         Args: { p_date: string; p_label: string }
         Returns: undefined

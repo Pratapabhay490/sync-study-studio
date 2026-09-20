@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useData } from "@/lib/data-context";
 import { useTheme } from "@/lib/theme-provider";
@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { UserAvatar } from "@/components/user-avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, LogOut, RotateCcw, UserX, Mail, Bell, BellOff, Send, UserPlus, Loader2 } from "lucide-react";
+import { Download, LogOut, RotateCcw, UserX, Mail, Bell, BellOff, Send, UserPlus, Loader2, Check, X, Hourglass } from "lucide-react";
 import { useNotifications } from "@/lib/notifications-context";
 import { useFloatingTimerPref } from "@/lib/floating-timer";
 import {
@@ -23,6 +23,15 @@ import clayBell from "@/assets/clay-bell.webp";
 import clayProgress from "@/assets/clay-icon-progress.webp";
 import { AVATAR_PRESETS, presetIdOf, presetValue } from "@/lib/avatar-presets";
 
+
+type PartnerInvite = {
+  id: string;
+  direction: "incoming" | "outgoing";
+  other_id: string;
+  other_name: string;
+  other_email: string;
+  created_at: string;
+};
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Let's be in sync" }] }),
@@ -48,6 +57,47 @@ function SettingsPage() {
   const [removePartner, setRemovePartner] = useState<{ id: string; name: string } | null>(null);
   const [partnerEmail, setPartnerEmail] = useState("");
   const [addingPartner, setAddingPartner] = useState(false);
+  const [invites, setInvites] = useState<PartnerInvite[]>([]);
+  const [busyInvite, setBusyInvite] = useState<string | null>(null);
+
+  const loadInvites = useCallback(async () => {
+    if (!user) return;
+    const { data } = await (supabase.rpc as any)("list_partner_invites");
+    setInvites((data as PartnerInvite[] | null) ?? []);
+  }, [user]);
+
+  useEffect(() => {
+    loadInvites();
+    if (!user) return;
+    const ch = supabase
+      .channel(`partner-invites-settings-${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "partner_invites" }, () => loadInvites())
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [user, loadInvites]);
+
+  const incoming = invites.filter((i) => i.direction === "incoming");
+  const outgoing = invites.filter((i) => i.direction === "outgoing");
+
+  async function respondInvite(id: string, action: "accept" | "declined" | "cancelled") {
+    setBusyInvite(id);
+    const { error } =
+      action === "accept"
+        ? await (supabase.rpc as any)("accept_partner_invite", { p_id: id })
+        : await (supabase.rpc as any)("respond_partner_invite", { p_id: id, p_action: action });
+    setBusyInvite(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(
+      action === "accept" ? "You're study partners now 🎉" : action === "declined" ? "Invite declined" : "Invite cancelled",
+    );
+    loadInvites();
+    if (action === "accept") setTimeout(() => window.location.reload(), 900);
+  }
 
 
   async function handleRemovePartner() {
@@ -64,19 +114,22 @@ function SettingsPage() {
     const email = partnerEmail.trim();
     if (!email) return;
     setAddingPartner(true);
-    const { error } = await (supabase.rpc as any)("add_study_partner_by_email", { p_email: email });
+    const { error } = await (supabase.rpc as any)("send_partner_invite", { p_email: email });
     setAddingPartner(false);
     if (error) {
       const msg = error.message?.includes("user_not_found")
         ? "No account found with that email. Ask them to sign up first."
         : error.message?.includes("cannot_partner_self")
-        ? "You can't add yourself as a partner."
+        ? "You can't invite yourself."
+        : error.message?.includes("already_partners")
+        ? "You're already study partners."
         : error.message;
       toast.error(msg);
       return;
     }
-    toast.success(`Added ${email} as a study partner 🎉`);
+    toast.success(`Invite sent to ${email} — they just need to accept it 💌`);
     setPartnerEmail("");
+    loadInvites();
   }
 
   async function saveProfile() {
@@ -192,7 +245,7 @@ function SettingsPage() {
           <img src={clayPartners} alt="" width={56} height={56} className="h-12 w-12 shrink-0 drop-shadow-md" loading="lazy" decoding="async" />
           <div>
             <h3 className="font-display text-lg font-semibold">Study partners</h3>
-            <p className="text-xs text-muted-foreground">Add a partner by their account email to share progress and analytics.</p>
+            <p className="text-xs text-muted-foreground">Invite a partner by their account email — they have to accept before progress is shared.</p>
           </div>
         </div>
 
@@ -206,9 +259,61 @@ function SettingsPage() {
           />
           <Button onClick={handleAddPartner} disabled={addingPartner || !partnerEmail.trim()} className="bg-gradient-primary text-white">
             {addingPartner ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
-            Add partner
+            Send invite
           </Button>
         </div>
+
+        {incoming.length > 0 && (
+          <div className="mb-5 space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary">Invites for you</p>
+            {incoming.map((inv) => (
+              <div
+                key={inv.id}
+                className="clay flex flex-col gap-3 rounded-2xl border-0 p-3 animate-in fade-in slide-in-from-bottom-2 sm:flex-row sm:items-center"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="font-display text-sm font-semibold">{inv.other_name} wants to study with you 🤝</p>
+                  <p className="truncate text-xs text-muted-foreground">{inv.other_email}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    disabled={busyInvite === inv.id}
+                    onClick={() => respondInvite(inv.id, "accept")}
+                    className="bg-gradient-primary text-white"
+                  >
+                    {busyInvite === inv.id ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Check className="mr-1 h-4 w-4" />}
+                    Accept
+                  </Button>
+                  <Button size="sm" variant="outline" disabled={busyInvite === inv.id} onClick={() => respondInvite(inv.id, "declined")}>
+                    <X className="mr-1 h-4 w-4" /> Decline
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {outgoing.length > 0 && (
+          <div className="mb-5 space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Waiting on them</p>
+            {outgoing.map((inv) => (
+              <div key={inv.id} className="flex flex-col gap-2 rounded-2xl border border-dashed border-border p-3 sm:flex-row sm:items-center">
+                <div className="min-w-0 flex-1">
+                  <p className="flex items-center gap-1.5 text-sm font-medium">
+                    <Hourglass className="h-3.5 w-3.5 animate-pulse text-primary" />
+                    Invite sent to {inv.other_name}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">{inv.other_email}</p>
+                </div>
+                <Button size="sm" variant="ghost" disabled={busyInvite === inv.id} onClick={() => respondInvite(inv.id, "cancelled")}>
+                  <X className="mr-1 h-4 w-4" /> Cancel
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
 
         <ul className="space-y-3">
           {profiles.map((p) => (
