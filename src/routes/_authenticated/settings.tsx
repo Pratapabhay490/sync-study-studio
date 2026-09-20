@@ -259,9 +259,61 @@ function SettingsPage() {
           />
           <Button onClick={handleAddPartner} disabled={addingPartner || !partnerEmail.trim()} className="bg-gradient-primary text-white">
             {addingPartner ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
-            Add partner
+            Send invite
           </Button>
         </div>
+
+        {incoming.length > 0 && (
+          <div className="mb-5 space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary">Invites for you</p>
+            {incoming.map((inv) => (
+              <div
+                key={inv.id}
+                className="clay flex flex-col gap-3 rounded-2xl border-0 p-3 animate-in fade-in slide-in-from-bottom-2 sm:flex-row sm:items-center"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="font-display text-sm font-semibold">{inv.other_name} wants to study with you 🤝</p>
+                  <p className="truncate text-xs text-muted-foreground">{inv.other_email}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    disabled={busyInvite === inv.id}
+                    onClick={() => respondInvite(inv.id, "accept")}
+                    className="bg-gradient-primary text-white"
+                  >
+                    {busyInvite === inv.id ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Check className="mr-1 h-4 w-4" />}
+                    Accept
+                  </Button>
+                  <Button size="sm" variant="outline" disabled={busyInvite === inv.id} onClick={() => respondInvite(inv.id, "declined")}>
+                    <X className="mr-1 h-4 w-4" /> Decline
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {outgoing.length > 0 && (
+          <div className="mb-5 space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Waiting on them</p>
+            {outgoing.map((inv) => (
+              <div key={inv.id} className="flex flex-col gap-2 rounded-2xl border border-dashed border-border p-3 sm:flex-row sm:items-center">
+                <div className="min-w-0 flex-1">
+                  <p className="flex items-center gap-1.5 text-sm font-medium">
+                    <Hourglass className="h-3.5 w-3.5 animate-pulse text-primary" />
+                    Invite sent to {inv.other_name}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">{inv.other_email}</p>
+                </div>
+                <Button size="sm" variant="ghost" disabled={busyInvite === inv.id} onClick={() => respondInvite(inv.id, "cancelled")}>
+                  <X className="mr-1 h-4 w-4" /> Cancel
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
 
         <ul className="space-y-3">
           {profiles.map((p) => (
