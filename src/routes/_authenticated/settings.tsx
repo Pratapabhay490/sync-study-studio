@@ -69,8 +69,8 @@ function SettingsPage() {
     };
   }, [user, loadInvites]);
 
-  const incoming = invites.filter((i) => i.to_user === user?.id);
-  const outgoing = invites.filter((i) => i.from_user === user?.id);
+  const incoming = invites.filter((i) => i.direction === "incoming");
+  const outgoing = invites.filter((i) => i.direction === "outgoing");
 
   async function respondInvite(id: string, action: "accept" | "declined" | "cancelled") {
     setBusyInvite(id);
