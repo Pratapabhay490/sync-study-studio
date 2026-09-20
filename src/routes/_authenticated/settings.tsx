@@ -24,6 +24,15 @@ import clayProgress from "@/assets/clay-icon-progress.webp";
 import { AVATAR_PRESETS, presetIdOf, presetValue } from "@/lib/avatar-presets";
 
 
+type PartnerInvite = {
+  id: string;
+  direction: "incoming" | "outgoing";
+  other_id: string;
+  other_name: string;
+  other_email: string;
+  created_at: string;
+};
+
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Let's be in sync" }] }),
   component: SettingsPage,
