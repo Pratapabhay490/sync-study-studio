@@ -7,6 +7,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { cors } from "../_shared/cors.ts";
+import { allowRequest, tooManyRequests } from "../_shared/ratelimit.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY =
@@ -50,6 +51,8 @@ Deno.serve(async (req) => {
     });
   }
   const userId = userData.user.id;
+
+  if (!(await allowRequest(sb, "mcq_embed", 60))) return tooManyRequests(corsHeaders);
 
   try {
     const body = await req.json().catch(() => ({}));

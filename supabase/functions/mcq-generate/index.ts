@@ -14,6 +14,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { cors } from "../_shared/cors.ts";
+import { allowRequest, tooManyRequests } from "../_shared/ratelimit.ts";
 import { LOVABLE_AI_GATEWAY_URL, LOVABLE_GATEWAY_MODEL, logGeminiStartup } from "../_shared/gemini.ts";
 
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");

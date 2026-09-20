@@ -3,6 +3,7 @@
 // Requires a valid Supabase user JWT (Authorization: Bearer <token>).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { cors } from "../_shared/cors.ts";
+import { allowRequest, tooManyRequests } from "../_shared/ratelimit.ts";
 import { LOVABLE_AI_GATEWAY_URL, LOVABLE_GATEWAY_MODEL, logGeminiStartup } from "../_shared/gemini.ts";
 
 logGeminiStartup("gemini-analyze");
@@ -94,6 +95,8 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
+
+  if (!(await allowRequest(sb, "gemini_analyze", 40))) return tooManyRequests(corsHeaders);
 
   try {
     const raw = await req.json().catch(() => ({}));
