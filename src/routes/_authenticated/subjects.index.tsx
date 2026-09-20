@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { useData } from "@/lib/data-context";
 import { getSubjectClayIcon } from "@/lib/subject-icons";
 import { Button } from "@/components/ui/button";
@@ -50,7 +50,11 @@ function SubjectsPage() {
   const [renameTarget, setRenameTarget] = useState<{ id: string; name: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const filtered = subjects.filter((s) => s.name.toLowerCase().includes(q.toLowerCase()));
+  const deferredQ = useDeferredValue(q);
+  const filtered = useMemo(() => {
+    const needle = deferredQ.trim().toLowerCase();
+    return needle ? subjects.filter((s) => s.name.toLowerCase().includes(needle)) : subjects;
+  }, [subjects, deferredQ]);
 
   // Pre-index topics + progress once instead of scanning every array per card.
   const topicsBySubject = useMemo(() => {
