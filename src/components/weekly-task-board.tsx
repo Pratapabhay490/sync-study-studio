@@ -112,7 +112,7 @@ export function WeeklyTaskBoard({
         .from("weekly_task_completions")
         .select("id,task_id,user_id")
         .in("task_id", list.map((t) => t.id));
-      setCompletions((compRows as Completion[] | null) ?? []);
+      setCompletions(dedupeCompletions((compRows as Completion[] | null) ?? []));
     } else {
       setCompletions([]);
     }
@@ -220,7 +220,7 @@ export function WeeklyTaskBoard({
       task_id: task.id,
       user_id: currentUserId,
     };
-    setCompletions((rows) => [...rows, optimistic]);
+    setCompletions((rows) => dedupeCompletions([...rows, optimistic]));
     const { data, error } = await supabase
       .from("weekly_task_completions")
       .insert({ task_id: task.id, user_id: currentUserId })
@@ -231,7 +231,9 @@ export function WeeklyTaskBoard({
       toast.error("Could not update the task");
       return;
     }
-    setCompletions((rows) => rows.map((c) => (c.id === optimistic.id ? data : c)));
+    setCompletions((rows) =>
+      dedupeCompletions(rows.map((c) => (c.id === optimistic.id ? (data as Completion) : c))),
+    );
     const total = doneBy(task.id).filter((id) => id !== currentUserId).length + 1;
     if (total >= required) {
       celebrate();
