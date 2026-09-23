@@ -283,6 +283,36 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_merge_log: {
+        Row: {
+          absorbed_id: string
+          created_at: string
+          id: string
+          keeper_id: string
+          reverted_at: string | null
+          subjects_moved: number
+          topics_moved: number
+        }
+        Insert: {
+          absorbed_id: string
+          created_at?: string
+          id?: string
+          keeper_id: string
+          reverted_at?: string | null
+          subjects_moved?: number
+          topics_moved?: number
+        }
+        Update: {
+          absorbed_id?: string
+          created_at?: string
+          id?: string
+          keeper_id?: string
+          reverted_at?: string | null
+          subjects_moved?: number
+          topics_moved?: number
+        }
+        Relationships: []
+      }
       pokes: {
         Row: {
           created_at: string
