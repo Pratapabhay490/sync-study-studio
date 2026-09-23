@@ -36,6 +36,18 @@ interface Completion {
   user_id: string;
 }
 
+/** Keep one row per (task_id, user_id) so optimistic + realtime rows can't double-count. */
+function dedupeCompletions(rows: Completion[]) {
+  const seen = new Map<string, Completion>();
+  for (const row of rows) {
+    const key = `${row.task_id}:${row.user_id}`;
+    const existing = seen.get(key);
+    // Prefer the persisted server row over a temporary optimistic one.
+    if (!existing || existing.id.startsWith("temp-")) seen.set(key, row);
+  }
+  return [...seen.values()];
+}
+
 function pairKeyFor(a: string, b: string) {
   return a < b ? `${a}:${b}` : `${b}:${a}`;
 }
@@ -100,7 +112,7 @@ export function WeeklyTaskBoard({
         .from("weekly_task_completions")
         .select("id,task_id,user_id")
         .in("task_id", list.map((t) => t.id));
-      setCompletions((compRows as Completion[] | null) ?? []);
+      setCompletions(dedupeCompletions((compRows as Completion[] | null) ?? []));
     } else {
       setCompletions([]);
     }
@@ -144,7 +156,9 @@ export function WeeklyTaskBoard({
           }
           const row = payload.new as Completion;
           if (!row?.id) return;
-          setCompletions((rows) => (rows.some((c) => c.id === row.id) ? rows : [...rows, row]));
+          setCompletions((rows) =>
+            rows.some((c) => c.id === row.id) ? rows : dedupeCompletions([...rows, row]),
+          );
           if (row.user_id !== currentUserId) notifyPartnerChange();
         },
       )
@@ -206,7 +220,7 @@ export function WeeklyTaskBoard({
       task_id: task.id,
       user_id: currentUserId,
     };
-    setCompletions((rows) => [...rows, optimistic]);
+    setCompletions((rows) => dedupeCompletions([...rows, optimistic]));
     const { data, error } = await supabase
       .from("weekly_task_completions")
       .insert({ task_id: task.id, user_id: currentUserId })
@@ -217,7 +231,9 @@ export function WeeklyTaskBoard({
       toast.error("Could not update the task");
       return;
     }
-    setCompletions((rows) => rows.map((c) => (c.id === optimistic.id ? data : c)));
+    setCompletions((rows) =>
+      dedupeCompletions(rows.map((c) => (c.id === optimistic.id ? (data as Completion) : c))),
+    );
     const total = doneBy(task.id).filter((id) => id !== currentUserId).length + 1;
     if (total >= required) {
       celebrate();
