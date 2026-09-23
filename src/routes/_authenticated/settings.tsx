@@ -123,6 +123,12 @@ function SettingsPage() {
         ? "You can't invite yourself."
         : error.message?.includes("already_partners")
         ? "You're already study partners."
+        : error.message?.includes("partner_already_has_partner")
+        ? "That person already has a study partner."
+        : error.message?.includes("already_has_partner")
+        ? "You already have a study partner. Remove them first to invite someone else."
+        : error.message?.includes("invite_expired")
+        ? "That invite has expired. Send a new one."
         : error.message;
       toast.error(msg);
       return;
