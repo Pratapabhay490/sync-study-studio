@@ -156,7 +156,9 @@ export function WeeklyTaskBoard({
           }
           const row = payload.new as Completion;
           if (!row?.id) return;
-          setCompletions((rows) => (rows.some((c) => c.id === row.id) ? rows : [...rows, row]));
+          setCompletions((rows) =>
+            rows.some((c) => c.id === row.id) ? rows : dedupeCompletions([...rows, row]),
+          );
           if (row.user_id !== currentUserId) notifyPartnerChange();
         },
       )
