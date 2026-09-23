@@ -36,6 +36,18 @@ interface Completion {
   user_id: string;
 }
 
+/** Keep one row per (task_id, user_id) so optimistic + realtime rows can't double-count. */
+function dedupeCompletions(rows: Completion[]) {
+  const seen = new Map<string, Completion>();
+  for (const row of rows) {
+    const key = `${row.task_id}:${row.user_id}`;
+    const existing = seen.get(key);
+    // Prefer the persisted server row over a temporary optimistic one.
+    if (!existing || existing.id.startsWith("temp-")) seen.set(key, row);
+  }
+  return [...seen.values()];
+}
+
 function pairKeyFor(a: string, b: string) {
   return a < b ? `${a}:${b}` : `${b}:${a}`;
 }
