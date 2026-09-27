@@ -107,9 +107,13 @@ Deno.serve(async (req) => {
     let itemFailed = 0;
     for (const s of subs ?? []) {
       try {
+        // High urgency makes Android/Chrome deliver immediately instead of
+        // batching until the device wakes from Doze (caused ~30 min delays).
+        const urgent = item.kind !== "motivation";
         await webpush.sendNotification(
           { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
           payload,
+          { urgency: urgent ? "high" : "normal", TTL: urgent ? 3600 : 6 * 3600 },
         );
         sent++;
         itemSent++;
