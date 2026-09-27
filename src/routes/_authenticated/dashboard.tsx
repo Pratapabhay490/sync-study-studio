@@ -1,3 +1,4 @@
+import { HideInSolo } from "@/lib/solo-mode";
 import { SyncMark } from "@/components/sync-mark";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
@@ -554,13 +555,19 @@ function Dashboard() {
       {/* Side-by-side */}
       <ScrollReveal as="section" className="grid gap-4 md:grid-cols-2" direction="up" delay={80}>
         <UserCard profile={me} stats={myStats} accent="abhay" label="You" />
-        <UserCard
-          profile={other}
-          stats={otherStats}
-          accent="aishwarya"
-          label="Study partner"
-          poke={other ? <PokeButton toUserId={other.id} toName={other.name} /> : null}
-        />
+        {other ? (
+          <UserCard
+            profile={other}
+            stats={otherStats}
+            accent="aishwarya"
+            label="Study partner"
+            poke={<PokeButton toUserId={other.id} toName={other.name} />}
+          />
+        ) : (
+          <HideInSolo>
+            <UserCard profile={other} stats={otherStats} accent="aishwarya" label="Study partner" poke={null} />
+          </HideInSolo>
+        )}
       </ScrollReveal>
 
       {user && (

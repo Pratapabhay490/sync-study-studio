@@ -1,3 +1,4 @@
+import { HideInSolo } from "@/lib/solo-mode";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useDeferredValue, useMemo, useState } from "react";
 import { useData } from "@/lib/data-context";
@@ -245,9 +246,9 @@ function SubjectsPage() {
                       </div>
                     ))}
                     {!u2 && (
-                      <div className="rounded-lg border border-dashed border-border p-2 text-center text-[11px] text-muted-foreground">
+                      <HideInSolo><div className="rounded-lg border border-dashed border-border p-2 text-center text-[11px] text-muted-foreground">
                         Waiting for study partner
-                      </div>
+                      </div></HideInSolo>
                     )}
                     {!u1 && null}
                   </div>

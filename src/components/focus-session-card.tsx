@@ -1,3 +1,4 @@
+import { HideInSolo } from "@/lib/solo-mode";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -380,9 +381,11 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
                <span className="col-span-2 text-xs text-muted-foreground sm:col-span-1">1–480 min</span>
             </form>
             {!partnerId && (
-              <p className="text-xs text-muted-foreground">
-                Add a study partner in Settings to invite them to sessions.
-              </p>
+              <HideInSolo>
+                <p className="text-xs text-muted-foreground">
+                  Add a study partner in Settings to invite them to sessions.
+                </p>
+              </HideInSolo>
             )}
           </>
         )}

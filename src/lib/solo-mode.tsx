@@ -49,3 +49,9 @@ export function useSoloMode() {
 
   return { solo, setSolo };
 }
+
+/** Renders children only when the user has NOT turned on solo mode. */
+export function HideInSolo({ children }: { children: React.ReactNode }) {
+  const { solo } = useSoloMode();
+  return solo ? null : children;
+}
