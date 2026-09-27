@@ -229,7 +229,7 @@ function PartnerHome() {
             ) : (
               <HideInSolo>
                 <div className="shrink-0 text-xl sm:text-2xl">💫</div>
-                <PartnerBadge profile={other} status={presence[other?.id ?? ""]} label="Your partner" fallback="Add a study partner in Settings" />
+                <PartnerBadge profile={other} status={undefined} label="Your partner" fallback="Add a study partner in Settings" />
               </HideInSolo>
             )}
           </div>
