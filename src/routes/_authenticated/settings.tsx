@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Download, LogOut, RotateCcw, UserX, Mail, Bell, BellOff, Send, UserPlus, Loader2, Check, X, Hourglass } from "lucide-react";
 import { useNotifications } from "@/lib/notifications-context";
 import { useFloatingTimerPref } from "@/lib/floating-timer";
+import { useSoloMode } from "@/lib/solo-mode";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -57,6 +58,9 @@ function SettingsPage() {
   const [removePartner, setRemovePartner] = useState<{ id: string; name: string } | null>(null);
   const [partnerEmail, setPartnerEmail] = useState("");
   const [addingPartner, setAddingPartner] = useState(false);
+  const { solo, setSolo } = useSoloMode();
+  const hasPartner = profiles.length > 1;
+  const soloOn = solo && !hasPartner;
   const [invites, setInvites] = useState<PartnerInvite[]>([]);
   const [busyInvite, setBusyInvite] = useState<string | null>(null);
 
@@ -255,6 +259,27 @@ function SettingsPage() {
           </div>
         </div>
 
+        {!hasPartner && (
+          <div className="mb-5 flex items-center justify-between gap-4 rounded-2xl border border-border bg-background/50 p-4">
+            <div className="min-w-0">
+              <Label htmlFor="solo-mode" className="font-display text-sm font-semibold">Solo mode</Label>
+              <p className="text-xs text-muted-foreground">
+                Study on your own without partner prompts. Turn it off anytime to invite a partner.
+              </p>
+            </div>
+            <Switch
+              id="solo-mode"
+              checked={solo}
+              onCheckedChange={async (v) => {
+                const { error } = await setSolo(v);
+                if (error) toast.error("Couldn't update solo mode");
+                else toast.success(v ? "Solo mode on — all features, no partner needed" : "Solo mode off — you can invite a partner again");
+              }}
+            />
+          </div>
+        )}
+
+        {!soloOn && (<>
         <div className="mb-5 flex flex-col gap-2 sm:flex-row">
           <Input
             type="email"
@@ -355,6 +380,7 @@ function SettingsPage() {
             </li>
           )}
         </ul>
+        </>)}
       </div>
 
       <div className="clay rounded-3xl border-0 p-6">
