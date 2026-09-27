@@ -1,3 +1,4 @@
+import { HideInSolo } from "@/lib/solo-mode";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CalendarRange, Check, Plus, Repeat2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -381,9 +382,11 @@ export function WeeklyTaskBoard({
       </ul>
 
       {!partner && (
-        <p className="mt-3 text-center text-xs text-muted-foreground">
-          Add a study partner and this board becomes shared.
-        </p>
+        <HideInSolo>
+          <p className="mt-3 text-center text-xs text-muted-foreground">
+            Add a study partner and this board becomes shared.
+          </p>
+        </HideInSolo>
       )}
     </section>
   );

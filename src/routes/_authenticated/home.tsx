@@ -1,3 +1,4 @@
+import { HideInSolo } from "@/lib/solo-mode";
 import { SyncMark } from "@/components/sync-mark";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
@@ -220,8 +221,17 @@ function PartnerHome() {
           </div>
           <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 sm:flex sm:gap-6">
             <PartnerBadge profile={me} status={presence[me?.id ?? ""]} label="You" />
-            <div className="shrink-0 text-xl sm:text-2xl">💫</div>
-            <PartnerBadge profile={other} status={presence[other?.id ?? ""]} label="Your partner" fallback="Add a study partner in Settings" />
+            {other ? (
+              <>
+                <div className="shrink-0 text-xl sm:text-2xl">💫</div>
+                <PartnerBadge profile={other} status={presence[other?.id ?? ""]} label="Your partner" />
+              </>
+            ) : (
+              <HideInSolo>
+                <div className="shrink-0 text-xl sm:text-2xl">💫</div>
+                <PartnerBadge profile={other} status={undefined} label="Your partner" fallback="Add a study partner in Settings" />
+              </HideInSolo>
+            )}
           </div>
 
           {/* XP + streak strip */}

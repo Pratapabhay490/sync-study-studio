@@ -372,6 +372,7 @@ export type Database = {
           email: string
           id: string
           name: string
+          solo_mode: boolean
           updated_at: string
         }
         Insert: {
@@ -384,6 +385,7 @@ export type Database = {
           email: string
           id: string
           name: string
+          solo_mode?: boolean
           updated_at?: string
         }
         Update: {
@@ -396,6 +398,7 @@ export type Database = {
           email?: string
           id?: string
           name?: string
+          solo_mode?: boolean
           updated_at?: string
         }
         Relationships: []

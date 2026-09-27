@@ -1,3 +1,4 @@
+import { HideInSolo } from "@/lib/solo-mode";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Check, ChevronRight, ListChecks, Plus, Trash2 } from "lucide-react";
@@ -145,9 +146,9 @@ export function DailyTaskBoard({
           />
         ))}
         {orderedProfiles.length < 2 && (
-          <div className="clay-pressed grid min-h-40 place-items-center p-6 text-center text-sm text-muted-foreground">
+          <HideInSolo><div className="clay-pressed grid min-h-40 place-items-center p-6 text-center text-sm text-muted-foreground">
             Add a study partner to see both task lists here.
-          </div>
+          </div></HideInSolo>
         )}
       </div>
     </section>
