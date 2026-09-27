@@ -14,6 +14,7 @@ import { Download, LogOut, RotateCcw, UserX, Mail, Bell, BellOff, Send, UserPlus
 import { useNotifications } from "@/lib/notifications-context";
 import { useFloatingTimerPref } from "@/lib/floating-timer";
 import { useSoloMode } from "@/lib/solo-mode";
+import { SoloModeToggle } from "@/components/solo-mode-toggle";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -61,6 +62,15 @@ function SettingsPage() {
   const { solo, setSolo } = useSoloMode();
   const hasPartner = profiles.length > 1;
   const soloOn = solo && !hasPartner;
+  const [soloAccept, setSoloAccept] = useState<string | null>(null);
+  async function acceptAfterSoloOff() {
+    const id = soloAccept;
+    setSoloAccept(null);
+    if (!id) return;
+    const { error } = await setSolo(false);
+    if (error) { toast.error("Couldn't turn off solo mode"); return; }
+    await respondInvite(id, "accept");
+  }
   const [invites, setInvites] = useState<PartnerInvite[]>([]);
   const [busyInvite, setBusyInvite] = useState<string | null>(null);
 
@@ -259,25 +269,7 @@ function SettingsPage() {
           </div>
         </div>
 
-        {!hasPartner && (
-          <div className="mb-5 flex items-center justify-between gap-4 rounded-2xl border border-border bg-background/50 p-4">
-            <div className="min-w-0">
-              <Label htmlFor="solo-mode" className="font-display text-sm font-semibold">Solo mode</Label>
-              <p className="text-xs text-muted-foreground">
-                Study on your own without partner prompts. Turn it off anytime to invite a partner.
-              </p>
-            </div>
-            <Switch
-              id="solo-mode"
-              checked={solo}
-              onCheckedChange={async (v) => {
-                const { error } = await setSolo(v);
-                if (error) toast.error("Couldn't update solo mode");
-                else toast.success(v ? "Solo mode on — all features, no partner needed" : "Solo mode off — you can invite a partner again");
-              }}
-            />
-          </div>
-        )}
+        {!hasPartner && <SoloModeToggle className="mb-5" />}
 
         {!soloOn && (<>
         <div className="mb-5 flex flex-col gap-2 sm:flex-row">
@@ -293,6 +285,8 @@ function SettingsPage() {
             Send invite
           </Button>
         </div>
+
+        </>)}
 
         {incoming.length > 0 && (
           <div className="mb-5 space-y-3">
@@ -310,7 +304,7 @@ function SettingsPage() {
                   <Button
                     size="sm"
                     disabled={busyInvite === inv.id}
-                    onClick={() => respondInvite(inv.id, "accept")}
+                    onClick={() => (soloOn ? setSoloAccept(inv.id) : respondInvite(inv.id, "accept"))}
                     className="bg-gradient-primary text-white"
                   >
                     {busyInvite === inv.id ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Check className="mr-1 h-4 w-4" />}
@@ -325,6 +319,7 @@ function SettingsPage() {
           </div>
         )}
 
+        {!soloOn && (<>
         {outgoing.length > 0 && (
           <div className="mb-5 space-y-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Waiting on them</p>
@@ -480,6 +475,21 @@ function SettingsPage() {
         <h3 className="mb-4 font-display text-lg font-semibold">Account</h3>
         <Button variant="outline" onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> Sign out</Button>
       </div>
+
+      <AlertDialog open={soloAccept !== null} onOpenChange={(o) => !o && setSoloAccept(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Turn off solo mode to accept?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You're in solo mode. To accept this invite, solo mode will be turned off and you'll start studying together. Your progress stays exactly as it is.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Stay solo</AlertDialogCancel>
+            <AlertDialogAction onClick={acceptAfterSoloOff}>Turn off &amp; accept</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={!!removePartner} onOpenChange={(o) => !o && setRemovePartner(null)}>
         <AlertDialogContent>
