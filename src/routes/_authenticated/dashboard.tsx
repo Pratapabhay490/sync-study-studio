@@ -23,6 +23,7 @@ import { DashboardSkeleton } from "@/components/skeletons";
 import { PokeButton } from "@/components/poke-button";
 import { StudyHoursCard } from "@/components/study-hours-card";
 import { DailyTaskBoard, todayISO } from "@/components/daily-task-board";
+import { SoloModeToggle } from "@/components/solo-mode-toggle";
 import { WeeklyTaskBoard } from "@/components/weekly-task-board";
 
 import clayTopics from "@/assets/clay-icon-topics.webp";
@@ -551,6 +552,12 @@ function Dashboard() {
       </ScrollReveal>
 
 
+
+      {!other && (
+        <ScrollReveal direction="up" delay={70}>
+          <SoloModeToggle className="clay border-0" />
+        </ScrollReveal>
+      )}
 
       {/* Side-by-side */}
       <ScrollReveal as="section" className="grid gap-4 md:grid-cols-2" direction="up" delay={80}>
