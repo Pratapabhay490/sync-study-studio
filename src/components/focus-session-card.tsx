@@ -238,7 +238,7 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}{" "}
-                · {session.joined_by_partner ? "both joined" : "waiting for partner"}
+                · {session.partner_id ? (session.joined_by_partner ? "both joined" : "waiting for partner") : "solo session"}
               </div>
               <div className="relative mt-2 flex justify-center gap-2 text-lg" aria-hidden="true">
                 {["📚", "☕️", "🎯"].map((e, i) => (
