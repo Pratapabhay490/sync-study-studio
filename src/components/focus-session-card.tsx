@@ -238,7 +238,7 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}{" "}
-                · {session.joined_by_partner ? "both joined" : "waiting for partner"}
+                · {session.partner_id ? (session.joined_by_partner ? "both joined" : "waiting for partner") : "solo session"}
               </div>
               <div className="relative mt-2 flex justify-center gap-2 text-lg" aria-hidden="true">
                 {["📚", "☕️", "🎯"].map((e, i) => (
@@ -338,8 +338,9 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
         ) : (
           <>
             <p className="text-sm text-muted-foreground">
-              Kick off a focus block and {partnerName?.split(" ")[0] ?? "your partner"} gets a push
-              notification to join.
+              {partnerId
+                ? <>Kick off a focus block and {partnerName?.split(" ")[0] ?? "your partner"} gets a push notification to join.</>
+                : "Kick off a focus block for yourself — the timer starts right away."}
             </p>
              <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
               {[6, 29, 45, 60, 90].map((d) => (
@@ -347,7 +348,7 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
                   key={d}
                   type="button"
                   onClick={() => start(d)}
-                  disabled={busy || !partnerId}
+                  disabled={busy}
                   className="inline-flex min-w-0 items-center justify-center gap-1.5 rounded-xl bg-gradient-primary px-2.5 py-2 text-xs font-semibold text-white shadow-clay-sm transition hover:-translate-y-0.5 disabled:opacity-50 sm:gap-2 sm:px-4 sm:text-sm"
                 >
                   <Play className="h-4 w-4" /> {d} min
@@ -373,7 +374,7 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
               />
               <button
                 type="submit"
-                disabled={busy || !partnerId || !custom}
+                disabled={busy || !custom}
                 className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 disabled:opacity-50"
               >
                 <Play className="h-4 w-4" /> Start
