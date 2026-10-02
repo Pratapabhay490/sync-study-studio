@@ -56,34 +56,33 @@
   --font-sans: "Inter", "Nunito", ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Light mode — Sky Clay (soft medical productivity) */
+/* Light mode — Tactile Sky Clay */
 :root {
   --radius: 1.5rem;
-  /* sky / off-white pastel background */
-  --background: oklch(0.975 0.012 240);
-  --foreground: oklch(0.24 0.08 260);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.24 0.08 260);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.24 0.08 260);
-  /* royal blue primary */
-  --primary: oklch(0.62 0.2 260);
+  /* Cool matte surfaces with enough separation to avoid a washed-out page. */
+  --background: oklch(0.955 0.014 250);
+  --foreground: oklch(0.25 0.065 260);
+  --card: oklch(0.975 0.011 250);
+  --card-foreground: oklch(0.25 0.065 260);
+  --popover: oklch(0.985 0.008 250);
+  --popover-foreground: oklch(0.25 0.065 260);
+  --primary: oklch(0.59 0.2 260);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.94 0.03 240);
-  --secondary-foreground: oklch(0.28 0.08 260);
-  --muted: oklch(0.95 0.02 240);
-  --muted-foreground: oklch(0.5 0.05 260);
-  --accent: oklch(0.92 0.06 240);
-  --accent-foreground: oklch(0.28 0.1 260);
+  --secondary: oklch(0.91 0.025 246);
+  --secondary-foreground: oklch(0.3 0.07 260);
+  --muted: oklch(0.925 0.018 248);
+  --muted-foreground: oklch(0.43 0.045 258);
+  --accent: oklch(0.89 0.055 242);
+  --accent-foreground: oklch(0.29 0.09 260);
   --destructive: oklch(0.68 0.18 22);
   --destructive-foreground: oklch(0.99 0 0);
   --success: oklch(0.78 0.13 165);
   --success-foreground: oklch(0.2 0.05 165);
   --warning: oklch(0.84 0.13 75);
   --warning-foreground: oklch(0.22 0.04 75);
-  --border: oklch(0.92 0.02 240);
-  --input: oklch(0.96 0.02 240);
-  --ring: oklch(0.62 0.2 260);
+  --border: oklch(0.85 0.025 247);
+  --input: oklch(0.91 0.025 247);
+  --ring: oklch(0.59 0.2 260);
 
   /* partners: Abhay = ocean blue, Aishwarya = soft coral/pink */
   --abhay: oklch(0.66 0.17 245);
@@ -95,14 +94,14 @@
   --chart-4: oklch(0.78 0.13 165);
   --chart-5: oklch(0.78 0.14 295);
 
-  --sidebar: oklch(0.985 0.01 240);
-  --sidebar-foreground: oklch(0.28 0.08 260);
-  --sidebar-primary: oklch(0.62 0.2 260);
+  --sidebar: oklch(0.94 0.016 250);
+  --sidebar-foreground: oklch(0.27 0.07 260);
+  --sidebar-primary: oklch(0.59 0.2 260);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.93 0.05 240);
-  --sidebar-accent-foreground: oklch(0.28 0.1 260);
-  --sidebar-border: oklch(0.92 0.02 240);
-  --sidebar-ring: oklch(0.62 0.2 260);
+  --sidebar-accent: oklch(0.88 0.05 242);
+  --sidebar-accent-foreground: oklch(0.29 0.09 260);
+  --sidebar-border: oklch(0.84 0.025 247);
+  --sidebar-ring: oklch(0.59 0.2 260);
 
   --gradient-primary: linear-gradient(135deg, oklch(0.7 0.18 250) 0%, oklch(0.56 0.22 268) 100%);
   --gradient-aurora: linear-gradient(
@@ -114,17 +113,17 @@
   --gradient-abhay: linear-gradient(135deg, oklch(0.74 0.15 235), oklch(0.6 0.2 260));
   --gradient-aishwarya: linear-gradient(135deg, oklch(0.82 0.13 25), oklch(0.74 0.16 350));
 
-  /* Soft sky claymorphism shadows: bottom depth + top highlight + faint ambient */
+  /* Balanced tactile depth: visible on pale surfaces without harsh outlines. */
   --shadow-clay:
-    10px 14px 30px oklch(0.55 0.15 255 / 0.18), -8px -8px 22px oklch(1 0 0 / 0.9),
-    inset 1.5px 1.5px 0 oklch(1 0 0 / 0.85), inset -2px -2px 6px oklch(0.6 0.15 255 / 0.08);
+    12px 16px 30px oklch(0.58 0.045 250 / 0.26), -8px -8px 20px oklch(1 0 0 / 0.78),
+    inset 1.5px 1.5px 0 oklch(1 0 0 / 0.72), inset -2px -2px 6px oklch(0.58 0.06 250 / 0.1);
   --shadow-clay-sm:
-    6px 8px 16px oklch(0.55 0.15 255 / 0.15), -4px -4px 12px oklch(1 0 0 / 0.85),
-    inset 1px 1px 0 oklch(1 0 0 / 0.7);
+    6px 8px 16px oklch(0.58 0.045 250 / 0.23), -4px -4px 10px oklch(1 0 0 / 0.72),
+    inset 1px 1px 0 oklch(1 0 0 / 0.65);
   --shadow-clay-inset:
-    inset 5px 5px 12px oklch(0.55 0.15 255 / 0.18), inset -3px -3px 8px oklch(1 0 0 / 0.85);
-  --shadow-glow: 0 18px 48px -12px oklch(0.62 0.2 260 / 0.45);
-  --shadow-soft: 8px 10px 24px oklch(0.55 0.15 255 / 0.12), -4px -4px 14px oklch(1 0 0 / 0.8);
+    inset 6px 6px 12px oklch(0.58 0.04 250 / 0.22), inset -5px -5px 10px oklch(1 0 0 / 0.74);
+  --shadow-glow: 0 16px 40px -12px oklch(0.59 0.2 260 / 0.38);
+  --shadow-soft: 8px 10px 22px oklch(0.58 0.04 250 / 0.2), -4px -4px 12px oklch(1 0 0 / 0.7);
   --shadow-card: var(--shadow-clay);
 }
 
@@ -208,10 +207,7 @@
     text-size-adjust: 100%;
     background-color: var(--color-background);
     color: var(--color-foreground);
-    background-image:
-      radial-gradient(900px 600px at 8% -10%, oklch(0.84 0.1 240 / 0.45), transparent 60%),
-      radial-gradient(700px 500px at 110% 10%, oklch(0.85 0.09 290 / 0.35), transparent 60%),
-      radial-gradient(800px 600px at 50% 120%, oklch(0.88 0.08 200 / 0.35), transparent 60%);
+    background-image: none;
     background-attachment: fixed;
   }
   .dark html,
