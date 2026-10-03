@@ -44,12 +44,12 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
-  const { user, loading } = useAuth();
+  const { user, loading, isGuest } = useAuth();
   const navigate = useNavigate();
   useAutoReveal("/");
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard" });
-  }, [user, loading, navigate]);
+    if (!loading && user && !isGuest) navigate({ to: "/dashboard" });
+  }, [user, loading, isGuest, navigate]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
