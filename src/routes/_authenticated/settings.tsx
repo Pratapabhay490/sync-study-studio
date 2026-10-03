@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useData } from "@/lib/data-context";
@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { UserAvatar } from "@/components/user-avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, LogOut, RotateCcw, UserX, Mail, Bell, BellOff, Send, UserPlus, Loader2, Check, X, Hourglass } from "lucide-react";
+import { Download, LogIn, LogOut, RotateCcw, UserX, Mail, Bell, BellOff, Send, UserPlus, Loader2, Check, X, Hourglass } from "lucide-react";
 import { useNotifications } from "@/lib/notifications-context";
 import { useFloatingTimerPref } from "@/lib/floating-timer";
 import { useSoloMode } from "@/lib/solo-mode";
@@ -41,12 +41,18 @@ export const Route = createFileRoute("/_authenticated/settings")({
 });
 
 function SettingsPage() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isGuest, exitGuestMode } = useAuth();
+  const navigate = useNavigate();
   const { profiles, subjects, topics, progress, resetMyProgress } = useData();
   const { pushEnabled, enablePush, disablePush, sendTestPush, permission } = useNotifications();
   const { theme, toggle } = useTheme();
   const { enabled: floatEnabled, setEnabled: setFloatEnabled, support: floatSupport } = useFloatingTimerPref();
   const me = profiles.find((p) => p.id === user?.id);
+  // Guests have no profile — the profile card becomes a signup nudge instead.
+  const goAuth = (tab: "signin" | "signup") => {
+    exitGuestMode();
+    navigate({ to: "/auth", search: { tab } });
+  };
   const [name, setName] = useState(me?.name ?? "");
   const [avatar, setAvatar] = useState(me?.avatar_url ?? "");
   const hydrated = useRef(false);
@@ -201,6 +207,23 @@ function SettingsPage() {
         </div>
       </div>
 
+      {isGuest ? (
+        <div className="clay rounded-3xl border-0 p-6 text-center">
+          <h3 className="font-display text-lg font-semibold">You&apos;re exploring as a guest</h3>
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+            Sign up free to save your profile, add a study partner, and sync your
+            progress across devices.
+          </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-3">
+            <Button className="bg-gradient-primary text-white" onClick={() => goAuth("signup")}>
+              Sign up free
+            </Button>
+            <Button variant="outline" onClick={() => goAuth("signin")}>
+              Sign in
+            </Button>
+          </div>
+        </div>
+      ) : (
       <div className="clay rounded-3xl border-0 p-6">
         <h3 className="mb-4 font-display text-lg font-semibold">Profile</h3>
         <div className="flex flex-col gap-4 md:flex-row md:items-end">
@@ -259,6 +282,7 @@ function SettingsPage() {
           </div>
         </div>
       </div>
+      )}
 
       <div className="clay rounded-3xl border-0 p-6">
         <div className="mb-4 flex items-start gap-3">
@@ -473,7 +497,13 @@ function SettingsPage() {
       <div className="clay rounded-3xl border-0 p-6">
 
         <h3 className="mb-4 font-display text-lg font-semibold">Account</h3>
-        <Button variant="outline" onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> Sign out</Button>
+        {isGuest ? (
+          <Button className="bg-gradient-primary text-white" onClick={() => goAuth("signin")}>
+            <LogIn className="mr-2 h-4 w-4" /> Sign in
+          </Button>
+        ) : (
+          <Button variant="outline" onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> Sign out</Button>
+        )}
       </div>
 
       <AlertDialog open={soloAccept !== null} onOpenChange={(o) => !o && setSoloAccept(null)}>
