@@ -7,7 +7,12 @@ interface AuthContextValue {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
+  signUp: (
+    email: string,
+    password: string,
+    name: string
+  ) => Promise<{ error: string | null; needsVerification: boolean }>;
+  resendVerificationEmail: (email: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -39,11 +44,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     async signUp(email, password, name) {
       const redirectUrl = `${window.location.origin}/dashboard`;
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { name }, emailRedirectTo: redirectUrl },
       });
+      // Email confirmation is enabled: a fresh signup returns a user but no
+      // session until the email link is clicked.
+      return { error: error?.message ?? null, needsVerification: !error && !data.session };
+    },
+    async resendVerificationEmail(email) {
+      const { error } = await supabase.auth.resend({ type: "signup", email });
       return { error: error?.message ?? null };
     },
     async signOut() {

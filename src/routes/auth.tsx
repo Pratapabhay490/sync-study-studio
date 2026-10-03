@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2, Mail, Lock, User } from "lucide-react";
+import { Loader2, Mail, MailCheck, Lock, User } from "lucide-react";
 import syncLogo from "@/assets/sync-logo.webp";
 import clayAuthHero from "@/assets/clay-auth-hero.webp";
 import { toast } from "sonner";
@@ -21,9 +21,13 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { signIn, signUp, user, loading } = useAuth();
+  const { signIn, signUp, resendVerificationEmail, user, loading } = useAuth();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [tab, setTab] = useState("signin");
+  // Set when signup succeeded but the email still needs verification.
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/dashboard" });
@@ -40,8 +44,13 @@ function AuthPage() {
     setSubmitting(true);
     const { error } = await signIn(signinEmail, signinPassword);
     setSubmitting(false);
-    if (error) toast.error(error);
-    else {
+    if (error) {
+      toast.error(
+        /not confirmed/i.test(error)
+          ? "Your email isn't verified yet — open your inbox, click the verification link, then sign in."
+          : error
+      );
+    } else {
       toast.success("Welcome back!");
       navigate({ to: "/dashboard" });
     }
@@ -54,13 +63,29 @@ function AuthPage() {
       return;
     }
     setSubmitting(true);
-    const { error } = await signUp(signupEmail, signupPassword, signupName);
+    const { error, needsVerification } = await signUp(signupEmail, signupPassword, signupName);
     setSubmitting(false);
     if (error) toast.error(error);
+    else if (needsVerification) setPendingEmail(signupEmail);
     else {
       toast.success("Account created. You're in!");
       navigate({ to: "/dashboard" });
     }
+  }
+
+  async function handleResend() {
+    if (!pendingEmail) return;
+    setResending(true);
+    const { error } = await resendVerificationEmail(pendingEmail);
+    setResending(false);
+    if (error) toast.error(error);
+    else toast.success("Verification email sent — check your inbox.");
+  }
+
+  function backToSignIn() {
+    if (pendingEmail) setSigninEmail(pendingEmail);
+    setPendingEmail(null);
+    setTab("signin");
   }
 
   return (
@@ -92,43 +117,71 @@ function AuthPage() {
             <p className="mt-2 text-sm text-muted-foreground">Sign in to sync your study journey</p>
           </div>
 
-          <Tabs defaultValue="signin" className="mt-6">
-            <TabsList className="grid w-full grid-cols-2 rounded-full bg-input p-1.5 shadow-clay-inset">
-              <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-clay-sm">Sign in</TabsTrigger>
-              <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-clay-sm">Sign up</TabsTrigger>
-            </TabsList>
+          {pendingEmail ? (
+            <div className="mt-6 space-y-4 text-center">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-primary text-white shadow-clay-sm">
+                <MailCheck className="h-7 w-7" />
+              </div>
+              <div>
+                <h2 className="font-display text-2xl font-bold tracking-tight">Check your inbox</h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  We sent a verification link to{" "}
+                  <span className="font-semibold text-foreground">{pendingEmail}</span>.
+                  Click the link in that email, then sign in to start studying.
+                </p>
+              </div>
+              <Button onClick={handleResend} disabled={resending} size="lg" className="w-full">
+                {resending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Resend verification email"}
+              </Button>
+              <div>
+                <button
+                  type="button"
+                  onClick={backToSignIn}
+                  className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  Back to sign in
+                </button>
+              </div>
+            </div>
+          ) : (
+            <Tabs value={tab} onValueChange={setTab} className="mt-6">
+              <TabsList className="grid w-full grid-cols-2 rounded-full bg-input p-1.5 shadow-clay-inset">
+                <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-clay-sm">Sign in</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-clay-sm">Sign up</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="mt-6 space-y-4">
-                <FieldWithIcon icon={Mail}>
-                  <Input id="si-email" type="email" placeholder="Enter your email" className="pl-12" value={signinEmail} onChange={(e) => setSigninEmail(e.target.value)} required />
-                </FieldWithIcon>
-                <FieldWithIcon icon={Lock}>
-                  <Input id="si-pass" type="password" placeholder="Enter your password" className="pl-12" value={signinPassword} onChange={(e) => setSigninPassword(e.target.value)} required />
-                </FieldWithIcon>
-                <Button type="submit" disabled={submitting} size="lg" className="mt-2 w-full">
-                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
-                </Button>
-              </form>
-            </TabsContent>
+              <TabsContent value="signin">
+                <form onSubmit={handleSignIn} className="mt-6 space-y-4">
+                  <FieldWithIcon icon={Mail}>
+                    <Input id="si-email" type="email" placeholder="Enter your email" className="pl-12" value={signinEmail} onChange={(e) => setSigninEmail(e.target.value)} required />
+                  </FieldWithIcon>
+                  <FieldWithIcon icon={Lock}>
+                    <Input id="si-pass" type="password" placeholder="Enter your password" className="pl-12" value={signinPassword} onChange={(e) => setSigninPassword(e.target.value)} required />
+                  </FieldWithIcon>
+                  <Button type="submit" disabled={submitting} size="lg" className="mt-2 w-full">
+                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
+                  </Button>
+                </form>
+              </TabsContent>
 
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="mt-6 space-y-4">
-                <FieldWithIcon icon={User}>
-                  <Input id="su-name" placeholder="Your name" className="pl-12" value={signupName} onChange={(e) => setSignupName(e.target.value)} required />
-                </FieldWithIcon>
-                <FieldWithIcon icon={Mail}>
-                  <Input id="su-email" type="email" placeholder="Enter your email" className="pl-12" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required />
-                </FieldWithIcon>
-                <FieldWithIcon icon={Lock}>
-                  <Input id="su-pass" type="password" placeholder="Create a password (min 6)" minLength={6} className="pl-12" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required />
-                </FieldWithIcon>
-                <Button type="submit" disabled={submitting} size="lg" className="mt-2 w-full">
-                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create account"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="signup">
+                <form onSubmit={handleSignUp} className="mt-6 space-y-4">
+                  <FieldWithIcon icon={User}>
+                    <Input id="su-name" placeholder="Your name" className="pl-12" value={signupName} onChange={(e) => setSignupName(e.target.value)} required />
+                  </FieldWithIcon>
+                  <FieldWithIcon icon={Mail}>
+                    <Input id="su-email" type="email" placeholder="Enter your email" className="pl-12" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required />
+                  </FieldWithIcon>
+                  <FieldWithIcon icon={Lock}>
+                    <Input id="su-pass" type="password" placeholder="Create a password (min 6)" minLength={6} className="pl-12" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required />
+                  </FieldWithIcon>
+                  <Button type="submit" disabled={submitting} size="lg" className="mt-2 w-full">
+                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create account"}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          )}
         </div>
 
         <p className="mt-8 text-center text-xs text-muted-foreground">
