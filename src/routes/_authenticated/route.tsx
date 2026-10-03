@@ -11,6 +11,7 @@ import { useTheme } from "@/lib/theme-provider";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { NotificationCenter } from "@/components/notification-center";
+import { SignupPromptModal } from "@/components/signup-prompt-modal";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAutoReveal } from "@/lib/use-auto-reveal";
 import syncLogo from "@/assets/sync-logo.webp";
@@ -20,7 +21,11 @@ export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
+    // Guests explore with a synthetic local user (see auth-context); only
+    // bounce to /auth when there is neither a session nor guest mode.
+    const isGuest =
+      typeof window !== "undefined" && window.localStorage.getItem("syncstudy-guest") === "1";
+    if ((error || !data.user) && !isGuest) throw redirect({ to: "/auth" });
     return { user: data.user };
   },
   component: AuthenticatedLayout,
@@ -39,7 +44,7 @@ const nav = [
 ] as const;
 
 function AuthenticatedLayout() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isGuest, exitGuestMode } = useAuth();
   const { profiles } = useData();
   const { theme, toggle } = useTheme();
   const navigate = useNavigate();
@@ -119,6 +124,24 @@ function AuthenticatedLayout() {
             </nav>
 
             <div className="mt-auto">
+              {isGuest ? (
+                <div className="clay-pressed p-3 text-center">
+                  <div className="text-sm font-semibold">Exploring as guest</div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Sign in to save progress and sync with a partner.
+                  </p>
+                  <Button
+                    size="sm"
+                    className="mt-3 w-full bg-gradient-primary text-white"
+                    onClick={() => {
+                      exitGuestMode();
+                      navigate({ to: "/auth", search: { tab: "signin" } });
+                    }}
+                  >
+                    Sign in
+                  </Button>
+                </div>
+              ) : (
               <div className="clay-pressed p-3">
                 <div className="flex items-center gap-3">
                   <UserAvatar profile={me} size={40} />
@@ -136,6 +159,7 @@ function AuthenticatedLayout() {
                   </Button>
                 </div>
               </div>
+              )}
             </div>
           </div>
         </aside>
@@ -159,6 +183,7 @@ function AuthenticatedLayout() {
           </div>
         </main>
       </div>
+      <SignupPromptModal />
     </div>
   );
 }
