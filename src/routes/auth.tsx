@@ -11,6 +11,9 @@ import clayAuthHero from "@/assets/clay-auth-hero.webp";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>): { tab?: "signin" | "signup" } => ({
+    tab: search.tab === "signup" || search.tab === "signin" ? search.tab : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — Let's be in sync" },
@@ -21,17 +24,25 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { signIn, signUp, resendVerificationEmail, user, loading } = useAuth();
+  const { signIn, signUp, resendVerificationEmail, user, loading, isGuest, enterGuestMode } = useAuth();
   const navigate = useNavigate();
+  const search = Route.useSearch();
   const [submitting, setSubmitting] = useState(false);
-  const [tab, setTab] = useState("signin");
+  const [tab, setTab] = useState(search.tab === "signup" ? "signup" : "signin");
   // Set when signup succeeded but the email still needs verification.
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard" });
-  }, [user, loading, navigate]);
+    // Guests land here deliberately (e.g. from the profile signup nudge) —
+    // don't bounce them straight back into the app.
+    if (!loading && user && !isGuest) navigate({ to: "/dashboard" });
+  }, [user, loading, isGuest, navigate]);
+
+  function handleGuest() {
+    enterGuestMode();
+    navigate({ to: "/dashboard" });
+  }
 
   const [signinEmail, setSigninEmail] = useState("");
   const [signinPassword, setSigninPassword] = useState("");
@@ -183,6 +194,27 @@ function AuthPage() {
             </Tabs>
           )}
         </div>
+
+        {/* Friction-free first look: explore with a sample catalogue, no account. */}
+        {!pendingEmail && (
+          <div className="mt-6">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="h-px flex-1 bg-border" />
+              or
+              <div className="h-px flex-1 bg-border" />
+            </div>
+            <button
+              type="button"
+              onClick={handleGuest}
+              className="clay mt-4 w-full rounded-2xl border-0 px-6 py-3.5 text-sm font-semibold transition hover:-translate-y-0.5"
+            >
+              Explore as guest
+            </button>
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              No account needed — sign up anytime to save your progress.
+            </p>
+          </div>
+        )}
 
         <p className="mt-8 text-center text-xs text-muted-foreground">
           Two minds. One rhythm. Built for study duos who thrive together.
