@@ -9,6 +9,7 @@ import {
 } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./auth-context";
+import { GUEST_SUBJECTS, GUEST_TOPICS } from "./guest-demo-data";
 
 export interface Profile {
   id: string;
@@ -51,7 +52,7 @@ interface DataContextValue {
   topics: Topic[];
   progress: TopicProgress[];
   refresh: () => Promise<void>;
-  toggleTopic: (topicId: string, completed: boolean) => Promise<void>;
+  toggleTopic: (topicId: string, completed: boolean) => Promise<boolean>;
   setTopicRevisions: (topicId: string, revisions: number) => Promise<void>;
   addTopic: (subjectId: string, topicName: string, description?: string) => Promise<void>;
   bulkAddTopics: (subjectId: string, topicNames: string[]) => Promise<void>;
@@ -72,7 +73,7 @@ interface DataContextValue {
 const DataContext = createContext<DataContextValue | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, isGuest, openSignupPrompt } = useAuth();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -80,6 +81,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
+    // Guests browse a bundled sample catalogue (RLS blocks anonymous reads),
+    // so there is nothing to fetch — just (re)seed it.
+    if (isGuest) {
+      setSubjects(GUEST_SUBJECTS);
+      setTopics(GUEST_TOPICS);
+      setProfiles([]);
+      setProgress([]);
+      setLoading(false);
+      return;
+    }
     const [p, s, t, pr] = await Promise.all([
       supabase.rpc("list_visible_profiles"),
       supabase.from("subjects").select("*").order("name"),
@@ -91,7 +102,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (t.data) setTopics(t.data as Topic[]);
     if (pr.data) setProgress(pr.data as TopicProgress[]);
     setLoading(false);
-  }, []);
+  }, [isGuest]);
 
   const refreshProfiles = useCallback(async () => {
     const { data } = await supabase.rpc("list_visible_profiles");
@@ -100,6 +111,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user) return;
+    // Guests get the bundled sample catalogue and no realtime channel —
+    // anonymous sockets receive nothing under RLS anyway.
+    if (isGuest) {
+      setSubjects(GUEST_SUBJECTS);
+      setTopics(GUEST_TOPICS);
+      setProfiles([]);
+      setProgress([]);
+      setLoading(false);
+      return;
+    }
     refresh();
     const channel = supabase
       .channel("study-sync")
@@ -151,7 +172,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, refresh, refreshProfiles]);
+  }, [user, isGuest, refresh, refreshProfiles]);
+
+  /**
+   * Guests may look but not write: any mutation attempt opens the signup
+   * prompt instead. Returns true when the caller should bail out.
+   */
+  const guestGuard = useCallback(() => {
+    if (isGuest) {
+      openSignupPrompt();
+      return true;
+    }
+    return false;
+  }, [isGuest, openSignupPrompt]);
 
   // Replace (or insert) the single row for a (topic_id, user_id) pair, so
   // optimistic placeholders can never coexist with the real server row.
@@ -166,7 +199,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const toggleTopic = useCallback(
     async (topicId: string, completed: boolean) => {
-      if (!user) return;
+      // Guests get the signup prompt; report back so callers (confetti, …)
+      // only react to a real write.
+      if (guestGuard()) return false;
+      if (!user) return false;
       const existing = progress.find((p) => p.topic_id === topicId && p.user_id === user.id);
       const completed_at = completed ? new Date().toISOString() : null;
       putProgressRow({
@@ -189,12 +225,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
         .select("*")
         .maybeSingle();
       if (data) putProgressRow(data as TopicProgress);
+      return true;
     },
-    [user, progress, putProgressRow],
+    [user, progress, putProgressRow, guestGuard],
   );
 
   const setTopicRevisions = useCallback(
     async (topicId: string, revisions: number) => {
+      if (guestGuard()) return;
       if (!user) return;
       const next = Math.max(0, Math.min(REVISION_TARGET, Math.round(revisions)));
       const existing = progress.find((p) => p.topic_id === topicId && p.user_id === user.id);
@@ -228,11 +266,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
       if (data) putProgressRow(data as TopicProgress);
     },
-    [user, progress, putProgressRow],
+    [user, progress, putProgressRow, guestGuard],
   );
 
   const addTopic = useCallback(
     async (subjectId: string, topicName: string, description?: string) => {
+      if (guestGuard()) return;
       if (!user) return;
       const { data, error } = await supabase
         .from("topics")
@@ -248,11 +287,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       if (data) setTopics((prev) => [...prev.filter((t) => t.id !== data.id), data as Topic]);
     },
-    [user],
+    [user, guestGuard],
   );
 
   const bulkAddTopics = useCallback(
     async (subjectId: string, topicNames: string[]) => {
+      if (guestGuard()) return;
       if (!user) return;
       const rows = topicNames
         .map((n) => n.trim())
@@ -263,11 +303,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       if (data) setTopics((prev) => [...prev, ...(data as Topic[])]);
     },
-    [user],
+    [user, guestGuard],
   );
 
   const updateTopic = useCallback(
     async (topicId: string, updates: { topic_name?: string; description?: string | null }) => {
+      if (guestGuard()) return;
       const snapshot = topics;
       setTopics((prev) =>
         prev.map((t) => (t.id === topicId ? ({ ...t, ...updates } as Topic) : t)),
@@ -278,11 +319,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    [topics],
+    [topics, guestGuard],
   );
 
   const deleteTopic = useCallback(
     async (topicId: string) => {
+      if (guestGuard()) return;
       const topicsSnap = topics;
       const progressSnap = progress;
       setTopics((prev) => prev.filter((t) => t.id !== topicId));
@@ -294,11 +336,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    [topics, progress],
+    [topics, progress, guestGuard],
   );
 
   const addSubject = useCallback(
     async (name: string, icon?: string) => {
+      if (guestGuard()) return { error: "Sign up to continue" };
       if (!user) return { error: "Not signed in" };
       const { data, error } = await supabase
         .from("subjects")
@@ -314,11 +357,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
         );
       return {};
     },
-    [user],
+    [user, guestGuard],
   );
 
   const updateSubject = useCallback(
     async (id: string, updates: { name?: string; icon?: string }) => {
+      if (guestGuard()) return { error: "Sign up to continue" };
       const snapshot = subjects;
       setSubjects((prev) => prev.map((s) => (s.id === id ? ({ ...s, ...updates } as Subject) : s)));
       const { error } = await supabase.from("subjects").update(updates).eq("id", id);
@@ -328,11 +372,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
       return {};
     },
-    [subjects],
+    [subjects, guestGuard],
   );
 
   const deleteSubject = useCallback(
     async (id: string) => {
+      if (guestGuard()) return { error: "Sign up to continue" };
       const snapshot = subjects;
       const topicsSnap = topics;
       const progressSnap = progress;
@@ -349,11 +394,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
       return {};
     },
-    [subjects, topics, progress],
+    [subjects, topics, progress, guestGuard],
   );
 
   const resetMyProgress = useCallback(async () => {
-    if (!user) return;
+    if (guestGuard()) return;
+      if (!user) return;
     await supabase.from("topic_progress").delete().eq("user_id", user.id);
   }, [user]);
 
@@ -392,7 +438,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       addSubject,
       updateSubject,
       deleteSubject,
-      resetMyProgress,
+      guestGuard,
     ],
   );
 
