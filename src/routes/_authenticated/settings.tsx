@@ -98,8 +98,10 @@ function SettingsPage() {
     };
   }, [user, loadInvites]);
 
-  const incoming = invites.filter((i) => i.direction === "incoming");
-  const outgoing = invites.filter((i) => i.direction === "outgoing");
+  // Invites older than 7 days can't be accepted anymore — don't show them.
+  const freshInvites = invites.filter((i) => Date.now() - new Date(i.created_at).getTime() < 7 * 864e5);
+  const incoming = freshInvites.filter((i) => i.direction === "incoming");
+  const outgoing = freshInvites.filter((i) => i.direction === "outgoing");
 
   async function respondInvite(id: string, action: "accept" | "declined" | "cancelled") {
     setBusyInvite(id);
@@ -109,7 +111,21 @@ function SettingsPage() {
         : await (supabase.rpc as any)("respond_partner_invite", { p_id: id, p_action: action });
     setBusyInvite(null);
     if (error) {
-      toast.error(error.message);
+      const m: string = error.message ?? "";
+      if (m.includes("invite_expired") || m.includes("invite_not_pending") || m.includes("invite_not_found")) {
+        // Clear the stale invite so it stops showing up.
+        await (supabase.rpc as any)("respond_partner_invite", { p_id: id, p_action: "declined" });
+        setInvites((list) => list.filter((i) => i.id !== id));
+      }
+      toast.error(
+        m.includes("invite_expired") ? "That invite has expired. Ask them to send a new one."
+        : m.includes("invite_not_pending") || m.includes("invite_not_found") ? "That invite is no longer available."
+        : m.includes("partner_already_has_partner") ? "That person already has a study partner."
+        : m.includes("already_has_partner") ? "You already have a study partner. Remove them first to accept this invite."
+        : m.includes("already_partners") ? "You're already study partners."
+        : "Couldn't update the invite. Please try again.",
+      );
+      loadInvites();
       return;
     }
     toast.success(
