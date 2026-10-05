@@ -407,12 +407,12 @@ function SubjectDetail() {
                     type="button"
                     onClick={(e) => {
                       const next = !myDone;
+                      const targetRect = e.currentTarget.getBoundingClientRect();
                       toggleTopic(t.id, next).then((ok) => {
                         if (ok && next) {
-                          const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
                           celebrate(
-                            (r.left + r.width / 2) / window.innerWidth,
-                            (r.top + r.height / 2) / window.innerHeight,
+                            (targetRect.left + targetRect.width / 2) / window.innerWidth,
+                            (targetRect.top + targetRect.height / 2) / window.innerHeight,
                           );
                         }
                       });
