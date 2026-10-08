@@ -33,6 +33,10 @@ export function WeeklyChallengeCard({ partnerId }: { partnerId?: string | null }
     };
 
     (async () => {
+      // Skip when there's no real session (guest mode) — the RPC would run as
+      // anon and be rejected with "permission denied".
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess.session || !live) return;
       const { data: id, error } = await supabase.rpc("ensure_weekly_challenge");
       if (error || !id || !live) return;
       await fetchRow(id as string);

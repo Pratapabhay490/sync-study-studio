@@ -35,7 +35,7 @@ export const Route = createFileRoute("/_authenticated/home")({
 });
 
 function PartnerHome() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { profiles, subjects, topics, progress } = useData();
   usePresenceHeartbeat("online");
 
@@ -52,9 +52,12 @@ function PartnerHome() {
 
   // Trigger streak refresh on mount (server updates together_streaks table)
   useEffect(() => {
-    if (!other) return;
-    supabase.rpc("refresh_together_streak").then(() => {});
-  }, [other?.id]);
+    // Guests have no session, so the RPC would run as anon and be rejected.
+    if (!other || !session) return;
+    supabase.rpc("refresh_together_streak").then(({ error }) => {
+      if (error) console.warn("refresh_together_streak failed:", error.message);
+    });
+  }, [other?.id, session]);
 
   const myStats = user ? computeUserStats(user.id, topics, progress) : { pct: 0, completed: 0, total: 0 };
   const otherStats = other ? computeUserStats(other.id, topics, progress) : { pct: 0, completed: 0, total: 0 };
