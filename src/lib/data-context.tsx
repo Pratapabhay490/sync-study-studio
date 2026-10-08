@@ -10,6 +10,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./auth-context";
 import { GUEST_SUBJECTS, GUEST_TOPICS } from "./guest-demo-data";
+import { mascotEvents } from "@/components/study-mascot/mascot-events";
 
 export interface Profile {
   id: string;
@@ -225,6 +226,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         .select("*")
         .maybeSingle();
       if (data) putProgressRow(data as TopicProgress);
+      // Living avatar reacts to real topic ticks (additive — doesn't touch confetti logic).
+      if (completed) mascotEvents.emit({ type: "topic:completed" });
       return true;
     },
     [user, progress, putProgressRow, guestGuard],

@@ -1,7 +1,8 @@
 import { createFileRoute, Outlet, redirect, useNavigate, Link, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { useData } from "@/lib/data-context";
-import { UserAvatar } from "@/components/user-avatar";
+import { LivingAvatar } from "@/components/living-avatar";
+import { MascotProvider } from "@/components/study-mascot/mascot-brain";
 import { Button } from "@/components/ui/button";
 import {
   Activity, BarChart3, BookOpen, Brain, Home, LayoutDashboard, LogOut, Map, Menu, Moon, Settings, Sun, Trophy, X,
@@ -60,6 +61,7 @@ function AuthenticatedLayout() {
   }
 
   return (
+    <MascotProvider>
     <div className="min-h-screen">
       {/* Mobile top bar */}
       <div className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 md:hidden">
@@ -144,7 +146,7 @@ function AuthenticatedLayout() {
               ) : (
               <div className="clay-pressed p-3">
                 <div className="flex items-center gap-3">
-                  <UserAvatar profile={me} size={40} />
+                  <LivingAvatar profile={me} size={40} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-semibold">{me?.name ?? "You"}</div>
                     <div className="truncate text-xs text-muted-foreground">{me?.email}</div>
@@ -185,5 +187,6 @@ function AuthenticatedLayout() {
       </div>
       <SignupPromptModal />
     </div>
+    </MascotProvider>
   );
 }
