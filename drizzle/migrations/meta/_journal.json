@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791440943539,
+      "tag": "0000_regrant_streak_challenge_functions",
+      "breakpoints": true
+    }
+  ]
+}
