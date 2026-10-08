@@ -17,6 +17,7 @@
  */
 
 import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Profile } from "@/lib/data-context";
 import { animatedAvatar, presetIdOf, resolveAvatar } from "@/lib/avatar-presets";
@@ -35,8 +36,9 @@ export function LivingAvatar({
 
   const presetId = presetIdOf(profile?.avatar_url);
   const animSrc = animatedAvatar(presetId, mood);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
   // Animated WebP for presets; static image (or fallback) otherwise.
-  const src = animSrc ?? resolveAvatar(profile?.avatar_url);
+  const src = animSrc && failedSrc !== animSrc ? animSrc : resolveAvatar(profile?.avatar_url);
 
   const initials =
     profile?.name
@@ -72,8 +74,9 @@ export function LivingAvatar({
               className={ring ? "ring-2 ring-background ring-offset-2 ring-offset-background" : ""}
             >
               {src ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={src} alt={profile?.name ?? ""} className="h-full w-full object-cover" draggable={false} />
+                <AvatarImage src={src} alt={profile?.name ?? ""} className="object-cover" draggable={false} onLoadingStatusChange={(status) => {
+                  if (status === "error") setFailedSrc(src);
+                }} />
               ) : null}
               <AvatarFallback className={`${bg} text-white font-semibold`}>
                 {initials}
