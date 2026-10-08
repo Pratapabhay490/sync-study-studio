@@ -25,26 +25,28 @@ import owlIdle from "@/assets/avatar-anims/owl-idle.webp";
 import owlHappy from "@/assets/avatar-anims/owl-happy.webp";
 import owlCheering from "@/assets/avatar-anims/owl-cheering.webp";
 import owlStudying from "@/assets/avatar-anims/owl-studying.webp";
-import foxSleepy from "@/assets/avatar-anims/fox-sleepy.webp";
-import foxDancing from "@/assets/avatar-anims/fox-dancing.webp";
-import foxWaving from "@/assets/avatar-anims/fox-waving.webp";
-import foxSad from "@/assets/avatar-anims/fox-sad.webp";
-import pandaSleepy from "@/assets/avatar-anims/panda-sleepy.webp";
-import pandaDancing from "@/assets/avatar-anims/panda-dancing.webp";
-import pandaWaving from "@/assets/avatar-anims/panda-waving.webp";
-import pandaSad from "@/assets/avatar-anims/panda-sad.webp";
-import astronautSleepy from "@/assets/avatar-anims/astronaut-sleepy.webp";
-import astronautDancing from "@/assets/avatar-anims/astronaut-dancing.webp";
-import astronautWaving from "@/assets/avatar-anims/astronaut-waving.webp";
-import astronautSad from "@/assets/avatar-anims/astronaut-sad.webp";
-import catSleepy from "@/assets/avatar-anims/cat-sleepy.webp";
-import catDancing from "@/assets/avatar-anims/cat-dancing.webp";
-import catWaving from "@/assets/avatar-anims/cat-waving.webp";
-import catSad from "@/assets/avatar-anims/cat-sad.webp";
-import owlSleepy from "@/assets/avatar-anims/owl-sleepy.webp";
-import owlDancing from "@/assets/avatar-anims/owl-dancing.webp";
-import owlWaving from "@/assets/avatar-anims/owl-waving.webp";
-import owlSad from "@/assets/avatar-anims/owl-sad.webp";
+// sleepy/dancing/waving/sad clips were never generated — alias to the
+// closest existing clip so every mood still resolves to a real asset.
+const foxSleepy = foxIdle;
+const foxDancing = foxCheering;
+const foxWaving = foxHappy;
+const foxSad = foxIdle;
+const pandaSleepy = pandaIdle;
+const pandaDancing = pandaCheering;
+const pandaWaving = pandaHappy;
+const pandaSad = pandaIdle;
+const astronautSleepy = astronautIdle;
+const astronautDancing = astronautCheering;
+const astronautWaving = astronautHappy;
+const astronautSad = astronautIdle;
+const catSleepy = catIdle;
+const catDancing = catCheering;
+const catWaving = catHappy;
+const catSad = catIdle;
+const owlSleepy = owlIdle;
+const owlDancing = owlCheering;
+const owlWaving = owlHappy;
+const owlSad = owlIdle;
 
 import type { MascotMood } from "@/components/study-mascot/mascot-brain";
 
