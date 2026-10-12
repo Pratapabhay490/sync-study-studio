@@ -3,9 +3,9 @@
  *
  * Instead of a separate floating mascot, the user's own profile character
  * (fox, panda, astronaut, cat, owl) lives in the header's top-left spot.
- * Each preset has AI-generated animated versions (idle, happy, cheering,
- * studying, sleepy, dancing, waving, sad)
- * studying) that swap based on the mascot brain's mood:
+ * Each preset has sharp 144px animated versions (idle, happy, cheering,
+ * studying, sleepy, dancing, waving, sad) that swap based on the mascot
+ * brain's mood:
  *
  *   idle       gentle breathing (default)
  *   happy      bounce (topic/task ticks, greeting, tap)
