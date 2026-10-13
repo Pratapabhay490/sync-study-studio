@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Re-encode all 40 genuine avatar animations at 96px and 8fps, targeting at most 150KB each.
+- [ ] Verify all clips and the signed-in sidebar animation without console errors.
+
 - [x] Move today’s collaborative task board onto Home.
 - [x] Preserve the full dated task-board view.
 - [x] Add optimistic task interactions, completion feedback, and focused live updates.
