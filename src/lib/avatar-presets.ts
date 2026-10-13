@@ -116,7 +116,8 @@ function moodClip(mood: MascotMood): string {
     case "peeking":
       return "waving";
     case "listening":
-      return "sad";
+      // A poke means "hey!" — answer with the happy bounce, never the sad clip.
+      return "happy";
     case "cheering":
       return "cheering";
     case "dancing":
