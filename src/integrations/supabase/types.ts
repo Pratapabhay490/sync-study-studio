@@ -1260,6 +1260,35 @@ export type Database = {
           },
         ]
       }
+      weekly_task_progress: {
+        Row: {
+          percent: number
+          task_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          percent?: number
+          task_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          percent?: number
+          task_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_task_progress_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       weekly_tasks: {
         Row: {
           carry_count: number
