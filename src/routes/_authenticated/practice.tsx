@@ -19,6 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { celebrate } from "@/lib/celebrate";
+import { mascotEvents } from "@/components/study-mascot/mascot-events";
 import { toast } from "sonner";
 import {
   sb, generateQuestions, embedDocument,
@@ -283,6 +284,7 @@ function Lobby({
     }
     startingRef.current = true;
     setStarting(true);
+    mascotEvents.emit({ type: "quiz:generating" });
     const clickId = (globalThis.crypto?.randomUUID?.() ?? `click_${Date.now()}`);
     console.info("[startSession] begin", { click_id: clickId, mode, subject, topic, difficulty, count, source });
     try {

@@ -84,6 +84,8 @@ export function MascotProvider({ children }: { children: ReactNode }) {
   const moodRef = useRef<MascotMood>("idle");
   const greetedRef = useRef(false);
   const topicsTodayRef = useRef(0);
+  /** True while a focus block is running — mascot holds "studying", never sleeps. */
+  const focusActiveRef = useRef(false);
 
   useEffect(() => {
     moodRef.current = mood;
@@ -101,7 +103,7 @@ export function MascotProvider({ children }: { children: ReactNode }) {
     if (moodTimer.current) clearTimeout(moodTimer.current);
     setMood(m);
     moodTimer.current = setTimeout(() => {
-      setMood("idle");
+      setMood(focusActiveRef.current ? "studying" : "idle");
     }, ms);
   }, []);
 
@@ -114,6 +116,7 @@ export function MascotProvider({ children }: { children: ReactNode }) {
   const armIdle = useCallback(() => {
     if (idleTimer.current) clearTimeout(idleTimer.current);
     idleTimer.current = setTimeout(() => {
+      if (focusActiveRef.current) return; // never doze off mid focus block
       setMood("sleepy");
     }, IDLE_MS);
   }, []);
@@ -161,11 +164,13 @@ export function MascotProvider({ children }: { children: ReactNode }) {
           showBubble("Badge unlocked!", 5000);
           break;
         case "focus:started":
+          focusActiveRef.current = true;
           if (moodTimer.current) clearTimeout(moodTimer.current);
           setMood("studying");
           showBubble("Locking in with you.", 4000);
           break;
         case "focus:ended":
+          focusActiveRef.current = false;
           showMood("cheering", 4000);
           showBubble("Session done — proud of you!", 4000);
           break;

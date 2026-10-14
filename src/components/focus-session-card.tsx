@@ -1,6 +1,7 @@
 import { HideInSolo } from "@/lib/solo-mode";
 import { motion } from "framer-motion";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { mascotEvents } from "@/components/study-mascot/mascot-events";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
@@ -73,6 +74,15 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
   const iAmParticipant =
     session && user && (session.host_id === user.id || session.partner_id === user.id);
   const meActive = !!user && members.some((m) => m.user_id === user.id && !m.left_at);
+
+  // Keep the mascot in "studying" for the whole time I'm in a running block.
+  const focusing = !!session && !!iAmParticipant && remaining > 0 && (meActive || members.length === 0);
+  const focusingRef = useRef(false);
+  useEffect(() => {
+    if (focusing === focusingRef.current) return;
+    focusingRef.current = focusing;
+    mascotEvents.emit({ type: focusing ? "focus:started" : "focus:ended" });
+  }, [focusing]);
   const iCanJoin =
     session &&
     user &&

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useBadgeCatalog, tierClass } from "@/lib/badges";
 import { celebrate } from "@/lib/celebrate";
+import { mascotEvents } from "@/components/study-mascot/mascot-events";
 
 interface Pending {
   badge_key: string;
@@ -29,6 +30,7 @@ export function BadgePopup() {
           const r: any = payload.new;
           setQueue((q) => [...q, { badge_key: r.badge_key, unlocked_at: r.unlocked_at }]);
           celebrate();
+          mascotEvents.emit({ type: "badge:earned" });
         },
       )
       .subscribe();
