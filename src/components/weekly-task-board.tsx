@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Slider } from "@/components/ui/slider";
 import { ProgressRing } from "@/components/progress-ring";
 import { UserAvatar } from "@/components/user-avatar";
 import { ClayPeek } from "@/components/clay-visuals";
@@ -73,6 +74,10 @@ export function WeeklyTaskBoard({
   const [week, setWeek] = useState<string | null>(null);
   const [tasks, setTasks] = useState<WeeklyTask[]>([]);
   const [completions, setCompletions] = useState<Completion[]>([]);
+  /** Per-user goal progress, keyed `${task_id}:${user_id}` → 0–100. */
+  const [progress, setProgress] = useState<Record<string, number>>({});
+  /** Live slider value while dragging, before it is saved. */
+  const [dragging, setDragging] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [adding, setAdding] = useState(false);
@@ -115,8 +120,17 @@ export function WeeklyTaskBoard({
         .select("id,task_id,user_id")
         .in("task_id", list.map((t) => t.id));
       setCompletions(dedupeCompletions((compRows as Completion[] | null) ?? []));
+      const { data: progRows } = await supabase
+        .from("weekly_task_progress")
+        .select("task_id,user_id,percent")
+        .in("task_id", list.map((t) => t.id));
+      const map: Record<string, number> = {};
+      for (const r of (progRows as { task_id: string; user_id: string; percent: number }[] | null) ?? [])
+        map[`${r.task_id}:${r.user_id}`] = r.percent;
+      setProgress(map);
     } else {
       setCompletions([]);
+      setProgress({});
     }
     setLoading(false);
   }, []);
@@ -164,6 +178,25 @@ export function WeeklyTaskBoard({
           if (row.user_id !== currentUserId) notifyPartnerChange();
         },
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "weekly_task_progress" },
+        (payload: any) => {
+          if (!active) return;
+          const row = (payload.new?.task_id ? payload.new : payload.old) as
+            | { task_id: string; user_id: string; percent?: number }
+            | undefined;
+          if (!row?.task_id) return;
+          const key = `${row.task_id}:${row.user_id}`;
+          setProgress((m) => {
+            const next = { ...m };
+            if (payload.eventType === "DELETE") delete next[key];
+            else next[key] = row.percent ?? 0;
+            return next;
+          });
+          if (row.user_id !== currentUserId) notifyPartnerChange();
+        },
+      )
       .subscribe();
     return () => {
       active = false;
@@ -206,42 +239,60 @@ export function WeeklyTaskBoard({
     if (data) setTasks((rows) => (rows.some((t) => t.id === data.id) ? rows : [...rows, data]));
   }
 
-  async function toggleMine(task: WeeklyTask) {
-    const mine = completions.find((c) => c.task_id === task.id && c.user_id === currentUserId);
-    if (mine) {
-      setCompletions((rows) => rows.filter((c) => c.id !== mine.id));
-      const { error } = await supabase.from("weekly_task_completions").delete().eq("id", mine.id);
-      if (error) {
-        setCompletions((rows) => [...rows, mine]);
-        toast.error("Could not update the task");
-      }
-      return;
-    }
-    const optimistic: Completion = {
-      id: `temp-${task.id}`,
-      task_id: task.id,
-      user_id: currentUserId,
-    };
-    setCompletions((rows) => dedupeCompletions([...rows, optimistic]));
-    const { data, error } = await supabase
-      .from("weekly_task_completions")
-      .insert({ task_id: task.id, user_id: currentUserId })
-      .select("id,task_id,user_id")
-      .single();
-    if (error) {
-      setCompletions((rows) => rows.filter((c) => c.id !== optimistic.id));
-      toast.error("Could not update the task");
-      return;
-    }
+  /** A user's progress on a goal; a tick without a saved bar counts as 100%. */
+  const percentFor = useCallback(
+    (taskId: string, userId: string) => {
+      const saved = progress[`${taskId}:${userId}`];
+      if (completions.some((c) => c.task_id === taskId && c.user_id === userId)) return 100;
+      return saved ?? 0;
+    },
+    [progress, completions],
+  );
+
+  /** Save my progress; the database marks the goal done for me at 100%. */
+  async function saveProgress(task: WeeklyTask, value: number) {
+    const percent = Math.max(0, Math.min(100, Math.round(value)));
+    const key = `${task.id}:${currentUserId}`;
+    const prevProgress = progress;
+    const prevCompletions = completions;
+    const wasDone = prevCompletions.some((c) => c.task_id === task.id && c.user_id === currentUserId);
+    setProgress((m) => ({ ...m, [key]: percent }));
     setCompletions((rows) =>
-      dedupeCompletions(rows.map((c) => (c.id === optimistic.id ? (data as Completion) : c))),
+      percent >= 100
+        ? dedupeCompletions([...rows, { id: `temp-${task.id}`, task_id: task.id, user_id: currentUserId }])
+        : rows.filter((c) => !(c.task_id === task.id && c.user_id === currentUserId)),
     );
-    const total = doneBy(task.id).filter((id) => id !== currentUserId).length + 1;
-    if (total >= required) {
+    const { error } = await supabase
+      .from("weekly_task_progress")
+      .upsert({ task_id: task.id, user_id: currentUserId, percent }, { onConflict: "task_id,user_id" });
+    setDragging((d) => {
+      const { [key]: _, ...rest } = d;
+      return rest;
+    });
+    if (error) {
+      setProgress(prevProgress);
+      setCompletions(prevCompletions);
+      toast.error("Could not save your progress");
+      return;
+    }
+    if (percent >= 100 && !wasDone) {
+      const { data: compRows } = await supabase
+        .from("weekly_task_completions")
+        .select("id,task_id,user_id")
+        .eq("task_id", task.id);
+      const rows = (compRows as Completion[] | null) ?? [];
+      setCompletions((all) =>
+        dedupeCompletions([...all.filter((c) => c.task_id !== task.id), ...rows]),
+      );
       celebrate();
       mascotEvents.emit({ type: "task:completed" });
-      toast.success("Both of you finished it. Nice teamwork!");
+      if (rows.length >= required && required > 1) toast.success("Both of you finished it. Nice teamwork!");
     }
+  }
+
+  function toggleMine(task: WeeklyTask) {
+    const mineDone = completions.some((c) => c.task_id === task.id && c.user_id === currentUserId);
+    void saveProgress(task, mineDone ? 0 : 100);
   }
 
   async function removeTask(task: WeeklyTask) {
@@ -365,6 +416,48 @@ export function WeeklyTaskBoard({
                         carried {task.carry_count}w
                       </span>
                     )}
+                  </div>
+                  <div className="mt-2 space-y-1.5">
+                    {members.map((member) => {
+                      const isMe = member.id === currentUserId;
+                      const key = `${task.id}:${member.id}`;
+                      const value = isMe && key in dragging ? dragging[key] : percentFor(task.id, member.id);
+                      return (
+                        <div key={member.id} className="grid grid-cols-[3.5rem_minmax(0,1fr)_2.5rem] items-center gap-2">
+                          <span className="truncate text-[10px] font-semibold text-muted-foreground">
+                            {isMe ? "You" : member.name.split(" ")[0]}
+                          </span>
+                          {isMe ? (
+                            <Slider
+                              value={[value]}
+                              min={0}
+                              max={100}
+                              step={5}
+                              onValueChange={(v) => setDragging((d) => ({ ...d, [key]: v[0] }))}
+                              onValueCommit={(v) => saveProgress(task, v[0])}
+                              aria-label={`Your progress on ${task.title}`}
+                            />
+                          ) : (
+                            <div
+                              className="h-2 overflow-hidden rounded-full bg-secondary"
+                              role="progressbar"
+                              aria-valuenow={value}
+                              aria-valuemin={0}
+                              aria-valuemax={100}
+                              aria-label={`${member.name}'s progress`}
+                            >
+                              <div
+                                className={cn("h-full rounded-full bg-primary transition-all duration-500", value >= 100 && "bg-success")}
+                                style={{ width: `${value}%` }}
+                              />
+                            </div>
+                          )}
+                          <span className={cn("text-right text-[10px] font-bold tabular-nums", value >= 100 && "text-success")}>
+                            {value}%
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
                 <Button
