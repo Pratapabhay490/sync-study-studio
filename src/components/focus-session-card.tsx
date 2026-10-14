@@ -83,9 +83,6 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
     focusingRef.current = focusing;
     mascotEvents.emit({ type: focusing ? "focus:started" : "focus:ended" });
   }, [focusing]);
-  useEffect(() => () => {
-    if (focusingRef.current) mascotEvents.emit({ type: "focus:ended" });
-  }, []);
   const iCanJoin =
     session &&
     user &&
