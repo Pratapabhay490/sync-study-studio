@@ -10,6 +10,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BOARD_HINT_CLASS, useBoardSeen } from "@/lib/board-updates";
 import { celebrate } from "@/lib/celebrate";
+import { mascotEvents } from "@/components/study-mascot/mascot-events";
 import { cn } from "@/lib/utils";
 import { supabase as supabaseTyped } from "@/integrations/supabase/client";
 
@@ -209,7 +210,7 @@ function TaskColumn({
       toast.error("Task could not be updated");
       return;
     }
-    if (nextDone) celebrate();
+    if (nextDone) { celebrate(); mascotEvents.emit({ type: "task:completed" }); }
   }
 
   async function deleteTask(task: DailyTask) {

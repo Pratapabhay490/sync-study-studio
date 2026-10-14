@@ -10,6 +10,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { ClayPeek } from "@/components/clay-visuals";
 import { BOARD_HINT_CLASS, useBoardSeen } from "@/lib/board-updates";
 import { celebrate } from "@/lib/celebrate";
+import { mascotEvents } from "@/components/study-mascot/mascot-events";
 import { cn } from "@/lib/utils";
 import { supabase as supabaseTyped } from "@/integrations/supabase/client";
 
@@ -238,6 +239,7 @@ export function WeeklyTaskBoard({
     const total = doneBy(task.id).filter((id) => id !== currentUserId).length + 1;
     if (total >= required) {
       celebrate();
+      mascotEvents.emit({ type: "task:completed" });
       toast.success("Both of you finished it. Nice teamwork!");
     }
   }
