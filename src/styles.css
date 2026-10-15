@@ -113,17 +113,17 @@
   --gradient-abhay: linear-gradient(135deg, oklch(0.74 0.15 235), oklch(0.6 0.2 260));
   --gradient-aishwarya: linear-gradient(135deg, oklch(0.82 0.13 25), oklch(0.74 0.16 350));
 
-  /* Balanced tactile depth: visible on pale surfaces without harsh outlines. */
+  /* Soft tactile depth: wide, diffuse shadows with muted highlights — no crisp edges. */
   --shadow-clay:
-    12px 16px 30px oklch(0.58 0.045 250 / 0.26), -8px -8px 20px oklch(1 0 0 / 0.78),
-    inset 1.5px 1.5px 0 oklch(1 0 0 / 0.72), inset -2px -2px 6px oklch(0.58 0.06 250 / 0.1);
+    16px 20px 40px oklch(0.55 0.05 250 / 0.22), -10px -10px 26px oklch(1 0 0 / 0.55),
+    inset 1.5px 1.5px 0 oklch(1 0 0 / 0.45), inset -3px -3px 10px oklch(0.55 0.06 250 / 0.08);
   --shadow-clay-sm:
-    6px 8px 16px oklch(0.58 0.045 250 / 0.23), -4px -4px 10px oklch(1 0 0 / 0.72),
-    inset 1px 1px 0 oklch(1 0 0 / 0.65);
+    8px 10px 22px oklch(0.55 0.05 250 / 0.19), -6px -6px 14px oklch(1 0 0 / 0.5),
+    inset 1px 1px 0 oklch(1 0 0 / 0.4);
   --shadow-clay-inset:
-    inset 6px 6px 12px oklch(0.58 0.04 250 / 0.22), inset -5px -5px 10px oklch(1 0 0 / 0.74);
-  --shadow-glow: 0 16px 40px -12px oklch(0.59 0.2 260 / 0.38);
-  --shadow-soft: 8px 10px 22px oklch(0.58 0.04 250 / 0.2), -4px -4px 12px oklch(1 0 0 / 0.7);
+    inset 7px 7px 16px oklch(0.55 0.04 250 / 0.18), inset -7px -7px 14px oklch(1 0 0 / 0.6);
+  --shadow-glow: 0 16px 40px -12px oklch(0.59 0.2 260 / 0.32);
+  --shadow-soft: 10px 12px 28px oklch(0.55 0.04 250 / 0.18), -6px -6px 16px oklch(1 0 0 / 0.55);
   --shadow-card: var(--shadow-clay);
 }
 
@@ -207,8 +207,14 @@
     text-size-adjust: 100%;
     background-color: var(--color-background);
     color: var(--color-foreground);
-    background-image: none;
     background-attachment: fixed;
+  }
+  /* Light mode ambient wash: soft sky tints so the page never reads as stark white. */
+  html:not(.dark) body {
+    background-image:
+      radial-gradient(900px 620px at 8% -10%, oklch(0.88 0.05 250 / 0.55), transparent 62%),
+      radial-gradient(760px 540px at 108% 8%, oklch(0.9 0.05 310 / 0.4), transparent 60%),
+      radial-gradient(860px 640px at 50% 118%, oklch(0.89 0.045 215 / 0.45), transparent 62%);
   }
   .dark html,
   .dark body,
