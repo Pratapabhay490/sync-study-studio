@@ -3,7 +3,7 @@
  *
  * Instead of a separate floating mascot, the user's own profile character
  * (fox, panda, astronaut, cat, owl) lives in the header's top-left spot.
- * Each preset has 96px, 8fps multi-frame animated versions (idle, happy, cheering,
+ * Each preset has 128px, 12fps multi-frame animated versions (idle, happy, cheering,
  * studying, sleepy, dancing, waving, sad) that swap based on the mascot
  * brain's mood:
  *
@@ -16,8 +16,8 @@
  * Tapping the avatar pokes the brain for a contextual bubble, shown below.
  */
 
-import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Profile } from "@/lib/data-context";
 import { animatedAvatar, presetIdOf, resolveAvatar } from "@/lib/avatar-presets";
@@ -37,8 +37,42 @@ export function LivingAvatar({
   const presetId = presetIdOf(profile?.avatar_url);
   const animSrc = animatedAvatar(presetId, mood);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
-  // Animated WebP for presets; static image (or fallback) otherwise.
-  const src = animSrc && failedSrc !== animSrc ? animSrc : resolveAvatar(profile?.avatar_url);
+  const [readyClip, setReadyClip] = useState<{ presetId: string | null; src: string } | null>(null);
+  const [pageVisible, setPageVisible] = useState(true);
+  const reducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    const updateVisibility = () => setPageVisible(!document.hidden);
+    updateVisibility();
+    document.addEventListener("visibilitychange", updateVisibility);
+    return () => document.removeEventListener("visibilitychange", updateVisibility);
+  }, []);
+
+  useEffect(() => {
+    if (!animSrc || reducedMotion || !pageVisible || failedSrc === animSrc) return;
+    // Load only the requested mood, keeping the previous clip visible until ready.
+    let cancelled = false;
+    const image = new Image();
+    image.decoding = "async";
+    image.onload = () => {
+      if (!cancelled) setReadyClip({ presetId, src: animSrc });
+    };
+    image.onerror = () => {
+      if (!cancelled) setFailedSrc(animSrc);
+    };
+    image.src = animSrc;
+    return () => {
+      cancelled = true;
+      image.onload = null;
+      image.onerror = null;
+    };
+  }, [animSrc, presetId, reducedMotion, pageVisible, failedSrc]);
+
+  // Stop decoding animated frames in hidden tabs or when reduced motion is requested.
+  const canAnimate = pageVisible && !reducedMotion && failedSrc !== animSrc;
+  const src = canAnimate && readyClip?.presetId === presetId
+    ? readyClip?.src ?? resolveAvatar(profile?.avatar_url)
+    : resolveAvatar(profile?.avatar_url);
 
   const initials =
     profile?.name

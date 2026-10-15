@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] Re-encode all 40 genuine avatar animations at 96px and 8fps, targeting at most 150KB each.
-- [ ] Verify all clips and the signed-in sidebar animation without console errors.
+- [ ] Upgrade all 40 genuine avatar animations for sharper rendering and smoother motion, capped at 150KB each.
+- [ ] Verify all clips and on-demand avatar loading without console errors.
 
 - [x] Move today’s collaborative task board onto Home.
 - [x] Preserve the full dated task-board view.
