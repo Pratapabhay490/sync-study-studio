@@ -11,6 +11,7 @@ export type MascotEvent =
   | { type: "badge:earned" }
   | { type: "focus:started" }
   | { type: "focus:ended" }
+  | { type: "focus:lost" }
   | { type: "tab:changed"; tab: string }
   | { type: "streak:milestone"; days: number }
   | { type: "quiz:generating" }

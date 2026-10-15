@@ -83,6 +83,19 @@ export function FocusSessionCard({ session, partnerId, partnerName }: Props) {
     focusingRef.current = focusing;
     mascotEvents.emit({ type: focusing ? "focus:started" : "focus:ended" });
   }, [focusing]);
+  // Navigating away from Home mid-session unmounts this card; without this
+  // cleanup the mascot's focus flag stays true forever (stuck "studying").
+  // "focus:lost" quietly resets it — no "session done" celebration, since
+  // the session itself is still running.
+  useEffect(
+    () => () => {
+      if (focusingRef.current) {
+        focusingRef.current = false;
+        mascotEvents.emit({ type: "focus:lost" });
+      }
+    },
+    [],
+  );
   const iCanJoin =
     session &&
     user &&
