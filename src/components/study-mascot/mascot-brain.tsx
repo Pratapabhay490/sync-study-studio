@@ -174,6 +174,11 @@ export function MascotProvider({ children }: { children: ReactNode }) {
           showMood("cheering", 4000);
           showBubble("Session done — proud of you!", 4000);
           break;
+        case "focus:lost":
+          // Left the page mid-session: drop the focus flag quietly, no cheer.
+          focusActiveRef.current = false;
+          setMood("idle");
+          break;
         case "streak:milestone":
           if (e.days >= 14) {
             showMood("dancing", 5000);
