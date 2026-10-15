@@ -279,7 +279,10 @@
 }
 
 @utility clay {
-  background: var(--card);
+  /* Gentle top-light sheen over the card tone for a soft, non-flat surface. */
+  background:
+    linear-gradient(165deg, oklch(1 0 0 / 0.22) 0%, transparent 42%),
+    var(--card);
   box-shadow: var(--shadow-clay);
   border-radius: var(--radius);
 }
