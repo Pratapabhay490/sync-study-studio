@@ -177,7 +177,7 @@ export function MascotProvider({ children }: { children: ReactNode }) {
         case "focus:lost":
           // Left the page mid-session: drop the focus flag quietly, no cheer.
           focusActiveRef.current = false;
-          showMood("idle", 0);
+          setMood("idle");
           break;
         case "streak:milestone":
           if (e.days >= 14) {
