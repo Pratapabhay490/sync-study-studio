@@ -24,8 +24,8 @@ import { WeeklyChallengeCard } from "@/components/weekly-challenge-card";
 import { StudyTree } from "@/components/study-tree";
 import { BadgeShelf } from "@/components/badge-shelf";
 import { PartnerMascot } from "@/components/partner-mascot";
-import { differenceInCalendarDays, formatDistanceToNow, isToday, parseISO, startOfDay, subDays } from "date-fns";
-import { useEffect, useMemo, useState } from "react";
+import { differenceInCalendarDays, format, formatDistanceToNow, isToday, parseISO, startOfDay, subDays } from "date-fns";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowRight, Flame, Users, Heart, BookOpen, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
