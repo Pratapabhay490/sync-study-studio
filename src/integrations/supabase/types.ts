@@ -1341,6 +1341,10 @@ export type Database = {
     }
     Functions: {
       accept_partner_invite: { Args: { p_id: string }; Returns: undefined }
+      activity_days: {
+        Args: { p_days?: number; p_user: string }
+        Returns: string[]
+      }
       add_study_partner_by_email: { Args: { p_email: string }; Returns: string }
       award_xp: {
         Args: {
