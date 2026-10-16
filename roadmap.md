@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] Upgrade all 40 genuine avatar animations for sharper rendering and smoother motion, capped at 150KB each.
-- [ ] Verify all clips and on-demand avatar loading without console errors.
+- [x] Upgrade all 40 genuine avatar animations to 128px/12fps, capped at 150KB each (144KB average).
+- [x] Verify all 40 clips decode and the 64px avatar visibly animates with only its selected clip requested and no page errors.
 
 - [x] Move today’s collaborative task board onto Home.
 - [x] Preserve the full dated task-board view.
