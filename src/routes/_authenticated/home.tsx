@@ -24,8 +24,8 @@ import { WeeklyChallengeCard } from "@/components/weekly-challenge-card";
 import { StudyTree } from "@/components/study-tree";
 import { BadgeShelf } from "@/components/badge-shelf";
 import { PartnerMascot } from "@/components/partner-mascot";
-import { differenceInCalendarDays, formatDistanceToNow, isToday, parseISO, startOfDay, subDays } from "date-fns";
-import { useEffect, useMemo, useState } from "react";
+import { differenceInCalendarDays, format, formatDistanceToNow, isToday, parseISO, startOfDay, subDays } from "date-fns";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowRight, Flame, Users, Heart, BookOpen, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -73,74 +73,60 @@ function PartnerHome() {
     [progress],
   );
 
-  const myStreak = useMemo(() => {
-    if (!user) return 0;
-    const days = new Set(
-      progress
-        .filter((p) => p.user_id === user.id && p.completed && p.completed_at)
-        .map((p) => startOfDay(parseISO(p.completed_at!)).toISOString()),
-    );
-    let s = 0;
-    let d = startOfDay(new Date());
-    while (days.has(d.toISOString())) {
-      s++;
-      d = subDays(d, 1);
-    }
-    return s;
-  }, [user, progress]);
+  // Activity days from every source: topics, revision stars, focus sessions,
+  // weekly goal progress and quizzes (server), merged with local ticks for instant updates.
+  const [serverDays, setServerDays] = useState<Record<string, string[]>>({});
+  useEffect(() => {
+    if (!session || !userIds.length) return;
+    let live = true;
+    const load = async () => {
+      const out: Record<string, string[]> = {};
+      await Promise.all(userIds.map(async (id) => {
+        const { data, error } = await supabase.rpc("activity_days", { p_user: id, p_days: 400 });
+        if (error) console.warn("activity_days failed:", error.message);
+        out[id] = ((data as unknown as string[]) ?? []).map(String);
+      }));
+      if (live) setServerDays(out);
+    };
+    load();
+    const iv = setInterval(load, 60_000);
+    return () => { live = false; clearInterval(iv); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, userIds.join(","), progress, focusSession?.id]);
 
-  const otherStreak = useMemo(() => {
-    if (!other) return 0;
-    const days = new Set(
-      progress
-        .filter((p) => p.user_id === other.id && p.completed && p.completed_at)
-        .map((p) => startOfDay(parseISO(p.completed_at!)).toISOString()),
-    );
-    let s = 0;
-    let d = startOfDay(new Date());
-    while (days.has(d.toISOString())) {
-      s++;
-      d = subDays(d, 1);
+  const daysFor = useCallback((id?: string) => {
+    const set = new Set<string>(id ? serverDays[id] ?? [] : []);
+    if (id) for (const p of progress) {
+      if (p.user_id !== id) continue;
+      if (p.completed && p.completed_at) set.add(format(parseISO(p.completed_at), "yyyy-MM-dd"));
+      const rev = (p as any).last_revised_at as string | null | undefined;
+      if (rev) set.add(format(parseISO(rev), "yyyy-MM-dd"));
     }
-    return s;
-  }, [other, progress]);
+    return set;
+  }, [serverDays, progress]);
 
-  const sharedStreak = useMemo(() => {
-    if (!user || !other) return 0;
-    const daysA = new Set(
-      progress.filter((p) => p.user_id === user.id && p.completed && p.completed_at)
-        .map((p) => startOfDay(parseISO(p.completed_at!)).toISOString()),
-    );
-    const daysB = new Set(
-      progress.filter((p) => p.user_id === other.id && p.completed && p.completed_at)
-        .map((p) => startOfDay(parseISO(p.completed_at!)).toISOString()),
-    );
-    let s = 0;
+  const runStreak = (has: (k: string) => boolean) => {
     let d = startOfDay(new Date());
-    while (daysA.has(d.toISOString()) && daysB.has(d.toISOString())) {
-      s++;
-      d = subDays(d, 1);
-    }
+    if (!has(format(d, "yyyy-MM-dd"))) d = subDays(d, 1); // today still in progress
+    let s = 0;
+    while (has(format(d, "yyyy-MM-dd"))) { s++; d = subDays(d, 1); }
     return s;
-  }, [user, other, progress]);
+  };
+  const myDays = useMemo(() => daysFor(user?.id), [daysFor, user?.id]);
+  const otherDays = useMemo(() => daysFor(other?.id), [daysFor, other?.id]);
+  const myStreak = user ? runStreak((k) => myDays.has(k)) : 0;
+  const otherStreak = other ? runStreak((k) => otherDays.has(k)) : 0;
+  const sharedStreak = user && other ? runStreak((k) => myDays.has(k) && otherDays.has(k)) : 0;
 
   const weekAgo = subDays(new Date(), 7);
   const daysTogetherThisWeek = useMemo(() => {
-    if (!user || !other) return 0;
-    const daysA = new Set<string>();
-    const daysB = new Set<string>();
-    for (const p of progress) {
-      if (!p.completed || !p.completed_at) continue;
-      const d = parseISO(p.completed_at);
-      if (d < weekAgo) continue;
-      const key = startOfDay(d).toISOString();
-      if (p.user_id === user.id) daysA.add(key);
-      if (p.user_id === other.id) daysB.add(key);
-    }
     let n = 0;
-    daysA.forEach((k) => { if (daysB.has(k)) n++; });
+    for (let i = 0; i < 7; i++) {
+      const k = format(subDays(new Date(), i), "yyyy-MM-dd");
+      if (myDays.has(k) && otherDays.has(k)) n++;
+    }
     return n;
-  }, [user, other, progress, weekAgo]);
+  }, [myDays, otherDays]);
 
   const combinedTopicsWeek = useMemo(
     () =>
@@ -201,11 +187,9 @@ function PartnerHome() {
 
   const partnerIdle = other
     ? (() => {
-        const rows = progress
-          .filter((p) => p.user_id === other.id && p.completed_at)
-          .sort((a, b) => (b.completed_at! > a.completed_at! ? 1 : -1));
-        if (!rows.length) return null;
-        return differenceInCalendarDays(new Date(), parseISO(rows[0].completed_at!));
+        const latest = [...otherDays].sort().pop();
+        if (!latest) return null;
+        return differenceInCalendarDays(new Date(), parseISO(latest));
       })()
     : null;
 

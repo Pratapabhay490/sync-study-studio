@@ -15,6 +15,13 @@
       "when": 1791973012477,
       "tag": "0001_weekly_task_progress",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792128275157,
+      "tag": "0002_activity_days_all_sources",
+      "breakpoints": true
     }
   ]
 }
