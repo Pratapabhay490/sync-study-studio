@@ -3,7 +3,7 @@
  *
  * Instead of a separate floating mascot, the user's own profile character
  * (fox, panda, astronaut, cat, owl) lives in the header's top-left spot.
- * Each preset has 128px, 12fps multi-frame animated versions (idle, happy, cheering,
+ * Each preset has 96px, 80-frame app clips multi-frame animated versions (idle, happy, cheering,
  * studying, sleepy, dancing, waving, sad) that swap based on the mascot
  * brain's mood:
  *
