@@ -27,12 +27,24 @@ export function LivingAvatar({
   profile,
   size = 44,
   ring,
+  mood: moodOverride,
+  hideBubble,
+  onTap,
+  label,
 }: {
   profile?: Profile | null;
   size?: number;
   ring?: boolean;
+  /** Show this mood instead of the user's own mascot brain (e.g. partner). */
+  mood?: MascotMood;
+  hideBubble?: boolean;
+  onTap?: () => void;
+  label?: string;
 }) {
-  const { mood, bubble, dispatch } = useMascot();
+  const brain = useMascot();
+  const mood = moodOverride ?? brain.mood;
+  const bubble = hideBubble || moodOverride ? null : brain.bubble;
+  const dispatch = onTap ? () => onTap() : brain.dispatch;
 
   const presetId = presetIdOf(profile?.avatar_url);
   const animSrc = animatedAvatar(presetId, mood);
