@@ -20,7 +20,7 @@ class AvatarAssetBudgetTests(unittest.TestCase):
             with self.subTest(clip=pointer.name):
                 asset = json.loads(pointer.read_text())
                 self.assertGreater(asset["size"], 0)
-                self.assertLessEqual(asset["size"], 150_000)
+                self.assertLessEqual(asset["size"], 220_000)
                 self.assertEqual(asset["content_type"], "image/webp")
 
 

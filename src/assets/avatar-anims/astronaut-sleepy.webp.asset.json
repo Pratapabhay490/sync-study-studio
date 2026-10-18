@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "asset_id": "f46358fe-12c1-4c7d-8b01-5db73f90c2a3",
+  "asset_id": "d363ba10-03d2-4a9f-ae9f-1a9e04a9bde0",
   "project_id": "349a0b3e-2e29-420d-b5f5-23c7e3d989d4",
-  "url": "/__l5e/assets-v1/f46358fe-12c1-4c7d-8b01-5db73f90c2a3/astronaut-sleepy.webp",
-  "r2_key": "a/v1/349a0b3e-2e29-420d-b5f5-23c7e3d989d4/f46358fe-12c1-4c7d-8b01-5db73f90c2a3/astronaut-sleepy.webp",
+  "url": "/__l5e/assets-v1/d363ba10-03d2-4a9f-ae9f-1a9e04a9bde0/astronaut-sleepy.webp",
+  "r2_key": "a/v1/349a0b3e-2e29-420d-b5f5-23c7e3d989d4/d363ba10-03d2-4a9f-ae9f-1a9e04a9bde0/astronaut-sleepy.webp",
   "original_filename": "astronaut-sleepy.webp",
-  "size": 143552,
+  "size": 193454,
   "content_type": "image/webp",
-  "created_at": "2026-10-16T03:32:21Z"
+  "created_at": "2026-10-18T08:45:52Z"
 }
