@@ -21,7 +21,7 @@ import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Profile } from "@/lib/data-context";
 import { animatedAvatar, presetIdOf, resolveAvatar } from "@/lib/avatar-presets";
-import { useMascot } from "./study-mascot/mascot-brain";
+import { useMascot, type MascotMood } from "./study-mascot/mascot-brain";
 
 export function LivingAvatar({
   profile,
@@ -44,7 +44,6 @@ export function LivingAvatar({
   const brain = useMascot();
   const mood = moodOverride ?? brain.mood;
   const bubble = hideBubble || moodOverride ? null : brain.bubble;
-  const dispatch = onTap ? () => onTap() : brain.dispatch;
 
   const presetId = presetIdOf(profile?.avatar_url);
   const animSrc = animatedAvatar(presetId, mood);
