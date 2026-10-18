@@ -21,18 +21,29 @@ import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Profile } from "@/lib/data-context";
 import { animatedAvatar, presetIdOf, resolveAvatar } from "@/lib/avatar-presets";
-import { useMascot } from "./study-mascot/mascot-brain";
+import { useMascot, type MascotMood } from "./study-mascot/mascot-brain";
 
 export function LivingAvatar({
   profile,
   size = 44,
   ring,
+  mood: moodOverride,
+  hideBubble,
+  onTap,
+  label,
 }: {
   profile?: Profile | null;
   size?: number;
   ring?: boolean;
+  /** Show this mood instead of the user's own mascot brain (e.g. partner). */
+  mood?: MascotMood;
+  hideBubble?: boolean;
+  onTap?: () => void;
+  label?: string;
 }) {
-  const { mood, bubble, dispatch } = useMascot();
+  const brain = useMascot();
+  const mood = moodOverride ?? brain.mood;
+  const bubble = hideBubble || moodOverride ? null : brain.bubble;
 
   const presetId = presetIdOf(profile?.avatar_url);
   const animSrc = animatedAvatar(presetId, mood);
@@ -89,8 +100,12 @@ export function LivingAvatar({
     <div className="relative">
       <motion.button
         type="button"
-        aria-label="Your avatar — tap for a nudge"
-        onClick={() => dispatch({ type: "poke" })}
+        aria-label={label ?? "Your avatar — tap for a nudge"}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (onTap) onTap();
+          else brain.dispatch({ type: "poke" });
+        }}
         className="block cursor-pointer"
         whileTap={{ scale: 0.9 }}
       >

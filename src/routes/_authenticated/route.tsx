@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { NotificationCenter } from "@/components/notification-center";
 import { SignupPromptModal } from "@/components/signup-prompt-modal";
+import { FloatingDuoPill } from "@/components/floating-duo-pill";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAutoReveal } from "@/lib/use-auto-reveal";
 import syncLogo from "@/assets/sync-logo.webp";
@@ -168,7 +169,7 @@ function AuthenticatedLayout() {
 
         {open && <div className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm md:hidden" onClick={() => setOpen(false)} />}
 
-        <main className="min-h-screen min-w-0 flex-1 overflow-x-clip px-4 py-4 md:px-8 md:py-8">
+        <main className="min-h-screen min-w-0 flex-1 overflow-x-clip px-4 pb-4 pt-16 md:px-8 md:pb-8 md:pt-20">
           <div className="mx-auto min-w-0 max-w-7xl">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -185,6 +186,7 @@ function AuthenticatedLayout() {
           </div>
         </main>
       </div>
+      {!isGuest && <FloatingDuoPill />}
       <SignupPromptModal />
     </div>
     </MascotProvider>
