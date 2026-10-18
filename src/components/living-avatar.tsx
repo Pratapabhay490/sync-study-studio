@@ -100,8 +100,12 @@ export function LivingAvatar({
     <div className="relative">
       <motion.button
         type="button"
-        aria-label="Your avatar — tap for a nudge"
-        onClick={() => dispatch({ type: "poke" })}
+        aria-label={label ?? "Your avatar — tap for a nudge"}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (onTap) onTap();
+          else brain.dispatch({ type: "poke" });
+        }}
         className="block cursor-pointer"
         whileTap={{ scale: 0.9 }}
       >
