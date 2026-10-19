@@ -59,7 +59,8 @@ export function FloatingDuoPill() {
   const otherOnline = !!op && now - new Date(op.updated_at).getTime() <= PRESENCE_STALE_MS;
   const focusLeft = session ? Math.max(0, new Date(session.ends_at).getTime() - now) : 0;
   const focusing = focusLeft > 0;
-  const otherStudying = otherOnline && op?.status === "studying";
+  // A running focus block means the partner is studying, even if their presence went stale.
+  const otherStudying = (!!other && focusing) || (otherOnline && op?.status === "studying");
 
   const partnerMood: MascotMood = partnerCheer
     ? "cheering"
