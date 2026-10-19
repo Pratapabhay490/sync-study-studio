@@ -3,6 +3,11 @@ import avatarPanda from "@/assets/avatars/avatar-panda.webp";
 import avatarAstronaut from "@/assets/avatars/avatar-astronaut.webp";
 import avatarCat from "@/assets/avatars/avatar-cat.webp";
 import avatarOwl from "@/assets/avatars/avatar-owl.webp";
+import avatarNinja from "@/assets/avatars/avatar-ninja.webp";
+import avatarIronhero from "@/assets/avatars/avatar-ironhero.webp";
+import avatarViking from "@/assets/avatars/avatar-viking.webp";
+import avatarSamurai from "@/assets/avatars/avatar-samurai.webp";
+import avatarSpacer from "@/assets/avatars/avatar-spacer.webp";
 
 // Animated versions (AI-generated from each preset's source image)
 import foxIdleAsset from "@/assets/avatar-anims/fox-idle.webp.asset.json";
@@ -94,6 +99,11 @@ export const AVATAR_PRESETS = [
   { id: "astronaut", src: avatarAstronaut, label: "Astronaut" },
   { id: "cat", src: avatarCat, label: "Cat" },
   { id: "owl", src: avatarOwl, label: "Owl" },
+  { id: "ninja", src: avatarNinja, label: "Ninja" },
+  { id: "ironhero", src: avatarIronhero, label: "Iron Hero" },
+  { id: "viking", src: avatarViking, label: "Thunder Viking" },
+  { id: "samurai", src: avatarSamurai, label: "Samurai" },
+  { id: "spacer", src: avatarSpacer, label: "Space Ranger" },
 ] as const;
 
 export type AvatarPresetId = (typeof AVATAR_PRESETS)[number]["id"];
