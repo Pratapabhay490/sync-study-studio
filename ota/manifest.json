@@ -1,1 +1,12 @@
-{"native": {"latestVersionCode": 17, "latestVersionName": "17.0", "updateUrl": "https://play.google.com/store/apps/details?id=com.syncstudy.app"}, "web": {"version": "23.3", "url": "https://github.com/Pratapabhay490/sync-study-studio/releases/download/ota-web-23.3/ota-bundle-23.3-fixed.zip", "checksum": "4d730e7512a6d311e2044facfc7a3b88de60ea83bb3586987b3e182883b43fd6"}}
+{
+  "native": {
+    "latestVersionCode": 24,
+    "latestVersionName": "24.0",
+    "updateUrl": "https://play.google.com/store/apps/details?id=com.syncstudy.app"
+  },
+  "web": {
+    "version": "24.1",
+    "url": "https://github.com/Pratapabhay490/sync-study-studio/releases/download/ota-web-24.1/ota-bundle-24.1.zip",
+    "checksum": "b9fd18b77e2af6cbcf769921d8f67a5af5ada69f630d5aedc7be797f10173152"
+  }
+}
