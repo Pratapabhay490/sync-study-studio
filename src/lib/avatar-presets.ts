@@ -4,7 +4,7 @@ import avatarAstronaut from "@/assets/avatars/avatar-astronaut.webp";
 import avatarCat from "@/assets/avatars/avatar-cat.webp";
 import avatarOwl from "@/assets/avatars/avatar-owl.webp";
 import avatarNinja from "@/assets/avatars/avatar-ninja.webp";
-import avatarIronhero from "@/assets/avatars/avatar-ironhero.webp";
+import avatarScholar from "@/assets/avatars/avatar-scholar.webp";
 import avatarViking from "@/assets/avatars/avatar-viking.webp";
 import avatarSamurai from "@/assets/avatars/avatar-samurai.webp";
 import avatarKunoichi from "@/assets/avatars/avatar-kunoichi.webp";
@@ -101,7 +101,7 @@ export const AVATAR_PRESETS = [
   { id: "cat", src: avatarCat, label: "Cat" },
   { id: "owl", src: avatarOwl, label: "Owl" },
   { id: "ninja", src: avatarNinja, label: "Ninja" },
-  { id: "ironhero", src: avatarIronhero, label: "Iron Hero" },
+  { id: "scholar", src: avatarScholar, label: "Scholar" },
   { id: "viking", src: avatarViking, label: "Thunder Viking" },
   { id: "samurai", src: avatarSamurai, label: "Samurai" },
   { id: "kunoichi", src: avatarKunoichi, label: "Kunoichi" },
