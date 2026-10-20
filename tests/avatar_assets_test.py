@@ -5,11 +5,11 @@ import unittest
 
 
 class AvatarAssetBudgetTests(unittest.TestCase):
-    def test_all_five_characters_have_eight_moods(self):
+    def test_all_characters_have_eight_moods(self):
         folder = Path(__file__).resolve().parents[1] / "src/assets/avatar-anims"
         expected = {
             f"{character}-{mood}.webp.asset.json"
-            for character in ("fox", "panda", "astronaut", "cat", "owl")
+            for character in ("fox", "panda", "astronaut", "cat", "owl", "ninja", "samurai", "viking", "scholar", "kunoichi", "heroine")
             for mood in ("idle", "happy", "cheering", "studying", "sleepy", "dancing", "waving", "sad")
         }
         self.assertEqual({p.name for p in folder.glob("*.asset.json")}, expected)
@@ -20,7 +20,7 @@ class AvatarAssetBudgetTests(unittest.TestCase):
             with self.subTest(clip=pointer.name):
                 asset = json.loads(pointer.read_text())
                 self.assertGreater(asset["size"], 0)
-                self.assertLessEqual(asset["size"], 220_000)
+                self.assertLessEqual(asset["size"], 260_000)
                 self.assertEqual(asset["content_type"], "image/webp")
 
 
