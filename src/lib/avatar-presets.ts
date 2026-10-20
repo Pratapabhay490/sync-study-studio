@@ -92,6 +92,56 @@ const owlWaving = owlWavingAsset.url;
 import owlSadAsset from "@/assets/avatar-anims/owl-sad.webp.asset.json";
 const owlSad = owlSadAsset.url;
 
+// Animated clips for the newer characters (from the Android app)
+import ninja_idle from "@/assets/avatar-anims/ninja-idle.webp.asset.json";
+import ninja_happy from "@/assets/avatar-anims/ninja-happy.webp.asset.json";
+import ninja_cheering from "@/assets/avatar-anims/ninja-cheering.webp.asset.json";
+import ninja_studying from "@/assets/avatar-anims/ninja-studying.webp.asset.json";
+import ninja_sleepy from "@/assets/avatar-anims/ninja-sleepy.webp.asset.json";
+import ninja_dancing from "@/assets/avatar-anims/ninja-dancing.webp.asset.json";
+import ninja_waving from "@/assets/avatar-anims/ninja-waving.webp.asset.json";
+import ninja_sad from "@/assets/avatar-anims/ninja-sad.webp.asset.json";
+import samurai_idle from "@/assets/avatar-anims/samurai-idle.webp.asset.json";
+import samurai_happy from "@/assets/avatar-anims/samurai-happy.webp.asset.json";
+import samurai_cheering from "@/assets/avatar-anims/samurai-cheering.webp.asset.json";
+import samurai_studying from "@/assets/avatar-anims/samurai-studying.webp.asset.json";
+import samurai_sleepy from "@/assets/avatar-anims/samurai-sleepy.webp.asset.json";
+import samurai_dancing from "@/assets/avatar-anims/samurai-dancing.webp.asset.json";
+import samurai_waving from "@/assets/avatar-anims/samurai-waving.webp.asset.json";
+import samurai_sad from "@/assets/avatar-anims/samurai-sad.webp.asset.json";
+import viking_idle from "@/assets/avatar-anims/viking-idle.webp.asset.json";
+import viking_happy from "@/assets/avatar-anims/viking-happy.webp.asset.json";
+import viking_cheering from "@/assets/avatar-anims/viking-cheering.webp.asset.json";
+import viking_studying from "@/assets/avatar-anims/viking-studying.webp.asset.json";
+import viking_sleepy from "@/assets/avatar-anims/viking-sleepy.webp.asset.json";
+import viking_dancing from "@/assets/avatar-anims/viking-dancing.webp.asset.json";
+import viking_waving from "@/assets/avatar-anims/viking-waving.webp.asset.json";
+import viking_sad from "@/assets/avatar-anims/viking-sad.webp.asset.json";
+import scholar_idle from "@/assets/avatar-anims/scholar-idle.webp.asset.json";
+import scholar_happy from "@/assets/avatar-anims/scholar-happy.webp.asset.json";
+import scholar_cheering from "@/assets/avatar-anims/scholar-cheering.webp.asset.json";
+import scholar_studying from "@/assets/avatar-anims/scholar-studying.webp.asset.json";
+import scholar_sleepy from "@/assets/avatar-anims/scholar-sleepy.webp.asset.json";
+import scholar_dancing from "@/assets/avatar-anims/scholar-dancing.webp.asset.json";
+import scholar_waving from "@/assets/avatar-anims/scholar-waving.webp.asset.json";
+import scholar_sad from "@/assets/avatar-anims/scholar-sad.webp.asset.json";
+import kunoichi_idle from "@/assets/avatar-anims/kunoichi-idle.webp.asset.json";
+import kunoichi_happy from "@/assets/avatar-anims/kunoichi-happy.webp.asset.json";
+import kunoichi_cheering from "@/assets/avatar-anims/kunoichi-cheering.webp.asset.json";
+import kunoichi_studying from "@/assets/avatar-anims/kunoichi-studying.webp.asset.json";
+import kunoichi_sleepy from "@/assets/avatar-anims/kunoichi-sleepy.webp.asset.json";
+import kunoichi_dancing from "@/assets/avatar-anims/kunoichi-dancing.webp.asset.json";
+import kunoichi_waving from "@/assets/avatar-anims/kunoichi-waving.webp.asset.json";
+import kunoichi_sad from "@/assets/avatar-anims/kunoichi-sad.webp.asset.json";
+import heroine_idle from "@/assets/avatar-anims/heroine-idle.webp.asset.json";
+import heroine_happy from "@/assets/avatar-anims/heroine-happy.webp.asset.json";
+import heroine_cheering from "@/assets/avatar-anims/heroine-cheering.webp.asset.json";
+import heroine_studying from "@/assets/avatar-anims/heroine-studying.webp.asset.json";
+import heroine_sleepy from "@/assets/avatar-anims/heroine-sleepy.webp.asset.json";
+import heroine_dancing from "@/assets/avatar-anims/heroine-dancing.webp.asset.json";
+import heroine_waving from "@/assets/avatar-anims/heroine-waving.webp.asset.json";
+import heroine_sad from "@/assets/avatar-anims/heroine-sad.webp.asset.json";
+
 import type { MascotMood } from "@/components/study-mascot/mascot-brain";
 
 export const AVATAR_PRESETS = [
@@ -117,6 +167,12 @@ const PRESET_ANIMS: Record<string, Record<string, string>> = {
   astronaut: { idle: astronautIdle, happy: astronautHappy, cheering: astronautCheering, studying: astronautStudying, sleepy: astronautSleepy, dancing: astronautDancing, waving: astronautWaving, sad: astronautSad },
   cat: { idle: catIdle, happy: catHappy, cheering: catCheering, studying: catStudying, sleepy: catSleepy, dancing: catDancing, waving: catWaving, sad: catSad },
   owl: { idle: owlIdle, happy: owlHappy, cheering: owlCheering, studying: owlStudying, sleepy: owlSleepy, dancing: owlDancing, waving: owlWaving, sad: owlSad },
+  ninja: { idle: ninja_idle.url, happy: ninja_happy.url, cheering: ninja_cheering.url, studying: ninja_studying.url, sleepy: ninja_sleepy.url, dancing: ninja_dancing.url, waving: ninja_waving.url, sad: ninja_sad.url },
+  samurai: { idle: samurai_idle.url, happy: samurai_happy.url, cheering: samurai_cheering.url, studying: samurai_studying.url, sleepy: samurai_sleepy.url, dancing: samurai_dancing.url, waving: samurai_waving.url, sad: samurai_sad.url },
+  viking: { idle: viking_idle.url, happy: viking_happy.url, cheering: viking_cheering.url, studying: viking_studying.url, sleepy: viking_sleepy.url, dancing: viking_dancing.url, waving: viking_waving.url, sad: viking_sad.url },
+  scholar: { idle: scholar_idle.url, happy: scholar_happy.url, cheering: scholar_cheering.url, studying: scholar_studying.url, sleepy: scholar_sleepy.url, dancing: scholar_dancing.url, waving: scholar_waving.url, sad: scholar_sad.url },
+  kunoichi: { idle: kunoichi_idle.url, happy: kunoichi_happy.url, cheering: kunoichi_cheering.url, studying: kunoichi_studying.url, sleepy: kunoichi_sleepy.url, dancing: kunoichi_dancing.url, waving: kunoichi_waving.url, sad: kunoichi_sad.url },
+  heroine: { idle: heroine_idle.url, happy: heroine_happy.url, cheering: heroine_cheering.url, studying: heroine_studying.url, sleepy: heroine_sleepy.url, dancing: heroine_dancing.url, waving: heroine_waving.url, sad: heroine_sad.url },
 };
 
 /** Map brain moods to the 8 animated clips. */
