@@ -2,7 +2,7 @@
 // Fails open only when the database call itself errors, so a transient DB
 // hiccup can never lock users out of the app.
 export async function allowRequest(
-  sb: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }> },
+  sb: { rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }> },
   bucket: string,
   limit: number,
   windowSeconds = 3600,

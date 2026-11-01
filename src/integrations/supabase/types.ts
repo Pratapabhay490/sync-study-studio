@@ -1424,9 +1424,17 @@ export type Database = {
       }
       my_partner_id: { Args: never; Returns: string }
       pair_key_for: { Args: { a: string; b: string }; Returns: string }
+      prepare_own_account_deletion: {
+        Args: { p_confirmation: string; p_user_id: string }
+        Returns: undefined
+      }
       refresh_together_streak: { Args: never; Returns: undefined }
       remove_study_partner: {
         Args: { p_partner_id: string }
+        Returns: undefined
+      }
+      reset_own_study_progress: {
+        Args: { p_confirmation: string }
         Returns: undefined
       }
       respond_partner_invite: {

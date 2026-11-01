@@ -22,6 +22,20 @@
       "when": 1792128275157,
       "tag": "0002_activity_days_all_sources",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793526876306,
+      "tag": "0003_safe_account_data_actions",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793526972980,
+      "tag": "0004_correct_reset_derived_xp",
+      "breakpoints": true
     }
   ]
 }
