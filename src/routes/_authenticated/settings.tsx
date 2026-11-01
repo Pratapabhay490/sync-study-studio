@@ -24,6 +24,7 @@ import clayPartners from "@/assets/clay-icon-partners.webp";
 import clayBell from "@/assets/clay-bell.webp";
 import clayProgress from "@/assets/clay-icon-progress.webp";
 import { AVATAR_PRESETS, presetIdOf, presetValue } from "@/lib/avatar-presets";
+import { AccountDataActions } from "@/components/account-data-actions";
 
 
 type PartnerInvite = {
@@ -36,14 +37,21 @@ type PartnerInvite = {
 };
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  head: () => ({ meta: [{ title: "Settings — Let's be in sync" }] }),
+  head: () => ({ meta: [
+    { title: "Settings — Let's be in sync" },
+    { name: "description", content: "Manage your SyncStudy profile, partners, notifications and account data." },
+    { property: "og:title", content: "Settings — Let's be in sync" },
+    { property: "og:description", content: "Manage your SyncStudy profile, partners, notifications and account data." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: SettingsPage,
 });
 
 function SettingsPage() {
   const { user, signOut, isGuest, exitGuestMode } = useAuth();
   const navigate = useNavigate();
-  const { profiles, subjects, topics, progress, resetMyProgress } = useData();
+  const { profiles, subjects, topics, progress } = useData();
   const { pushEnabled, enablePush, disablePush, sendTestPush, permission } = useNotifications();
   const { theme, toggle } = useTheme();
   const { enabled: floatEnabled, setEnabled: setFloatEnabled, support: floatSupport } = useFloatingTimerPref();
@@ -196,12 +204,6 @@ function SettingsPage() {
     a.download = `in-sync-export-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }
-
-  async function handleReset() {
-    if (!confirm("Reset all your completion progress? This can't be undone.")) return;
-    await resetMyProgress();
-    toast.success("Your progress was reset");
   }
 
   return (
@@ -505,7 +507,6 @@ function SettingsPage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <Button variant="outline" onClick={exportData}><Download className="mr-2 h-4 w-4" /> Export JSON</Button>
-            <Button variant="outline" onClick={handleReset}><RotateCcw className="mr-2 h-4 w-4" /> Reset my progress</Button>
           </div>
         </div>
       </div>
@@ -518,7 +519,10 @@ function SettingsPage() {
             <LogIn className="mr-2 h-4 w-4" /> Sign in
           </Button>
         ) : (
-          <Button variant="outline" onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> Sign out</Button>
+          <div className="space-y-5">
+            <Button variant="outline" onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> Sign out</Button>
+            <AccountDataActions />
+          </div>
         )}
       </div>
 
