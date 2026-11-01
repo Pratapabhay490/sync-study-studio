@@ -29,6 +29,13 @@
       "when": 1793526876306,
       "tag": "0003_safe_account_data_actions",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793526972980,
+      "tag": "0004_correct_reset_derived_xp",
+      "breakpoints": true
     }
   ]
 }
