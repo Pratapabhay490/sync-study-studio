@@ -36,7 +36,8 @@ export type MascotMood =
   | "listening"
   | "thinking"
   | "dancing"
-  | "waving";
+  | "waving"
+  | "sad";
 
 interface MascotContextValue {
   mood: MascotMood;
@@ -175,9 +176,9 @@ export function MascotProvider({ children }: { children: ReactNode }) {
           showBubble("Session done — proud of you!", 4000);
           break;
         case "focus:lost":
-          // Left the page mid-session: drop the focus flag quietly, no cheer.
+          // Left the page mid-session: brief sad face, then back to idle.
           focusActiveRef.current = false;
-          setMood("idle");
+          showMood("sad", 3000);
           break;
         case "streak:milestone":
           if (e.days >= 14) {

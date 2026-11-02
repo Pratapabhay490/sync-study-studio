@@ -68,9 +68,7 @@ export function FloatingDuoPill() {
       ? "studying"
       : !otherOnline
         ? "sleepy"
-        : op?.status === "break"
-          ? "idle"
-          : "waving";
+        : "idle";
 
   const mm = Math.floor(focusLeft / 60000);
   const ss = Math.floor((focusLeft % 60000) / 1000).toString().padStart(2, "0");
