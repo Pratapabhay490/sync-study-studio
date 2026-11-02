@@ -195,6 +195,8 @@ function moodClip(mood: MascotMood): string {
       return "studying";
     case "sleepy":
       return "sleepy";
+    case "sad":
+      return "sad";
     default:
       return "idle";
   }

@@ -118,19 +118,26 @@ export function LivingAvatar({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
           >
-            <Avatar
+            <span
               style={{ width: size, height: size }}
-              className={ring ? "ring-2 ring-background ring-offset-2 ring-offset-background" : ""}
+              className={`relative flex shrink-0 overflow-hidden rounded-full ${ring ? "ring-2 ring-background ring-offset-2 ring-offset-background" : ""}`}
             >
               {src ? (
-                <AvatarImage src={src} alt={profile?.name ?? ""} className="object-cover" draggable={false} onLoadingStatusChange={(status) => {
-                  if (status === "error") setFailedSrc(src);
-                }} />
-              ) : null}
-              <AvatarFallback className={`${bg} text-white font-semibold`}>
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+                // Plain img (not Radix AvatarImage) so clip swaps never flash the initials.
+                <img
+                  src={src}
+                  alt={profile?.name ?? ""}
+                  className="aspect-square h-full w-full object-cover"
+                  draggable={false}
+                  decoding="async"
+                  onError={() => setFailedSrc(src)}
+                />
+              ) : (
+                <span className={`${bg} flex h-full w-full items-center justify-center rounded-full font-semibold text-white`}>
+                  {initials}
+                </span>
+              )}
+            </span>
           </motion.div>
         </AnimatePresence>
       </motion.button>
