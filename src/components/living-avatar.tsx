@@ -18,7 +18,6 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Profile } from "@/lib/data-context";
 import { animatedAvatar, presetIdOf, resolveAvatar } from "@/lib/avatar-presets";
 import { useMascot, type MascotMood } from "./study-mascot/mascot-brain";
@@ -122,7 +121,7 @@ export function LivingAvatar({
               style={{ width: size, height: size }}
               className={`relative flex shrink-0 overflow-hidden rounded-full ${ring ? "ring-2 ring-background ring-offset-2 ring-offset-background" : ""}`}
             >
-              {src ? (
+              {src && failedSrc !== src ? (
                 // Plain img (not Radix AvatarImage) so clip swaps never flash the initials.
                 <img
                   src={src}
