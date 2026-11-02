@@ -28,9 +28,10 @@ import { differenceInCalendarDays, format, formatDistanceToNow, isToday, parseIS
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowRight, Flame, Users, Heart, BookOpen, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/_authenticated/home")({
-  head: () => ({ meta: [{ title: "Overview — Let's be in sync" }] }),
+  head: () => ({ meta: pageMeta("Overview — Let's be in sync", "See partner activity, shared streaks and study goals.") }),
   component: PartnerHome,
 });
 

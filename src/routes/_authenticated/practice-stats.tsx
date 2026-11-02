@@ -18,6 +18,14 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/practice-stats")({
+  head: () => ({ meta: [
+    { title: "Practice Results — SyncStudy" },
+    { name: "description", content: "Review your quiz accuracy and practice performance." },
+    { property: "og:title", content: "Practice Results — SyncStudy" },
+    { property: "og:description", content: "Review your quiz accuracy and practice performance." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: PracticeStatsPage,
 });
 

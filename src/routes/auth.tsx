@@ -9,16 +9,14 @@ import { Loader2, Mail, MailCheck, Lock, User } from "lucide-react";
 import syncLogo from "@/assets/sync-logo.webp";
 import clayAuthHero from "@/assets/clay-auth-hero.webp";
 import { toast } from "sonner";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>): { tab?: "signin" | "signup" } => ({
     tab: search.tab === "signup" || search.tab === "signin" ? search.tab : undefined,
   }),
   head: () => ({
-    meta: [
-      { title: "Sign in — Let's be in sync" },
-      { name: "description", content: "Sign in or create your account to start tracking MBBS progress together." },
-    ],
+    meta: pageMeta("Sign in — Let's be in sync", "Sign in or create your account to start tracking MBBS progress together."),
   }),
   component: AuthPage,
 });

@@ -8,13 +8,11 @@ import { UserAvatar } from "@/components/user-avatar";
 import { useBadgeCatalog, tierClass } from "@/lib/badges";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { Trophy, Zap, Flame, Users, Filter } from "lucide-react";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/_authenticated/journey")({
   head: () => ({
-    meta: [
-      { title: "Journey — Let's be in sync" },
-      { name: "description", content: "The shared timeline of your study partnership." },
-    ],
+    meta: pageMeta("Journey — Let's be in sync", "The shared timeline of your study partnership."),
   }),
   component: JourneyPage,
 });

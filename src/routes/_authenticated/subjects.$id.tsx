@@ -35,9 +35,10 @@ import { celebrate } from "@/lib/celebrate";
 import { ClayVisual } from "@/components/clay-visuals";
 import { TopicListSkeleton } from "@/components/skeletons";
 import { RevisionStars } from "@/components/revision-stars";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/_authenticated/subjects/$id")({
-  head: () => ({ meta: [{ title: "Subject — Let's be in sync" }] }),
+  head: () => ({ meta: pageMeta("Subject topics — Let's be in sync", "Track topic completions and revision stars for this subject.") }),
   component: SubjectDetail,
 });
 
