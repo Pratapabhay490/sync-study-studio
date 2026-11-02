@@ -36,6 +36,13 @@
       "when": 1793526972980,
       "tag": "0004_correct_reset_derived_xp",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793603369214,
+      "tag": "0005_admin_roles",
+      "breakpoints": true
     }
   ]
 }
