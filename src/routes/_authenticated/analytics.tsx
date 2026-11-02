@@ -13,9 +13,10 @@ import { parseISO, startOfDay, subDays, format, isToday, isThisWeek } from "date
 import { RefreshCcw, Flame, Trophy, Target, Brain, TrendingUp, AlertTriangle, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import clayBrain from "@/assets/clay-analytics-mascot.webp";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
-  head: () => ({ meta: [{ title: "Analytics — Let's be in sync" }] }),
+  head: () => ({ meta: pageMeta("Analytics — Let's be in sync", "Review your MBBS study trends and subject progress.") }),
   component: AnalyticsPage,
 });
 

@@ -27,9 +27,10 @@ import { Label } from "@/components/ui/label";
 import { Plus, Search, BookOpen, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { SubjectsSkeleton } from "@/components/skeletons";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/_authenticated/subjects/")({
-  head: () => ({ meta: [{ title: "Subjects — Let's be in sync" }] }),
+  head: () => ({ meta: pageMeta("Subjects — Let's be in sync", "Manage your personalized MBBS subjects and syllabus.") }),
   component: SubjectsPage,
 });
 

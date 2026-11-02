@@ -155,7 +155,14 @@ function useCountdown(target: Date) {
 }
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Home — Let's be in sync" }] }),
+  head: () => ({ meta: [
+    { title: "Home — Let's be in sync" },
+    { name: "description", content: "Your daily MBBS study dashboard and exam countdown." },
+    { property: "og:title", content: "Home — Let's be in sync" },
+    { property: "og:description", content: "Your daily MBBS study dashboard and exam countdown." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Dashboard,
 });
 

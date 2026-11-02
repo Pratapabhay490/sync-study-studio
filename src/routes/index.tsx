@@ -11,6 +11,7 @@ import clayBrain from "@/assets/clay-analytics-mascot.webp";
 import clayBell from "@/assets/clay-bell.webp";
 import Carousel, { type CarouselItem } from "@/components/Carousel";
 import { useAutoReveal } from "@/lib/use-auto-reveal";
+import { pageMeta } from "@/lib/page-meta";
 
 const ONBOARDING_ITEMS: CarouselItem[] = [
   {
@@ -35,10 +36,7 @@ const ONBOARDING_ITEMS: CarouselItem[] = [
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    meta: [
-      { title: "Let's be in sync — Study together, in real time" },
-      { name: "description", content: "A premium collaborative MBBS study tracker for partners. Add subjects, track topics, and watch each other's progress climb live." },
-    ],
+    meta: pageMeta("Let's be in sync — Study together, in real time", "A collaborative MBBS study tracker for partners. Add subjects and track topics together."),
   }),
   component: Landing,
 });

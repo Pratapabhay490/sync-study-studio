@@ -5,9 +5,10 @@ import { UserAvatar } from "@/components/user-avatar";
 import { formatDistanceToNow, parseISO, format } from "date-fns";
 import { getSubjectClayIcon } from "@/lib/subject-icons";
 import clayCompleted from "@/assets/clay-icon-completed.webp";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/_authenticated/activity")({
-  head: () => ({ meta: [{ title: "Activity — Let's be in sync" }] }),
+  head: () => ({ meta: pageMeta("Activity — Let's be in sync", "Follow recent topic completions in your study workspace.") }),
   component: ActivityPage,
 });
 

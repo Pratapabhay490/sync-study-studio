@@ -27,6 +27,14 @@ import {
 } from "@/lib/practice";
 
 export const Route = createFileRoute("/_authenticated/practice")({
+  head: () => ({ meta: [
+    { title: "MCQ Practice — SyncStudy" },
+    { name: "description", content: "Practice MBBS questions alone or with your study partner." },
+    { property: "og:title", content: "MCQ Practice — SyncStudy" },
+    { property: "og:description", content: "Practice MBBS questions alone or with your study partner." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: PracticePage,
 });
 
