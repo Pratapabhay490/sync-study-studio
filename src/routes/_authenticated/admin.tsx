@@ -83,7 +83,7 @@ function AdminPanel() {
               <th className="p-2">Topics</th><th className="p-2">Focus min</th><th className="p-2">Quiz</th><th className="p-2">Partner</th><th className="p-2"></th>
             </tr></thead>
             <tbody>
-              {data?.users.map((u) => (
+              {data?.users.map((u: any) => (
                 <tr key={u.id} className="border-t border-border">
                   <td className="p-2"><div className="font-semibold">{u.name || "—"}</div><div className="text-xs text-muted-foreground">{u.email}</div></td>
                   <td className="p-2">{new Date(u.createdAt).toLocaleDateString()}</td>
