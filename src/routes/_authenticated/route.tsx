@@ -5,9 +5,12 @@ import { LivingAvatar } from "@/components/living-avatar";
 import { MascotProvider } from "@/components/study-mascot/mascot-brain";
 import { Button } from "@/components/ui/button";
 import {
-  Activity, BarChart3, BookOpen, Brain, Home, LayoutDashboard, LogOut, Map, Menu, Moon, Settings, Sun, Trophy, X,
+  Activity, BarChart3, BookOpen, Brain, Home, LayoutDashboard, LogOut, Map, Menu, Moon, Settings, Shield, Sun, Trophy, X,
 } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { checkIsAdmin } from "@/lib/admin.functions";
 import { useTheme } from "@/lib/theme-provider";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -53,6 +56,9 @@ function AuthenticatedLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
   useAutoReveal(pathname);
+  const checkAdmin = useServerFn(checkIsAdmin);
+  const { data: adminRole } = useQuery({ queryKey: ["is-admin", user?.id], queryFn: () => checkAdmin(), enabled: !!user && !isGuest, staleTime: 300000 });
+  const navItems = adminRole?.isAdmin ? [...nav, { to: "/admin" as const, label: "Admin", icon: Shield }] : nav;
 
   const me = profiles.find((p) => p.id === user?.id);
 
@@ -101,7 +107,7 @@ function AuthenticatedLayout() {
             </Link>
 
             <nav className="flex flex-col gap-2">
-              {nav.map((item) => {
+              {navItems.map((item) => {
                 const active = pathname === item.to || pathname.startsWith(item.to + "/");
                 return (
                   <Link
