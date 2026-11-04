@@ -5,8 +5,8 @@
     "updateUrl": "https://play.google.com/store/apps/details?id=com.syncstudy.app"
   },
   "web": {
-    "version": "24.4",
-    "url": "https://github.com/Pratapabhay490/sync-study-studio/releases/download/ota-web-24.4/ota-bundle-24.4.zip",
-    "checksum": "6ebd0fc8d26a35f766fba0d47f69e2565956c418e7fbddfdee4c8d595300179d"
+    "version": "25.0",
+    "url": "https://github.com/Pratapabhay490/sync-study-studio/releases/download/ota-web-25.0/ota-bundle-repoint-25.0.zip",
+    "checksum": "fb92c2e2c334744313f81860b88da536aa4c9ca88109c3302aef11f789eb9c0e"
   }
 }
