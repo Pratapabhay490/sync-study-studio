@@ -6,7 +6,7 @@
   },
   "web": {
     "version": "25.6",
-    "url": "https://github.com/Pratapabhay490/sync-study-studio/releases/download/ota-web-25.6/OTA.bundle.25.6",
+    "url": "https://syncstudy.pages.dev/ota-bundle-25.6.zip",
     "checksum": "7240bec5321f3c27f21af02f71510c1d129bf2093ffadaee55e5303abc7a5f9c"
   }
 }
