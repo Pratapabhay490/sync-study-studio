@@ -5,8 +5,8 @@
     "updateUrl": "https://play.google.com/store/apps/details?id=com.syncstudy.app"
   },
   "web": {
-    "version": "25.7",
-    "url": "https://syncstudy.pages.dev/ota-bundle-25.7.zip",
-    "checksum": "917a8a306e2b06354fb2e50856e635095c91fec5cb4956953f41bad5b1692fac"
+    "version": "25.8",
+    "url": "https://syncstudy.pages.dev/ota-bundle-25.8.zip",
+    "checksum": "d443856bafd674b7d3789950b13081a3604a9f9bfdea593b6792ab69097a684a"
   }
 }
