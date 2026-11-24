@@ -2,11 +2,12 @@
   "native": {
     "latestVersionCode": 24,
     "latestVersionName": "24.0",
-    "updateUrl": "https://play.google.com/store/apps/details?id=com.syncstudy.app"
+    "updateUrl": "https://play.google.com/store/apps/details?id=com.syncstudy.app",
+    "apkUrl": null
   },
   "web": {
-    "version": "25.15",
-    "url": "https://syncstudy.pages.dev/ota-bundle-25.15.zip",
-    "checksum": "cadcfe3514921007d604197aafaa347fe94ea18bbab709c611f4f0410862de6f"
+    "version": "25.16",
+    "url": "https://syncstudy.pages.dev/ota-bundle-25.16.zip",
+    "checksum": "e10a735b41498742f527b5cf639691de7f0129b467a1e6fbd0e5f832ae3ba0a3"
   }
 }
