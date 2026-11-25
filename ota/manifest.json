@@ -6,8 +6,8 @@
     "apkUrl": null
   },
   "web": {
-    "version": "25.16",
-    "url": "https://syncstudy.pages.dev/ota-bundle-25.16.zip",
-    "checksum": "e10a735b41498742f527b5cf639691de7f0129b467a1e6fbd0e5f832ae3ba0a3"
+    "version": "25.17",
+    "url": "https://syncstudy.pages.dev/ota-bundle-25.17.zip",
+    "checksum": "e0bc70824fe6131361d4ec2a119a53908b8acd192446e79da8dc2613355b1f3e"
   }
 }
