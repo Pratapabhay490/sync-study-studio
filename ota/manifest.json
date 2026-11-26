@@ -1,9 +1,9 @@
 {
   "native": {
-    "latestVersionCode": 24,
-    "latestVersionName": "24.0",
+    "latestVersionCode": 28,
+    "latestVersionName": "25.18",
     "updateUrl": "https://play.google.com/store/apps/details?id=com.syncstudy.app",
-    "apkUrl": null
+    "apkUrl": "https://github.com/Pratapabhay490/sync-study-studio/releases/download/v25.18/syncstudy-25.18.apk"
   },
   "web": {
     "version": "25.17",
